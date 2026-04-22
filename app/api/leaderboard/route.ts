@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
-import { progressController } from "@/controllers/ProgressController";
+import { socialController } from "@/controllers/SocialController";
 import { connectDB } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   await connectDB();
-  return progressController.getStreak(req);
+  return socialController.getLeaderboard(req);
 }
