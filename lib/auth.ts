@@ -1,24 +1,42 @@
- import jwt from "jsonwebtoken";
+// Token management utilities
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const ACCESS_TOKEN_KEY = "gymstreak_access_token";
+const REFRESH_TOKEN_KEY = "gymstreak_refresh_token";
+const USER_KEY = "gymstreak_user";
 
-export const generateToken = (userId: string) => {
-  console.log("SIGN SECRET:", JWT_SECRET);
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
-};
+export const tokenManager = {
+  getAccessToken: (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  },
 
-export const verifyToken = (token: string) => {
-  try {
-    console.log("VERIFY SECRET:", JWT_SECRET);   
-    console.log("TOKEN:", token);                
+  getRefreshToken: (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  },
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+  setTokens: (accessToken: string, refreshToken: string) => {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  },
 
-    console.log("DECODED:", decoded);          
+  clearTokens: () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  },
 
-    return decoded;
-  } catch (err: any) {
-    console.log("JWT ERROR:", err.message);     
-    return null;
-  }
+  getUser: () => {
+    if (typeof window === "undefined") return null;
+    const user = localStorage.getItem(USER_KEY);
+    return user ? JSON.parse(user) : null;
+  },
+
+  setUser: (user: any) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
+  isAuthenticated: (): boolean => {
+    return !!tokenManager.getAccessToken();
+  },
 };
