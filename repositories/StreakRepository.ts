@@ -1,19 +1,39 @@
-import { Streak } from "../models/Streak";
+import { prisma } from "../lib/prisma";
 
 export class StreakRepository {
   async findByUserId(userId: string) {
-    return await Streak.findOne({ user: userId });
+    return await prisma.streak.findUnique({
+      where: { userId },
+    });
   }
 
   async upsert(userId: string, updateData: any) {
-    return await Streak.findOneAndUpdate({ user: userId }, updateData, {
-      upsert: true,
-      new: true,
+    return await prisma.streak.upsert({
+      where: { userId },
+      update: updateData,
+      create: {
+        userId,
+        ...updateData,
+      },
     });
   }
 
   async getAllActiveStreaks() {
-    return await Streak.find({ currentStreak: { $gt: 0 } }).populate("user", "name goal");
+    return await prisma.streak.findMany({
+      where: {
+        currentStreak: {
+          gt: 0,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            goal: true,
+          },
+        },
+      },
+    });
   }
 }
 

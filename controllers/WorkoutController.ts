@@ -12,7 +12,9 @@ export class WorkoutController {
       const user = await userRepository.findById(userId);
       if (!user) throw new Error("User not found");
       
-      const plan = await workoutService.getWorkoutPlan(user.goal, user.fitnessLevel);
+      const goal = user.goal || "Weight Loss";
+      const fitnessLevel = user.fitnessLevel || "Beginner";
+      const plan = await workoutService.getWorkoutPlan(goal, fitnessLevel);
       return NextResponse.json({ success: true, data: plan });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
