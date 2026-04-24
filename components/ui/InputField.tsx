@@ -7,12 +7,13 @@ interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   icon?: React.ReactNode;
   variant?: "light" | "dark" | "glass";
+  showStepper?: boolean;
 }
 
 const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
-  ({ label, error, icon, variant = "light", className = "", ...props }, ref) => {
+  ({ label, error, icon, variant = "light", showStepper = false, className = "", ...props }, ref) => {
     const [focused, setFocused] = useState(false);
-    const hasValue = !!props.value && String(props.value).length > 0;
+    const hasValue = props.value !== undefined && props.value !== null && String(props.value).length > 0;
 
     const baseStyles = {
       light:
@@ -20,17 +21,36 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       dark:
         "bg-dash-card border-white/10 text-white focus:border-neon-blue focus:ring-neon-blue/20",
       glass:
-        "bg-white/5 border-white/10 text-white focus:border-auth-accent focus:ring-auth-accent/20 placeholder-white/30",
+        "bg-white/5 border-white/10 text-white focus:border-auth-accent focus:ring-auth-accent/20 placeholder-white/20",
+    };
+
+    const labelBg = {
+      light: "bg-white",
+      dark: "bg-dash-card",
+      glass: "bg-[#1a1033]", // Solid background for glass to prevent merging
+    };
+
+    const handleIncrement = () => {
+      const val = Number(props.value) || 0;
+      const event = { target: { value: String(val + 1) } } as React.ChangeEvent<HTMLInputElement>;
+      props.onChange?.(event);
+    };
+
+    const handleDecrement = () => {
+      const val = Number(props.value) || 0;
+      const event = { target: { value: String(Math.max(0, val - 1)) } } as React.ChangeEvent<HTMLInputElement>;
+      props.onChange?.(event);
     };
 
     return (
       <div className="w-full">
-        <div className="relative">
+        <div className="relative group">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-auth-accent transition-colors z-10">
               {icon}
             </div>
           )}
+          
           <input
             ref={ref}
             {...props}
@@ -42,32 +62,43 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               setFocused(false);
               props.onBlur?.(e);
             }}
-            className={`w-full px-4 py-3 ${
-              icon ? "pl-10" : ""
-            } rounded-xl border-2 outline-none transition-all duration-200 text-sm focus:ring-4 ${
+            className={`w-full px-4 py-3.5 ${
+              icon ? "pl-11" : ""
+            } ${showStepper ? "pr-24" : ""} rounded-xl border-2 outline-none transition-all duration-300 text-sm focus:ring-4 ${
               baseStyles[variant]
-            } ${error ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""} ${className}`}
-            placeholder={focused || hasValue ? props.placeholder : ""}
-            aria-label={label}
-            aria-invalid={!!error}
+            } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-white/10"} ${className}`}
+            placeholder={focused ? props.placeholder : ""}
           />
+
+          {showStepper && props.type === "number" && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-all cursor-pointer"
+              >
+                <span className="text-lg font-bold">−</span>
+              </button>
+              <div className="w-px h-4 bg-white/10" />
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-all cursor-pointer"
+              >
+                <span className="text-lg font-bold">+</span>
+              </button>
+            </div>
+          )}
+
           <label
-            className={`absolute left-${icon ? "10" : "4"} transition-all duration-200 pointer-events-none ${
+            className={`absolute transition-all duration-300 pointer-events-none select-none ${
               focused || hasValue
-                ? "-top-2.5 text-xs px-1 font-medium " +
-                  (error 
-                    ? "text-red-400 bg-transparent" 
-                    : variant === "light"
-                      ? "bg-white text-primary"
-                      : variant === "glass"
-                      ? "bg-transparent text-auth-accent"
-                      : "bg-dash-card text-neon-blue")
-                : "top-3.5 text-sm " +
-                  (error
-                    ? "text-red-400/60"
-                    : variant === "light"
-                      ? "text-gray-400"
-                      : "text-white/40")
+                ? `-top-2.5 left-3 text-[11px] px-2 font-bold z-20 rounded-md ${labelBg[variant]} ${
+                    error ? "text-red-400" : variant === "glass" ? "text-auth-accent" : "text-primary"
+                  }`
+                : `top-3.5 left-${icon ? "11" : "4"} text-sm ${
+                    error ? "text-red-400/60" : "text-white/30"
+                  }`
             }`}
           >
             {label}

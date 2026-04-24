@@ -74,9 +74,10 @@ export default function DashboardPage() {
         const progressData = progressRes.status === "fulfilled" ? progressRes.value : null;
 
         const weightEntries = progressData?.data;
-        const lastWeight = Array.isArray(weightEntries) && weightEntries.length > 0 
-          ? weightEntries[weightEntries.length - 1].weight 
-          : null;
+        const lastWeight =
+          Array.isArray(weightEntries) && weightEntries.length > 0
+            ? weightEntries[weightEntries.length - 1].weight
+            : null;
 
         setStats({
           caloriesBurned: 2450,

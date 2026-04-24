@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 interface ActivityItem {
-  icon: string;
+  icon?: string;
   title: string;
   description: string;
   time: string;
@@ -48,6 +48,13 @@ export default function ActivityFeed({ items, loading = false }: ActivityFeedPro
     );
   }
 
+  const typeIcons = {
+    workout: "🏋️",
+    streak: "🔥",
+    diet: "🥗",
+    achievement: "🏆",
+  };
+
   return (
     <div className="space-y-2">
       {items.map((item, i) => (
@@ -59,7 +66,7 @@ export default function ActivityFeed({ items, loading = false }: ActivityFeedPro
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors"
         >
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${typeColors[item.type]}`}>
-            <span className="text-lg">{item.icon}</span>
+            <span className="text-lg">{item.icon || typeIcons[item.type]}</span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-medium truncate">{item.title}</p>

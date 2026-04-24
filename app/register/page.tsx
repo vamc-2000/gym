@@ -35,13 +35,25 @@ export default function RegisterPage() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!form.name.trim()) newErrors.name = "Name is required";
-    if (!form.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Invalid email";
-    if (!form.password) newErrors.password = "Password is required";
-    else if (form.password.length < 6) newErrors.password = "Min 6 characters";
+    
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
     if (!form.goal) newErrors.goal = "Select a goal";
     if (!form.fitnessLevel) newErrors.fitnessLevel = "Select your level";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -142,15 +154,19 @@ export default function RegisterPage() {
                   label="Height (cm)"
                   type="number"
                   variant="glass"
+                  showStepper
                   value={form.height}
                   onChange={(e) => update("height", e.target.value)}
+                  error={errors.height}
                 />
                 <InputField
                   label="Weight (kg)"
                   type="number"
                   variant="glass"
+                  showStepper
                   value={form.weight}
                   onChange={(e) => update("weight", e.target.value)}
+                  error={errors.weight}
                 />
               </div>
               <SelectField

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ProgressBar from "@/components/ui/ProgressBar";
-import StepCard from "@/components/ui/StepCard";
 import SelectionCard from "@/components/ui/SelectionCard";
 import InputField from "@/components/ui/InputField";
 import SubmitButton from "@/components/ui/SubmitButton";
@@ -31,9 +30,9 @@ interface OnboardingData {
 const TOTAL_STEPS = 9;
 
 const stepVariants = {
-  enter: { opacity: 0, x: 60 },
-  center: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -60 },
+  enter: { opacity: 0, scale: 0.95, y: 20 },
+  center: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.95, y: -20 },
 };
 
 export default function OnboardingPage() {
@@ -172,8 +171,14 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-onboarding-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-[420px]">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-gradient-to-br from-purple-950 via-gray-950 to-black animated-gradient">
+      
+      {/* Animated background blobs */}
+      <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-blob" />
+      <div className="absolute top-40 -right-20 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
+      <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-blob animation-delay-4000" />
+
+      <div className="w-full max-w-[440px] relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -181,11 +186,11 @@ export default function OnboardingPage() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            {/* Card */}
-            <div className="bg-white rounded-2xl shadow-xl shadow-black/5 p-8">
-              {/* Progress — skip welcome and success */}
+            {/* Main Container */}
+            <div className="glass-panel-purple rounded-[2rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+              {/* Progress */}
               {step > 0 && step < 8 && (
                 <ProgressBar currentStep={step} totalSteps={7} />
               )}
@@ -193,14 +198,18 @@ export default function OnboardingPage() {
               {/* STEP 0: Welcome */}
               {step === 0 && (
                 <div className="text-center py-8">
-                  <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <span className="text-4xl">🏋️</span>
-                  </div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">GymStreak</h1>
-                  <p className="text-gray-500 text-sm mb-8">
-                    Your personalized fitness journey starts here
+                  <motion.div 
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 12 }}
+                    className="w-20 h-20 bg-gradient-to-br from-auth-accent to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-auth-accent/30"
+                  >
+                    <span className="text-4xl -rotate-12">🏋️</span>
+                  </motion.div>
+                  <h1 className="text-3xl font-black text-white mb-3 tracking-tight">GymStreak</h1>
+                  <p className="text-white/50 text-sm mb-10 leading-relaxed">
+                    Your personalized fitness journey starts here. Let&apos;s build your dream physique together.
                   </p>
-                  <SubmitButton onClick={() => setStep(1)}>
+                  <SubmitButton onClick={() => setStep(1)} variant="gradient-purple">
                     Get Started
                   </SubmitButton>
                 </div>
@@ -209,10 +218,11 @@ export default function OnboardingPage() {
               {/* STEP 1: Name */}
               {step === 1 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">What&apos;s your name?</h2>
-                  <p className="text-sm text-gray-500 mb-6">Let&apos;s make this personal</p>
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">What&apos;s your name?</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">Let&apos;s make this personal so we can cheer you on properly.</p>
                   <InputField
                     label="Full Name"
+                    variant="glass"
                     value={data.name}
                     onChange={(e) => update("name", e.target.value)}
                     error={errors.name}
@@ -224,9 +234,9 @@ export default function OnboardingPage() {
               {/* STEP 2: Goal */}
               {step === 2 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">What&apos;s your goal?</h2>
-                  <p className="text-sm text-gray-500 mb-6">We&apos;ll customize your plan</p>
-                  <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">What&apos;s your goal?</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">We&apos;ll customize your workout and nutrition plan accordingly.</p>
+                  <div className="space-y-3">
                     {GOALS.map((g) => (
                       <SelectionCard
                         key={g.value}
@@ -239,7 +249,7 @@ export default function OnboardingPage() {
                     ))}
                   </div>
                   {errors.goal && (
-                    <p className="mt-2 text-xs text-red-500">{errors.goal}</p>
+                    <p className="mt-3 text-xs text-red-400 font-medium">{errors.goal}</p>
                   )}
                 </div>
               )}
@@ -247,9 +257,9 @@ export default function OnboardingPage() {
               {/* STEP 3: Fitness Level */}
               {step === 3 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">Your fitness level?</h2>
-                  <p className="text-sm text-gray-500 mb-6">No judgement here!</p>
-                  <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Your fitness level?</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">No judgement here! We just want to find the right starting intensity.</p>
+                  <div className="space-y-3">
                     {FITNESS_LEVELS.map((fl) => (
                       <SelectionCard
                         key={fl.value}
@@ -267,13 +277,9 @@ export default function OnboardingPage() {
               {/* STEP 4: Units */}
               {step === 4 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
-                    Preferred units?
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    We&apos;ll adjust all measurements
-                  </p>
-                  <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Preferred units?</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">We&apos;ll adjust all measurements to your preference.</p>
+                  <div className="space-y-3">
                     {UNIT_SYSTEMS.map((u) => (
                       <SelectionCard
                         key={u.value}
@@ -290,17 +296,15 @@ export default function OnboardingPage() {
               {/* STEP 5: Height & Weight */}
               {step === 5 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
-                    Your measurements
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    This helps us create your perfect plan
-                  </p>
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Your measurements</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">This helps us calculate your BMI and caloric needs.</p>
                   {data.units === "metric" ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <InputField
                         label="Height (cm)"
                         type="number"
+                        variant="glass"
+                        showStepper
                         value={data.heightCm}
                         onChange={(e) => update("heightCm", e.target.value)}
                         error={errors.heightCm}
@@ -308,17 +312,20 @@ export default function OnboardingPage() {
                       <InputField
                         label="Weight (kg)"
                         type="number"
+                        variant="glass"
+                        showStepper
                         value={data.weightKg}
                         onChange={(e) => update("weightKg", e.target.value)}
                         error={errors.weightKg}
                       />
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex gap-3">
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
                         <InputField
                           label="Feet"
                           type="number"
+                          variant="glass"
                           value={data.heightFt}
                           onChange={(e) => update("heightFt", e.target.value)}
                           error={errors.heightFt}
@@ -326,6 +333,7 @@ export default function OnboardingPage() {
                         <InputField
                           label="Inches"
                           type="number"
+                          variant="glass"
                           value={data.heightIn}
                           onChange={(e) => update("heightIn", e.target.value)}
                         />
@@ -333,6 +341,8 @@ export default function OnboardingPage() {
                       <InputField
                         label="Weight (lbs)"
                         type="number"
+                        variant="glass"
+                        showStepper
                         value={data.weightLbs}
                         onChange={(e) => update("weightLbs", e.target.value)}
                         error={errors.weightLbs}
@@ -345,55 +355,35 @@ export default function OnboardingPage() {
               {/* STEP 6: Target Weight */}
               {step === 6 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
-                    Target weight?
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Set a realistic goal — you can always adjust later
-                  </p>
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Target weight?</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">Set a realistic goal — you can always adjust this later.</p>
                   <InputField
-                    label={
-                      data.units === "metric"
-                        ? "Target Weight (kg)"
-                        : "Target Weight (lbs)"
-                    }
+                    label={data.units === "metric" ? "Target Weight (kg)" : "Target Weight (lbs)"}
                     type="number"
-                    value={
-                      data.units === "metric"
-                        ? data.targetWeightKg
-                        : data.targetWeightLbs
-                    }
-                    onChange={(e) =>
-                      update(
-                        data.units === "metric"
-                          ? "targetWeightKg"
-                          : "targetWeightLbs",
-                        e.target.value
-                      )
-                    }
-                    error={
-                      errors.targetWeightKg || errors.targetWeightLbs
-                    }
+                    variant="glass"
+                    showStepper
+                    value={data.units === "metric" ? data.targetWeightKg : data.targetWeightLbs}
+                    onChange={(e) => update(data.units === "metric" ? "targetWeightKg" : "targetWeightLbs", e.target.value)}
+                    error={errors.targetWeightKg || errors.targetWeightLbs}
                   />
-                  <p className="mt-3 text-xs text-gray-400 text-center">
-                    💡 A healthy rate is 0.5–1 kg (1–2 lbs) per week
-                  </p>
+                  <div className="mt-6 p-4 rounded-xl bg-auth-accent/5 border border-auth-accent/10">
+                    <p className="text-xs text-auth-accent/80 leading-relaxed text-center font-medium">
+                      💡 Pro Tip: A healthy weight change rate is typically 0.5–1 kg (1–2 lbs) per week.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* STEP 7: Account */}
               {step === 7 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
-                    Create your account
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Almost there, {data.name.split(" ")[0]}!
-                  </p>
+                  <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Create your account</h2>
+                  <p className="text-sm text-white/40 mb-8 leading-relaxed">Almost there, {data.name.split(" ")[0]}! Save your progress.</p>
                   <div className="space-y-4">
                     <InputField
                       label="Email"
                       type="email"
+                      variant="glass"
                       value={data.email}
                       onChange={(e) => update("email", e.target.value)}
                       error={errors.email}
@@ -401,6 +391,7 @@ export default function OnboardingPage() {
                     <InputField
                       label="Password"
                       type="password"
+                      variant="glass"
                       value={data.password}
                       onChange={(e) => update("password", e.target.value)}
                       error={errors.password}
@@ -408,16 +399,15 @@ export default function OnboardingPage() {
                     <InputField
                       label="Confirm Password"
                       type="password"
+                      variant="glass"
                       value={data.confirmPassword}
-                      onChange={(e) =>
-                        update("confirmPassword", e.target.value)
-                      }
+                      onChange={(e) => update("confirmPassword", e.target.value)}
                       error={errors.confirmPassword}
                     />
                   </div>
                   {error && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-                      <p className="text-sm text-red-600">{error}</p>
+                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                      <p className="text-sm text-red-400">{error}</p>
                     </div>
                   )}
                 </div>
@@ -430,31 +420,26 @@ export default function OnboardingPage() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 200 }}
-                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+                    className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8"
                   >
                     <span className="text-4xl">🎉</span>
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    You&apos;re all set!
-                  </h2>
-                  <p className="text-gray-500 text-sm mb-8">
-                    Welcome to GymStreak, {data.name.split(" ")[0]}. Your personalized
-                    plan is ready.
+                  <h2 className="text-3xl font-black text-white mb-3 tracking-tight">You&apos;re all set!</h2>
+                  <p className="text-white/50 text-sm mb-10 leading-relaxed">
+                    Welcome to GymStreak, {data.name.split(" ")[0]}. Your personalized fitness plan is ready and waiting.
                   </p>
-                  <SubmitButton
-                    onClick={() => router.push("/dashboard")}
-                  >
-                    Continue to Dashboard →
+                  <SubmitButton onClick={() => router.push("/dashboard")} variant="neon">
+                    Go to Dashboard →
                   </SubmitButton>
                 </div>
               )}
 
               {/* Navigation buttons */}
               {step > 0 && step < 8 && (
-                <div className="flex gap-3 mt-8">
+                <div className="flex gap-4 mt-10">
                   <button
                     onClick={back}
-                    className="flex-1 py-3 px-4 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="flex-1 py-4 px-4 rounded-xl border-2 border-white/10 text-white/50 font-bold text-sm hover:bg-white/5 hover:text-white transition-all cursor-pointer"
                   >
                     Back
                   </button>
@@ -463,18 +448,20 @@ export default function OnboardingPage() {
                       onClick={handleSubmit}
                       loading={loading}
                       fullWidth={false}
-                      className="flex-1"
+                      variant="gradient-purple"
+                      className="flex-[2]"
                     >
-                      Create Account
+                      Complete
                     </SubmitButton>
                   ) : (
                     <SubmitButton
                       onClick={next}
                       disabled={!canProceed()}
                       fullWidth={false}
-                      className="flex-1"
+                      variant="gradient-purple"
+                      className="flex-[2]"
                     >
-                      Next
+                      Next Step
                     </SubmitButton>
                   )}
                 </div>

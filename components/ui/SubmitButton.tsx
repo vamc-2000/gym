@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
+import { ReactNode } from "react";
 
-interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface SubmitButtonProps extends HTMLMotionProps<"button"> {
   children: ReactNode;
   loading?: boolean;
   variant?: "primary" | "gradient-purple" | "neon";
