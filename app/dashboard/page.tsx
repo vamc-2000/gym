@@ -73,14 +73,16 @@ export default function DashboardPage() {
         const streakData = streakRes.status === "fulfilled" ? streakRes.value : null;
         const progressData = progressRes.status === "fulfilled" ? progressRes.value : null;
 
+        const weightEntries = progressData?.data;
+        const lastWeight = Array.isArray(weightEntries) && weightEntries.length > 0 
+          ? weightEntries[weightEntries.length - 1].weight 
+          : null;
+
         setStats({
           caloriesBurned: 2450,
           workoutsCompleted: 24,
           currentStreak: streakData?.data?.currentStreak || 7,
-          weightProgress:
-            progressData?.data?.length > 0
-              ? `${progressData.data[progressData.data.length - 1].weight} kg`
-              : "75 kg",
+          weightProgress: lastWeight ? `${lastWeight} kg` : "75 kg",
         });
       } catch {
         // Use mock data on error

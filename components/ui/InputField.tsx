@@ -46,8 +46,8 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               icon ? "pl-10" : ""
             } rounded-xl border-2 outline-none transition-all duration-200 text-sm focus:ring-4 ${
               baseStyles[variant]
-            } ${error ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""} ${className}`}
-            placeholder=" "
+            } ${error ? "border-red-400 focus:border-red-400 focus:ring-red-400/20" : ""} ${className}`}
+            placeholder={focused || hasValue ? props.placeholder : ""}
             aria-label={label}
             aria-invalid={!!error}
           />
@@ -55,15 +55,19 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             className={`absolute left-${icon ? "10" : "4"} transition-all duration-200 pointer-events-none ${
               focused || hasValue
                 ? "-top-2.5 text-xs px-1 font-medium " +
-                  (variant === "light"
-                    ? "bg-white text-primary"
-                    : variant === "glass"
-                    ? "bg-transparent text-auth-accent"
-                    : "bg-dash-card text-neon-blue")
+                  (error 
+                    ? "text-red-400 bg-transparent" 
+                    : variant === "light"
+                      ? "bg-white text-primary"
+                      : variant === "glass"
+                      ? "bg-transparent text-auth-accent"
+                      : "bg-dash-card text-neon-blue")
                 : "top-3.5 text-sm " +
-                  (variant === "light"
-                    ? "text-gray-400"
-                    : "text-white/40")
+                  (error
+                    ? "text-red-400/60"
+                    : variant === "light"
+                      ? "text-gray-400"
+                      : "text-white/40")
             }`}
           >
             {label}
