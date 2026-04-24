@@ -8,6 +8,7 @@ export class AuthController {
       const user = await authService.register(body);
       return NextResponse.json({ success: true, data: user }, { status: 201 });
     } catch (error: any) {
+      console.error("Registration Error:", error);
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }
@@ -18,6 +19,7 @@ export class AuthController {
       const result = await authService.login(email, password);
       return NextResponse.json({ success: true, ...result });
     } catch (error: any) {
+      console.error("Login Error:", error);
       return NextResponse.json({ success: false, error: error.message }, { status: 401 });
     }
   }
@@ -28,6 +30,7 @@ export class AuthController {
       await authService.sendOTP(email);
       return NextResponse.json({ success: true, message: "OTP sent" });
     } catch (error: any) {
+      console.error("Send OTP Error:", error);
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }
@@ -38,6 +41,7 @@ export class AuthController {
       const result = await authService.verifyOTP(email, otp);
       return NextResponse.json({ success: true, ...result });
     } catch (error: any) {
+      console.error("Verify OTP Error:", error);
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }

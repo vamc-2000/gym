@@ -7,12 +7,16 @@ export class DietService {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error("User not found");
 
-    const bmi = calculateBMI(user.weight, user.height);
-    const plan = await dietRepository.findByGoalAndBMI(user.goal, bmi);
+    const weight = user.weight || 0;
+    const height = user.height || 0;
+    const goal = user.goal || "Weight Loss";
+
+    const bmi = calculateBMI(weight, height);
+    const plan = await dietRepository.findByGoalAndBMI(goal, bmi);
     
     if (!plan) {
       // Return a basic plan if no specific BMI match found
-      return await dietRepository.findByGoalAndBMI(user.goal, 22); 
+      return await dietRepository.findByGoalAndBMI(goal, 22); 
     }
 
     return plan;

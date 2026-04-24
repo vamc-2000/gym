@@ -22,6 +22,9 @@ export class UserController {
     try {
       const body = await req.json();
       const updated = await userService.updateProfile(userId, body);
+      if (!updated) {
+        return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+      }
       return NextResponse.json({ success: true, data: updated });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });

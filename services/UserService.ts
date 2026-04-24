@@ -6,8 +6,8 @@ export class UserService {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error("User not found");
     
-    const bmi = calculateBMI(user.weight, user.height);
-    return { ...user.toObject(), bmi };
+    const bmi = calculateBMI(user.weight || 0, user.height || 0);
+    return { ...user, bmi };
   }
 
   async updateProfile(userId: string, updateData: any) {

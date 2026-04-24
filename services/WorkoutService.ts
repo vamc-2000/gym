@@ -1,5 +1,5 @@
 import { workoutRepository } from "../repositories/WorkoutRepository";
-import { WorkoutLog } from "../models/WorkoutLog";
+import { workoutLogRepository } from "../repositories/WorkoutLogRepository";
 import { streakRepository } from "../repositories/StreakRepository";
 
 export class WorkoutService {
@@ -8,9 +8,9 @@ export class WorkoutService {
   }
 
   async completeWorkout(userId: string, workoutId: string) {
-    const log = await WorkoutLog.create({
-      user: userId,
-      workout: workoutId,
+    const log = await workoutLogRepository.create({
+      userId,
+      workoutId,
       date: new Date(),
       completed: true,
     });

@@ -1,5 +1,5 @@
 import { streakRepository } from "../repositories/StreakRepository";
-import { Leaderboard } from "../models/Leaderboard";
+import { leaderboardRepository } from "../repositories/LeaderboardRepository";
 
 export class SocialService {
   async getLeaderboard(category: string = "Overall") {
@@ -12,10 +12,10 @@ export class SocialService {
     }
 
     const rankings = filtered
-      .sort((a, b) => b.currentStreak - a.currentStreak)
+      .sort((a: { currentStreak: number; }, b: { currentStreak: number; }) => b.currentStreak - a.currentStreak)
       .slice(0, 10)
       .map((s: any) => ({
-        user: s.user?._id,
+        user: s.userId,
         name: s.user?.name || "Unknown",
         score: s.currentStreak,
         streak: s.currentStreak,
@@ -30,7 +30,7 @@ export class SocialService {
     
     for (const goal of goals) {
       const data = await this.getLeaderboard(goal);
-      await Leaderboard.create({
+      await leaderboardRepository.createSnapshot({
         category: goal,
         rankings: data.rankings,
         weekStartDate: now,

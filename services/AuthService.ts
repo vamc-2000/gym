@@ -2,11 +2,14 @@ import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/UserRepository";
 import { generateOTP } from "../utils/otp";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+import {validatePassword} from "../utils/validate";
 
 export class AuthService {
   async register(userData: any) {
     const existing = await userRepository.findByEmail(userData.email);
     if (existing) throw new Error("Email already exists");
+
+    validatePassword(userData.password);
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     return await userRepository.create({
@@ -22,10 +25,10 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Invalid credentials");
 
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
 
-    await userRepository.update(user._id, { refreshToken });
+    await userRepository.update(user.id, { refreshToken });
 
     return { user, accessToken, refreshToken };
   }
@@ -37,7 +40,7 @@ export class AuthService {
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
-    await userRepository.update(user._id, { otp, otpExpiry });
+    await userRepository.update(user.id, { otp, otpExpiry });
     // In production, send email here
     console.log(`OTP for ${email}: ${otp}`);
     return otp;
@@ -45,14 +48,14 @@ export class AuthService {
 
   async verifyOTP(email: string, otp: string) {
     const user = await userRepository.findByEmail(email);
-    if (!user || user.otp !== otp || user.otpExpiry < new Date()) {
+    if (!user || !user.otp || !user.otpExpiry || user.otp !== otp || user.otpExpiry < new Date()) {
       throw new Error("Invalid or expired OTP");
     }
 
-    await userRepository.update(user._id, { otp: null, otpExpiry: null });
+    await userRepository.update(user.id, { otp: null, otpExpiry: null });
     
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
 
     return { user, accessToken, refreshToken };
   }
