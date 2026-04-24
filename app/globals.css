@@ -63,13 +63,16 @@ body {
 
 /* Blob / floating orb animation */
 @keyframes blob {
+
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(20px, -20px) scale(1.05);
   }
+
   66% {
     transform: translate(-15px, 15px) scale(0.95);
   }
@@ -89,10 +92,12 @@ body {
 
 /* Animated gradient text */
 @keyframes gradient-x {
+
   0%,
   100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -107,26 +112,30 @@ body {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 75%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
 /* Spin (used for loading spinners) */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {
@@ -135,8 +144,15 @@ body {
 
 /* Pulse */
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .animate-pulse {
@@ -202,3 +218,28 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
+/* =========================================================
+   Global Click & Focus Reset
+   ========================================================= */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Remove the "blink" or outline on click for non-keyboard users */
+:focus {
+  outline: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-neon-blue) !important;
+  outline-offset: 2px !important;
+}
+
+/* Prevent accidental text selection on buttons and icons */
+button,
+svg,
+span[role="img"],
+.cursor-pointer {
+  user-select: none;
+}

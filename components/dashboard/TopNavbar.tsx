@@ -15,7 +15,7 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
 
   const handleLogout = () => {
     tokenManager.clearTokens();
-    router.push("/login");
+    router.push("/");
   };
 
   const greeting = () => {
