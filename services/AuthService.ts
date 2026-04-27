@@ -5,6 +5,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import {validatePassword} from "../utils/validate";
 
 export class AuthService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async register(userData: any) {
     const existing = await userRepository.findByEmail(userData.email);
     if (existing) throw new Error("Email already exists");

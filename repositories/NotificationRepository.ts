@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export class NotificationRepository {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(data: any) {
     return await prisma.notification.create({
       data,

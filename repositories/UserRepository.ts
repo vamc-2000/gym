@@ -13,12 +13,14 @@ export class UserRepository {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(userData: any) {
     return await prisma.user.create({
       data: userData,
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async update(id: string, updateData: any) {
     return await prisma.user.update({
       where: { id },

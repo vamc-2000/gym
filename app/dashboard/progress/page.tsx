@@ -50,7 +50,12 @@ export default function ProgressPage() {
     }
   };
 
-  useEffect(() => { fetchProgress(); }, []);
+  useEffect(() => {
+    const init = async () => {
+      await fetchProgress();
+    };
+    init();
+  }, []);
 
   const handleAddProgress = async () => {
     if (!weight) return;

@@ -1,11 +1,13 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* =========================================================
    GymStreak Design System
    Tailwind v4 theme tokens + global styles
    ========================================================= */
 
-@theme {
+:root {
   /* Brand colors */
   --color-neon-blue: #00f5ff;
   --color-neon-yellow: #facc15;
@@ -18,10 +20,8 @@
   /* Primary action */
   --color-primary: #00f5ff;
   --color-primary-hover: #00d4dd;
-
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
 
 /* =========================================================
    Base resets

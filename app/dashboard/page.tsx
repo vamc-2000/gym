@@ -56,13 +56,15 @@ export default function DashboardPage() {
     currentStreak: 0,
     weightProgress: "—",
   });
-  const [goalProgress, setGoalProgress] = useState(65);
-  const [userName, setUserName] = useState("");
+  const [goalProgress] = useState(65);
+  const [userName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return tokenManager.getUser()?.name || "";
+    }
+    return "";
+  });
 
   useEffect(() => {
-    const user = tokenManager.getUser();
-    if (user?.name) setUserName(user.name);
-
     const fetchDashboardData = async () => {
       try {
         const [streakRes, progressRes] = await Promise.allSettled([

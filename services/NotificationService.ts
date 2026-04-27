@@ -15,6 +15,7 @@ export class NotificationService {
     return await notificationRepository.findByUserId(userId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async updateSettings(userId: string, settings: any) {
     return await userRepository.update(userId, { notificationSettings: settings });
   }

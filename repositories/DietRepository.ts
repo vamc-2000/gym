@@ -11,6 +11,7 @@ export class DietRepository {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(dietData: any) {
     return await prisma.dietPlan.create({
       data: dietData,

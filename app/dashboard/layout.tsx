@@ -11,11 +11,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [userName, setUserName] = useState("");
+  const [userName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return tokenManager.getUser()?.name || "Athlete";
+    }
+    return "Athlete";
+  });
 
   useEffect(() => {
-    const user = tokenManager.getUser();
-    if (user?.name) setUserName(user.name);
     // Default to collapsed on mobile, expanded on desktop
     const handleResize = () => {
       setSidebarCollapsed(window.innerWidth < 1024);

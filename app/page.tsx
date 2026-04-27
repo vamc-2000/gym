@@ -11,10 +11,13 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    if (tokenManager.isAuthenticated()) {
+  }, []);
+
+  useEffect(() => {
+    if (mounted && tokenManager.isAuthenticated()) {
       router.push("/dashboard");
     }
-  }, [router]);
+  }, [mounted, router]);
 
   if (!mounted) return null;
 

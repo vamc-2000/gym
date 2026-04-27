@@ -13,6 +13,7 @@ export class WorkoutRepository {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(workoutData: any) {
     return await prisma.workout.create({
       data: workoutData,

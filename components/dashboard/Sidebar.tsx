@@ -24,6 +24,7 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const [_searchOpen, _setSearchOpen] = useState(false);
 
   return (
     <>

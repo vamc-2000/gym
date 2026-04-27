@@ -29,9 +29,14 @@ export const tokenManager = {
   getUser: () => {
     if (typeof window === "undefined") return null;
     const user = localStorage.getItem(USER_KEY);
-    return user ? JSON.parse(user) : null;
+    try {
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setUser: (user: any) => {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },

@@ -16,8 +16,8 @@ export class WorkoutController {
       const fitnessLevel = user.fitnessLevel || "Beginner";
       const plan = await workoutService.getWorkoutPlan(goal, fitnessLevel);
       return NextResponse.json({ success: true, data: plan });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -29,8 +29,8 @@ export class WorkoutController {
       const { workoutId } = await req.json();
       const log = await workoutService.completeWorkout(userId, workoutId);
       return NextResponse.json({ success: true, data: log });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

@@ -23,7 +23,7 @@ export default function LeaderboardPage() {
         if (res.success && res.data) {
           setEntries(
             Array.isArray(res.data)
-              ? res.data.map((e: any, i: number) => ({ ...e, rank: i + 1 }))
+              ? res.data.map((e: Record<string, unknown>, i: number) => ({ ...e, rank: i + 1 }))
               : []
           );
         }

@@ -68,7 +68,7 @@ export default function ProfilePage() {
     setSaving(true);
     setMessage("");
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         height: form.height ? Number(form.height) : undefined,
         weight: form.weight ? Number(form.weight) : undefined,
         bodyFat: form.bodyFat ? Number(form.bodyFat) : undefined,

@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export class LeaderboardRepository {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async createSnapshot(data: any) {
     return await prisma.leaderboardSnapshot.create({
       data,

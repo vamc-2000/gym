@@ -10,8 +10,8 @@ export class UserController {
     try {
       const profile = await userService.getProfile(userId);
       return NextResponse.json({ success: true, data: profile });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -26,8 +26,8 @@ export class UserController {
         return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
       }
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

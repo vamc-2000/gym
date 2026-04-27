@@ -11,8 +11,8 @@ export class NotificationController {
       const { settings } = await req.json();
       const updated = await notificationService.updateSettings(userId, settings);
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -23,8 +23,8 @@ export class NotificationController {
     try {
       const notifications = await notificationService.getNotifications(userId);
       return NextResponse.json({ success: true, data: notifications });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }
