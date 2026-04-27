@@ -83,13 +83,7 @@ model Workout {
   workoutLogs WorkoutLog[]
 }
 
-type Exercise {
-  name         String
-  sets         Int?
-  reps         Int?
-  duration     String?
-  instructions String?
-}
+// Removed Exercise type as it's now part of weeklyPlan Json
 
 model Progress {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -129,15 +123,18 @@ model Diet {
 }
 
 model DietPlan {
-  id                  String @id @default(auto()) @map("_id") @db.ObjectId
-  goal                String
-  minBMI              Float
-  maxBMI              Float
-  planName            String
-  description         String
-  recommendedCalories Int
-  macronutrientSplit  Json
-  dailySchedule       Json
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  goal          String
+  level         String
+  planName      String
+  description   String
+  calorieTarget String // e.g., "maintenance", "surplus"
+  proteinPerKg  Float
+  meals         Json // Stores meal schedule
+  minBMI        Float?
+  maxBMI        Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Notification {

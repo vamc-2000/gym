@@ -11,8 +11,34 @@ export class ManagementController {
     }
 
     try {
-      const users = await userRepository.findAll(); // We'll add this to the repository
+      const users = await userRepository.findAll();
       return NextResponse.json({ success: true, data: users });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  // Get System Statistics (SuperAdmin only)
+  async getStats(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!checkRole(decoded, ["SUPER_ADMIN"])) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
+      const users = await userRepository.findAll();
+      const stats = {
+        totalUsers: users.filter(u => u.role === "USER").length,
+        totalAdmins: users.filter(u => u.role === "ADMIN").length,
+        totalSuperAdmins: users.filter(u => u.role === "SUPER_ADMIN").length,
+        activeToday: users.filter(u => {
+          if (!u.lastLogin) return false;
+          const today = new Date();
+          const loginDate = new Date(u.lastLogin);
+          return loginDate.toDateString() === today.toDateString();
+        }).length
+      };
+      return NextResponse.json({ success: true, data: stats });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
