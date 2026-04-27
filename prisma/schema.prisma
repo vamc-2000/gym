@@ -22,6 +22,7 @@ model User {
   otp              String?
   otpExpiry        DateTime?
   refreshToken     String?
+  lastLogin        DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -72,24 +73,17 @@ model WorkoutLog {
 
 model Workout {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
   goal        String
-  level       String
-  exercises   Exercise[]
-  dayNumber   Int?
-  weekNumber  Int?
+  level       String   // beginner, intermediate, advanced
+  durationWeeks Int    @default(8)
+  weeklyPlan  Json     // Stores Monday-Sunday schedule
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
   workoutLogs WorkoutLog[]
 }
 
-type Exercise {
-  name         String
-  sets         Int?
-  reps         Int?
-  duration     String?
-  instructions String?
-}
+// Removed Exercise type as it's now part of weeklyPlan Json
 
 model Progress {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -131,13 +125,16 @@ model Diet {
 model DietPlan {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   goal                String
-  minBMI              Float
-  maxBMI              Float
+  level               String
   planName            String
   description         String
-  recommendedCalories Int
-  macronutrientSplit  Json
-  dailySchedule       Json
+  calorieTarget       String   // e.g., "maintenance", "surplus"
+  proteinPerKg        Float
+  meals               Json     // Stores meal schedule
+  minBMI              Float?
+  maxBMI              Float?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Notification {

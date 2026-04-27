@@ -1,10 +1,14 @@
 import { workoutRepository } from "../repositories/WorkoutRepository";
 import { workoutLogRepository } from "../repositories/WorkoutLogRepository";
 import { streakRepository } from "../repositories/StreakRepository";
+import { dietRepository } from "../repositories/DietRepository";
 
 export class WorkoutService {
   async getWorkoutPlan(goal: string, level: string) {
-    return await workoutRepository.findByGoalAndLevel(goal, level);
+    const workout = await workoutRepository.findByGoalAndLevel(goal, level);
+    const diet = await dietRepository.findByGoalAndLevel(goal, level);
+    
+    return { workout, diet };
   }
 
   async completeWorkout(userId: string, workoutId: string) {

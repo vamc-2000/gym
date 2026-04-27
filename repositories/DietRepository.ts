@@ -11,6 +11,12 @@ export class DietRepository {
     });
   }
 
+  async findByGoalAndLevel(goal: string, level: string) {
+    return await prisma.dietPlan.findFirst({
+      where: { goal, level },
+    });
+  }
+
   async create(dietData: any) {
     return await prisma.dietPlan.create({
       data: dietData,

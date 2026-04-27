@@ -28,7 +28,10 @@ export class AuthService {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    await userRepository.update(user.id, { refreshToken });
+    await userRepository.update(user.id, { 
+      refreshToken,
+      lastLogin: new Date()
+    });
 
     return { user, accessToken, refreshToken };
   }

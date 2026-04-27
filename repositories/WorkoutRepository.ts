@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma";
 
 export class WorkoutRepository {
   async findByGoalAndLevel(goal: string, level: string) {
-    return await prisma.workout.findMany({
+    return await prisma.workout.findFirst({
       where: { goal, level },
     });
   }

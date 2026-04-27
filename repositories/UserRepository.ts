@@ -33,6 +33,7 @@ export class UserRepository {
         name: true,
         email: true,
         role: true,
+        lastLogin: true,
         createdAt: true,
       }
     });
