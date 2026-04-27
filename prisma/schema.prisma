@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  email            String   @unique
+  password         String
+  role             Role     @default(USER)
+  
+  height           Float?
+  weight           Float?
+  bodyFat          Float?
+  goal             String?
+  fitnessLevel     String?
+  otp              String?
+  otpExpiry        DateTime?
+  refreshToken     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  notificationSettings NotificationSettings?
+  streaks             Streak?
+  workoutLogs         WorkoutLog[]
+  progress            Progress[]
+  leaderboard         Leaderboard?
+  dietLogs            Diet[]
+  notifications       Notification[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+type NotificationSettings {
+  preferredWorkoutTime String  @default("07:00")
+  dndEnabled           Boolean @default(false)
+  dndStart            String  @default("22:00")
+  dndEnd              String  @default("06:00")
+}
+
+model Streak {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  currentStreak   Int      @default(0)
+  longestStreak   Int      @default(0)
+  lastWorkoutDate DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WorkoutLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  workoutId   String   @db.ObjectId
+  workout     Workout  @relation(fields: [workoutId], references: [id])
+  date        DateTime @default(now())
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Workout {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  goal        String
+  level       String
+  exercises   Exercise[]
+  dayNumber   Int?
+  weekNumber  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workoutLogs WorkoutLog[]
+}
+
+type Exercise {
+  name         String
+  sets         Int?
+  reps         Int?
+  duration     String?
+  instructions String?
+}
+
+model Progress {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  weight    Float?
+  note      String?
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Leaderboard {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  category    String   @default("Overall")
+  rank        Int?
+  score       Int      @default(0)
+  lastUpdated DateTime @default(now())
+}
+
+model Diet {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now())
+  calories  Int      @default(0)
+  protein   Int      @default(0)
+  carbs     Int      @default(0)
+  fats      Int      @default(0)
+  logs      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DietPlan {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  goal                String
+  minBMI              Float
+  maxBMI              Float
+  planName            String
+  description         String
+  recommendedCalories Int
+  macronutrientSplit  Json
+  dailySchedule       Json
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  type      String?
+  createdAt DateTime @default(now())
+}
+
+model LeaderboardSnapshot {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  category      String
+  rankings      Json
+  weekStartDate DateTime
+  createdAt     DateTime @default(now())
+}

@@ -1,12 +1,8 @@
-import mongoose from "mongoose";
-import { connectDB } from "../lib/db";
-import { Streak } from "../models/Streak";
+import { prisma } from "../lib/prisma";
 import { socialService } from "../services/SocialService";
 
 async function runDailyTasks() {
   try {
-    await connectDB();
-
     console.log("Running daily tasks...");
 
     // 1. Reset streaks if user missed yesterday
@@ -15,14 +11,20 @@ async function runDailyTasks() {
     yesterday.setHours(0, 0, 0, 0);
 
     // Users whose last workout was before yesterday
-    const result = await Streak.updateMany(
-      { 
-        lastWorkoutDate: { $lt: yesterday },
-        currentStreak: { $gt: 0 }
+    const result = await prisma.streak.updateMany({
+      where: {
+        lastWorkoutDate: {
+          lt: yesterday,
+        },
+        currentStreak: {
+          gt: 0,
+        },
       },
-      { $set: { currentStreak: 0 } }
-    );
-    console.log(`Reset streaks for ${result.modifiedCount} users.`);
+      data: {
+        currentStreak: 0,
+      },
+    });
+    console.log(`Reset streaks for ${result.count} users.`);
 
     // 2. Generate weekly leaderboard snapshot if it's Sunday
     const today = new Date();
@@ -35,7 +37,7 @@ async function runDailyTasks() {
   } catch (error) {
     console.error("Error running daily tasks:", error);
   } finally {
-    mongoose.connection.close();
+    await prisma.$disconnect();
   }
 }
 

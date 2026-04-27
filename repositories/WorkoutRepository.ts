@@ -1,16 +1,22 @@
-import { Workout } from "../models/workout";
+import { prisma } from "../lib/prisma";
 
 export class WorkoutRepository {
   async findByGoalAndLevel(goal: string, level: string) {
-    return await Workout.find({ goal, level });
+    return await prisma.workout.findMany({
+      where: { goal, level },
+    });
   }
 
   async findById(id: string) {
-    return await Workout.findById(id);
+    return await prisma.workout.findUnique({
+      where: { id },
+    });
   }
 
   async create(workoutData: any) {
-    return await Workout.create(workoutData);
+    return await prisma.workout.create({
+      data: workoutData,
+    });
   }
 }
 

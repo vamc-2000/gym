@@ -6,3 +6,8 @@ export async function GET(req: NextRequest) {
   await connectDB();
   return progressController.getStreak(req);
 }
+
+export async function POST(req: NextRequest) {
+  await connectDB();
+  return progressController.updateProgress(req);
+}

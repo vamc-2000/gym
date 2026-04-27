@@ -1,10 +1,10 @@
-import { Notification } from "../models/Notification";
+import { notificationRepository } from "../repositories/NotificationRepository";
 import { userRepository } from "../repositories/UserRepository";
 
 export class NotificationService {
   async sendNotification(userId: string, title: string, message: string, type: string = "general") {
-    return await Notification.create({
-      user: userId,
+    return await notificationRepository.create({
+      userId,
       title,
       message,
       type,
@@ -12,7 +12,7 @@ export class NotificationService {
   }
 
   async getNotifications(userId: string) {
-    return await Notification.find({ user: userId }).sort({ createdAt: -1 });
+    return await notificationRepository.findByUserId(userId);
   }
 
   async updateSettings(userId: string, settings: any) {

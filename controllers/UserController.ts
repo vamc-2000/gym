@@ -4,11 +4,11 @@ import { authMiddleware } from "../middlewares/auth";
 
 export class UserController {
   async getProfile(req: NextRequest) {
-    const userId = authMiddleware(req);
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
-      const profile = await userService.getProfile(userId);
+      const profile = await userService.getProfile(decoded.userId);
       return NextResponse.json({ success: true, data: profile });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -16,12 +16,15 @@ export class UserController {
   }
 
   async updateProfile(req: NextRequest) {
-    const userId = authMiddleware(req);
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
       const body = await req.json();
-      const updated = await userService.updateProfile(userId, body);
+      const updated = await userService.updateProfile(decoded.userId, body);
+      if (!updated) {
+        return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+      }
       return NextResponse.json({ success: true, data: updated });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });

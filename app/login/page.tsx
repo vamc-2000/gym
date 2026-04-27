@@ -11,13 +11,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const res = await API("/auth", "PUT", { email, password });
+    const res = await API("/auth/login", "POST", { email, password });
 
-    if (res.token) {
-      localStorage.setItem("token", res.token);
+    if (res.accessToken) {
+      localStorage.setItem("token", res.accessToken);
       router.push("/dashboard");
     } else {
-      alert(res.message);
+      alert(res.error || "Login failed");
     }
   };
 
