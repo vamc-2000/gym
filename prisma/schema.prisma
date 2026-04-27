@@ -75,7 +75,7 @@ model Workout {
   title       String
   goal        String
   level       String
-  exercises   Exercise[]
+  exercises   Json
   dayNumber   Int?
   weekNumber  Int?
   createdAt   DateTime     @default(now())
