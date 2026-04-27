@@ -10,4 +10,6 @@ export const prisma =
     log: ["query"],
   });
 
+console.log("Prisma initializing with URL:", process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":****@"));
+
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

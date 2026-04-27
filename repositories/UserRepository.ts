@@ -19,10 +19,28 @@ export class UserRepository {
     });
   }
 
-  async update(id: string, updateData: any) {
+  async update(id: string, data: any) {
     return await prisma.user.update({
       where: { id },
-      data: updateData,
+      data,
+    });
+  }
+
+  async findAll() {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      }
+    });
+  }
+
+  async delete(id: string) {
+    return await prisma.user.delete({
+      where: { id }
     });
   }
 

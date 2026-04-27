@@ -100,6 +100,8 @@ model Progress {
   date      DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Leaderboard {
@@ -147,6 +149,8 @@ model Notification {
   read      Boolean  @default(false)
   type      String?
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model LeaderboardSnapshot {
