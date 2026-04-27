@@ -4,12 +4,12 @@ import { authMiddleware } from "../middlewares/auth";
 
 export class NotificationController {
   async updateSettings(req: NextRequest) {
-    const userId = authMiddleware(req);
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
       const { settings } = await req.json();
-      const updated = await notificationService.updateSettings(userId, settings);
+      const updated = await notificationService.updateSettings(decoded.userId, settings);
       return NextResponse.json({ success: true, data: updated });
     } catch (error: unknown) {
       return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
@@ -17,11 +17,11 @@ export class NotificationController {
   }
 
   async getNotifications(req: NextRequest) {
-    const userId = authMiddleware(req);
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
-      const notifications = await notificationService.getNotifications(userId);
+      const notifications = await notificationService.getNotifications(decoded.userId);
       return NextResponse.json({ success: true, data: notifications });
     } catch (error: unknown) {
       return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });

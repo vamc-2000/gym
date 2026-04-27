@@ -12,6 +12,8 @@ model User {
   name             String
   email            String   @unique
   password         String
+  role             Role     @default(USER)
+  
   height           Float?
   weight           Float?
   bodyFat          Float?
@@ -30,6 +32,12 @@ model User {
   leaderboard         Leaderboard?
   dietLogs            Diet[]
   notifications       Notification[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
 }
 
 type NotificationSettings {
