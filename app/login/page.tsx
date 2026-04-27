@@ -80,21 +80,33 @@ export default function LoginPage() {
             <p className="text-sm text-white/50">Sign in to continue your streak</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
             <InputField
               label="Email"
               type="email"
+              name="gym-login-email"
+              autoComplete="off"
               variant="glass"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrors({}); setError(""); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors({});
+                setError("");
+              }}
               error={errors.email}
             />
             <InputField
               label="Password"
               type="password"
+              name="gym-login-password"
+              autoComplete="new-password"
               variant="glass"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setErrors({}); setError(""); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErrors({});
+                setError("");
+              }}
               error={errors.password}
             />
 
@@ -136,4 +148,4 @@ export default function LoginPage() {
       </motion.div>
     </div>
   );
-}
+}

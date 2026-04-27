@@ -4,6 +4,7 @@ import { InputHTMLAttributes, forwardRef, useState } from "react";
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
+
   error?: string;
   icon?: React.ReactNode;
   variant?: "light" | "dark" | "glass";
@@ -50,7 +51,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               {icon}
             </div>
           )}
-          
+
           <input
             ref={ref}
             {...props}
@@ -62,11 +63,9 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
               setFocused(false);
               props.onBlur?.(e);
             }}
-            className={`w-full px-4 py-3.5 ${
-              icon ? "pl-11" : ""
-            } ${showStepper ? "pr-24" : ""} rounded-xl border-2 outline-none transition-all duration-300 text-sm focus:ring-4 ${
-              baseStyles[variant]
-            } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-white/10"} ${className}`}
+            className={`w-full px-4 py-3.5 ${icon ? "pl-11" : ""
+              } ${showStepper ? "pr-24" : ""} rounded-xl border-2 outline-none transition-all duration-300 text-sm focus:ring-4 ${baseStyles[variant]
+              } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-white/10"} ${className}`}
             placeholder={focused ? props.placeholder : ""}
           />
 
@@ -91,15 +90,12 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           )}
 
           <label
-            className={`absolute transition-all duration-300 pointer-events-none select-none ${
-              focused || hasValue
-                ? `-top-2.5 left-3 text-[11px] px-2 font-bold z-20 rounded-md ${labelBg[variant]} ${
-                    error ? "text-red-400" : variant === "glass" ? "text-auth-accent" : "text-primary"
-                  }`
-                : `top-3.5 left-${icon ? "11" : "4"} text-sm ${
-                    error ? "text-red-400/60" : "text-white/30"
-                  }`
-            }`}
+            className={`absolute transition-all duration-300 pointer-events-none select-none ${focused || hasValue
+                ? `-top-2.5 left-3 text-[11px] px-2 font-bold z-20 rounded-md ${labelBg[variant]} ${error ? "text-red-400" : variant === "glass" ? "text-auth-accent" : "text-primary"
+                }`
+                : `top-3.5 left-${icon ? "11" : "4"} text-sm ${error ? "text-red-400/60" : "text-white/30"
+                }`
+              }`}
           >
             {label}
           </label>

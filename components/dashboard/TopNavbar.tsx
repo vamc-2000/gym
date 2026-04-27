@@ -39,7 +39,7 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
         </button>
         <div className="hidden sm:block">
           <p className="text-white/40 text-xs">{greeting()}</p>
-          <p className="text-white font-semibold text-sm">{userName || "Athlete"} 💪</p>
+          <p className="text-white font-semibold text-sm">{userName || "Athlete"} <span>💪</span></p>
         </div>
       </div>
 
