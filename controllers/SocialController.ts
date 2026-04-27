@@ -8,8 +8,8 @@ export class SocialController {
       const category = searchParams.get("category") || "Overall";
       const leaderboard = await socialService.getLeaderboard(category);
       return NextResponse.json({ success: true, data: leaderboard });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

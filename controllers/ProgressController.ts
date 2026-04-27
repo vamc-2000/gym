@@ -11,8 +11,8 @@ export class ProgressController {
     try {
       const streak = await streakRepository.findByUserId(decoded.userId);
       return NextResponse.json({ success: true, data: streak });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -24,8 +24,8 @@ export class ProgressController {
       const body = await req.json();
       const log = await progressService.logProgress(decoded.userId, body);
       return NextResponse.json({ success: true, data: log });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

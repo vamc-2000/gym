@@ -1,3 +1,245 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================================================
+   GymStreak Design System
+   Tailwind v4 theme tokens + global styles
+   ========================================================= */
+
+:root {
+  /* Brand colors */
+  --color-neon-blue: #00f5ff;
+  --color-neon-yellow: #facc15;
+
+  /* Dashboard palette */
+  --color-dash-bg: #0a0a0f;
+  --color-dash-card: #111118;
+  --color-dash-border: rgba(255, 255, 255, 0.06);
+
+  /* Primary action */
+  --color-primary: #00f5ff;
+  --color-primary-hover: #00d4dd;
+}
+
+
+/* =========================================================
+   Base resets
+   ========================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-dash-bg);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================
+   Utility: Text glows
+   ========================================================= */
+.text-glow-blue {
+  color: var(--color-neon-blue);
+  text-shadow: 0 0 24px rgba(0, 245, 255, 0.6), 0 0 48px rgba(0, 245, 255, 0.2);
+}
+
+.text-glow-yellow {
+  color: var(--color-neon-yellow);
+  text-shadow: 0 0 24px rgba(250, 204, 21, 0.6), 0 0 48px rgba(250, 204, 21, 0.2);
+}
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+/* Blob / floating orb animation */
+@keyframes blob {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(20px, -20px) scale(1.05);
+  }
+
+  66% {
+    transform: translate(-15px, 15px) scale(0.95);
+  }
+}
+
+.animate-blob {
+  animation: blob 8s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Animated gradient text */
+@keyframes gradient-x {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 4s ease infinite;
+}
+
+/* Shimmer loading skeleton */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Spin (used for loading spinners) */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulse */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* =========================================================
+   Scrollbar styling
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dash-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* =========================================================
+   Focus ring
+   ========================================================= */
+:focus-visible {
+  outline: 2px solid var(--color-neon-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* =========================================================
+   Selection
+   ========================================================= */
+::selection {
+  background-color: rgba(0, 245, 255, 0.2);
+  color: #fff;
+}
+
+/* =========================================================
+   Glassmorphism Utilities
+   ========================================================= */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-purple {
+  background: rgba(88, 28, 135, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.glass-panel-blue {
+  background: rgba(30, 58, 138, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* =========================================================
+   Global Click & Focus Reset
+   ========================================================= */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Remove the "blink" or outline on click for non-keyboard users */
+:focus {
+  outline: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-neon-blue) !important;
+  outline-offset: 2px !important;
+}
+
+/* Prevent accidental text selection on buttons and icons */
+button,
+svg,
+span[role="img"],
+.cursor-pointer {
+  user-select: none;
+}

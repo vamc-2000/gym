@@ -7,6 +7,7 @@ export class StreakRepository {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async upsert(userId: string, updateData: any) {
     return await prisma.streak.upsert({
       where: { userId },

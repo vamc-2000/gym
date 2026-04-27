@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export class ProgressRepository {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(data: any) {
     return await prisma.progress.create({
       data,

@@ -7,9 +7,9 @@ export class AuthController {
       const body = await req.json();
       const user = await authService.register(body);
       return NextResponse.json({ success: true, data: user }, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Registration Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -18,9 +18,9 @@ export class AuthController {
       const { email, password } = await req.json();
       const result = await authService.login(email, password);
       return NextResponse.json({ success: true, ...result });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 401 });
     }
   }
 
@@ -29,9 +29,9 @@ export class AuthController {
       const { email } = await req.json();
       await authService.sendOTP(email);
       return NextResponse.json({ success: true, message: "OTP sent" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Send OTP Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -40,9 +40,9 @@ export class AuthController {
       const { email, otp } = await req.json();
       const result = await authService.verifyOTP(email, otp);
       return NextResponse.json({ success: true, ...result });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Verify OTP Error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

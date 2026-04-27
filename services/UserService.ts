@@ -10,6 +10,7 @@ export class UserService {
     return { ...user, bmi };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async updateProfile(userId: string, updateData: any) {
     return await userRepository.update(userId, updateData);
   }

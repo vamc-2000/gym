@@ -8,30 +8,30 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  name             String
-  email            String   @unique
-  password         String
-  role             Role     @default(USER)
-  
-  height           Float?
-  weight           Float?
-  bodyFat          Float?
-  goal             String?
-  fitnessLevel     String?
-  otp              String?
-  otpExpiry        DateTime?
-  refreshToken     String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  height       Float?
+  weight       Float?
+  bodyFat      Float?
+  goal         String?
+  fitnessLevel String?
+  otp          String?
+  otpExpiry    DateTime?
+  refreshToken String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   notificationSettings NotificationSettings?
-  streaks             Streak?
-  workoutLogs         WorkoutLog[]
-  progress            Progress[]
-  leaderboard         Leaderboard?
-  dietLogs            Diet[]
-  notifications       Notification[]
+  streaks              Streak?
+  workoutLogs          WorkoutLog[]
+  progress             Progress[]
+  leaderboard          Leaderboard?
+  dietLogs             Diet[]
+  notifications        Notification[]
 }
 
 enum Role {
@@ -43,53 +43,47 @@ enum Role {
 type NotificationSettings {
   preferredWorkoutTime String  @default("07:00")
   dndEnabled           Boolean @default(false)
-  dndStart            String  @default("22:00")
-  dndEnd              String  @default("06:00")
+  dndStart             String  @default("22:00")
+  dndEnd               String  @default("06:00")
 }
 
 model Streak {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String   @unique @db.ObjectId
-  user            User     @relation(fields: [userId], references: [id])
-  currentStreak   Int      @default(0)
-  longestStreak   Int      @default(0)
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @unique @db.ObjectId
+  user            User      @relation(fields: [userId], references: [id])
+  currentStreak   Int       @default(0)
+  longestStreak   Int       @default(0)
   lastWorkoutDate DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model WorkoutLog {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  workoutId   String   @db.ObjectId
-  workout     Workout  @relation(fields: [workoutId], references: [id])
-  date        DateTime @default(now())
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  workoutId String   @db.ObjectId
+  workout   Workout  @relation(fields: [workoutId], references: [id])
+  date      DateTime @default(now())
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Workout {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   goal        String
   level       String
-  exercises   Exercise[]
+  exercises   Json
   dayNumber   Int?
   weekNumber  Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   workoutLogs WorkoutLog[]
 }
 
-type Exercise {
-  name         String
-  sets         Int?
-  reps         Int?
-  duration     String?
-  instructions String?
-}
+// Removed Exercise type as it's now part of weeklyPlan Json
 
 model Progress {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -100,6 +94,8 @@ model Progress {
   date      DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Leaderboard {
@@ -127,15 +123,18 @@ model Diet {
 }
 
 model DietPlan {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  goal                String
-  minBMI              Float
-  maxBMI              Float
-  planName            String
-  description         String
-  recommendedCalories Int
-  macronutrientSplit  Json
-  dailySchedule       Json
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  goal          String
+  level         String
+  planName      String
+  description   String
+  calorieTarget String // e.g., "maintenance", "surplus"
+  proteinPerKg  Float
+  meals         Json // Stores meal schedule
+  minBMI        Float?
+  maxBMI        Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Notification {
@@ -147,6 +146,8 @@ model Notification {
   read      Boolean  @default(false)
   type      String?
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model LeaderboardSnapshot {

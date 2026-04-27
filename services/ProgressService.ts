@@ -2,6 +2,7 @@ import { progressRepository } from "../repositories/ProgressRepository";
 import { userRepository } from "../repositories/UserRepository";
 
 export class ProgressService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async logProgress(userId: string, data: any) {
     const log = await progressRepository.create({
       userId,
