@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import bcrypt from "bcryptjs";
 
 async function seed() {
   console.log("🌱 Seeding database...");
@@ -58,6 +59,20 @@ async function seed() {
     await prisma.dietPlan.create({ data: d });
   }
   console.log("✅ Diet Plans seeded");
+
+  // 3. Seed Users
+  const hashedPassword = await bcrypt.hash("Admin@123", 10);
+  await prisma.user.upsert({
+    where: { email: "admin@fit.com" },
+    update: {},
+    create: {
+      name: "Super Admin",
+      email: "admin@fit.com",
+      password: hashedPassword,
+      role: "SUPER_ADMIN",
+    },
+  });
+  console.log("✅ Super Admin seeded (admin@fit.com / Admin@123)");
 
   console.log("🏁 Seeding complete!");
   process.exit(0);

@@ -25,8 +25,8 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Invalid credentials");
 
-    const accessToken = generateAccessToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     await userRepository.update(user.id, { refreshToken });
 
@@ -54,8 +54,8 @@ export class AuthService {
 
     await userRepository.update(user.id, { otp: null, otpExpiry: null });
     
-    const accessToken = generateAccessToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     return { user, accessToken, refreshToken };
   }

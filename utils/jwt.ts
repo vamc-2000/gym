@@ -3,12 +3,12 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_access_secret";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "fallback_refresh_secret";
 
-export const generateAccessToken = (userId: string) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
+export const generateAccessToken = (user: any) => {
+  return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
 };
 
-export const generateRefreshToken = (userId: string) => {
-  return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: "7d" });
+export const generateRefreshToken = (user: any) => {
+  return jwt.sign({ userId: user.id, role: user.role }, REFRESH_SECRET, { expiresIn: "7d" });
 };
 
 export const verifyAccessToken = (token: string) => {
