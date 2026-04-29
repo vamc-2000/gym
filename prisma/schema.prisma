@@ -52,12 +52,12 @@ type NotificationSettings {
   dndEnd               String  @default("06:00")
 
   // Notification Preferences by Category
-  workoutReminders     Boolean @default(true)
-  goalProgress         Boolean @default(true)
-  nutritionHydration   Boolean @default(true)
-  recoveryHealth       Boolean @default(true)
-  socialCommunity      Boolean @default(true)
-  marketingPromos      Boolean @default(false)
+  workoutReminders   Boolean @default(true)
+  goalProgress       Boolean @default(true)
+  nutritionHydration Boolean @default(true)
+  recoveryHealth     Boolean @default(true)
+  socialCommunity    Boolean @default(true)
+  marketingPromos    Boolean @default(false)
 }
 
 model Streak {
@@ -72,61 +72,61 @@ model Streak {
 }
 
 model WorkoutLog {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String   @db.ObjectId
-  user            User     @relation(fields: [userId], references: [id])
-  workoutId       String   @db.ObjectId
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String          @db.ObjectId
+  user            User            @relation(fields: [userId], references: [id])
+  workoutId       String          @db.ObjectId
   workout         AssignedWorkout @relation(fields: [workoutId], references: [id])
-  date            DateTime @default(now())
-  completed       Boolean  @default(false)
+  date            DateTime        @default(now())
+  completed       Boolean         @default(false)
   startTime       DateTime?
   endTime         DateTime?
   durationSeconds Int?
   caloriesBurned  Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model WorkoutTemplate {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  goal        String
-  level       String
-  exercises   Json     // Standardized template
-  isActive    Boolean  @default(false)
-  version     Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  goal      String
+  level     String
+  exercises Json // Standardized template
+  isActive  Boolean  @default(false)
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AssignedWorkout {
-  id               String       @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String       @db.ObjectId
-  user             User         @relation(fields: [userId], references: [id])
-  templateId       String?      @db.ObjectId // Reference to original template if needed
-  title            String
-  goal             String
-  level            String
-  exercises        Json         // Snapshot of exercises at time of assignment
-  assignedAt       DateTime     @default(now())
-  isActive         Boolean      @default(true)
-  workoutLogs      WorkoutLog[]
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String       @db.ObjectId
+  user        User         @relation(fields: [userId], references: [id])
+  templateId  String?      @db.ObjectId // Reference to original template if needed
+  title       String
+  goal        String
+  level       String
+  exercises   Json // Snapshot of exercises at time of assignment
+  assignedAt  DateTime     @default(now())
+  isActive    Boolean      @default(true)
+  workoutLogs WorkoutLog[]
 
   @@index([userId, isActive])
 }
 
 model ExerciseLibrary {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String   @unique
-  category    String   // "Strength", "Cardio", "Flexibility"
-  muscleGroup String[] // ["Chest", "Triceps"]
-  equipment   String[] // ["Dumbbells", "Bench"]
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String   @unique
+  category     String // "Strength", "Cardio", "Flexibility"
+  muscleGroup  String[] // ["Chest", "Triceps"]
+  equipment    String[] // ["Dumbbells", "Bench"]
   instructions String?
-  videoUrl    String?
-  imageUrl    String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  videoUrl     String?
+  imageUrl     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // Removed Exercise type as it's now part of weeklyPlan Json
@@ -173,8 +173,8 @@ model ScheduleItem {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title       String
   description String?
-  type        String   // "workout", "meal", "water", "sleep", "supplement", "custom"
-  time        String   // HH:MM format (24h)
+  type        String // "workout", "meal", "water", "sleep", "supplement", "custom"
+  time        String // HH:MM format (24h)
   status      String   @default("upcoming") // "upcoming", "active", "completed", "missed"
   date        DateTime @default(now()) // The specific calendar date this item belongs to
   createdAt   DateTime @default(now())
@@ -223,7 +223,7 @@ model AssignedDiet {
   description   String
   calorieTarget String
   proteinPerKg  Float
-  meals         Json     // Snapshot of meal schedule at time of assignment
+  meals         Json // Snapshot of meal schedule at time of assignment
   assignedAt    DateTime @default(now())
   isActive      Boolean  @default(true)
 
@@ -237,10 +237,10 @@ model Notification {
   title     String
   message   String
   read      Boolean  @default(false)
-  type      String?  // Event name like 'workout.scheduled.reminder'
-  category  String?  // Category like 'WORKOUT', 'GOALS', 'NUTRITION', etc.
+  type      String? // Event name like 'workout.scheduled.reminder'
+  category  String? // Category like 'WORKOUT', 'GOALS', 'NUTRITION', etc.
   priority  String   @default("LOW") // 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'
-  metadata  Json?    // Optional payload (e.g., linked resource IDs)
+  metadata  Json? // Optional payload (e.g., linked resource IDs)
   createdAt DateTime @default(now())
 
   @@index([userId])

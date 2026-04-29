@@ -175,8 +175,8 @@ async function seed() {
   console.log("🌱 Seeding Production Workout & Diet Plans...");
 
   // Clear existing plans to avoid duplicates and schema errors
-  await prisma.workout.deleteMany({});
-  await prisma.dietPlan.deleteMany({});
+  await prisma.workoutTemplate.deleteMany({});
+  await prisma.dietTemplate.deleteMany({});
 
   for (const w of seedData.workouts) {
     await prisma.workoutTemplate.create({

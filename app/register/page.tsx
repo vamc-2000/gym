@@ -25,6 +25,7 @@ export default function RegisterPage() {
     weight: "",
     goal: "",
     fitnessLevel: "",
+    gender: "",
   });
 
   const update = (field: string, value: string) => {
@@ -55,6 +56,7 @@ export default function RegisterPage() {
     if (!form.fitnessLevel) newErrors.fitnessLevel = "Select your level";
     if (!form.height) newErrors.height = "Height is required";
     if (!form.weight) newErrors.weight = "Weight is required";
+    if (!form.gender) newErrors.gender = "Gender is required";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -76,6 +78,7 @@ export default function RegisterPage() {
         weight: form.weight ? Number(form.weight) : undefined,
         goal: form.goal,
         fitnessLevel: form.fitnessLevel,
+        gender: form.gender,
       });
 
       if (res.success) {
@@ -171,6 +174,18 @@ export default function RegisterPage() {
                   error={errors.weight}
                 />
               </div>
+              <SelectField
+                label="Gender"
+                variant="glass"
+                value={form.gender}
+                onChange={(e) => update("gender", e.target.value)}
+                options={[
+                  { value: "Male", label: "👨 Male" },
+                  { value: "Female", label: "👩 Female" },
+                  { value: "Other", label: "🌈 Other" }
+                ]}
+                error={errors.gender}
+              />
               <SelectField
                 label="Goal"
                 variant="glass"

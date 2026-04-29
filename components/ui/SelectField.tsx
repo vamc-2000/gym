@@ -10,6 +10,7 @@ interface SelectFieldProps {
   value?: string;
   onChange?: (e: { target: { value: string } }) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function SelectField({
@@ -20,6 +21,7 @@ export default function SelectField({
   value = "",
   onChange,
   className = "",
+  disabled = false,
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -90,15 +92,16 @@ export default function SelectField({
   };
 
   return (
-    <div className={`w-full ${className}`} ref={ref}>
+    <div className={`w-full ${className} ${disabled ? "opacity-50 pointer-events-none" : ""}`} ref={ref}>
       <div className="relative">
         {/* Trigger button */}
         <button
           type="button"
-          onClick={() => setOpen((prev) => !prev)}
+          onClick={() => !disabled && setOpen((prev) => !prev)}
+          disabled={disabled}
           className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-all duration-200 text-sm focus-within:ring-4 cursor-pointer text-left flex items-center justify-between ${
             baseStyles[variant]
-          } ${error ? "border-red-400" : ""} ${open ? "ring-4" : ""}`}
+          } ${error ? "border-red-400" : ""} ${open ? "ring-4" : ""} ${disabled ? "cursor-not-allowed" : ""}`}
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-label={label}

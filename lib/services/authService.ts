@@ -10,6 +10,7 @@ export interface RegisterPayload {
   weight?: number;
   goal?: string;
   fitnessLevel?: string;
+  gender?: string;
 }
 
 export interface LoginPayload {

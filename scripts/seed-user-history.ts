@@ -14,7 +14,7 @@ async function seedUserHistory(email: string) {
   console.log(`✅ User found: ${user.name} (${user.id})`);
   
   // Find a workout plan
-  const workout = await prisma.workout.findFirst();
+  const workout = await prisma.workoutTemplate.findFirst();
   if (!workout) {
     console.error(`❌ No workouts exist in DB. Please run seed-extended.ts first.`);
     process.exit(1);
