@@ -61,13 +61,13 @@ export default function LeaderboardPage() {
       {/* Top 3 podium */}
       {!loading && entries.length >= 3 && (
         <div className="flex justify-center items-end gap-4 py-4">
-          {[1, 0, 2].map((idx) => {
+          {[1, 0, 2].map((idx, i) => {
             const entry = entries[idx];
             const heights = ["h-28", "h-36", "h-24"];
             const order = [1, 0, 2];
             return (
               <motion.div
-                key={entry.rank}
+                key={`podium-${entry.name}-${idx}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: order[idx] * 0.1 }}
@@ -99,7 +99,7 @@ export default function LeaderboardPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="skeleton h-14 w-full rounded-xl" />
+              <div key={`skeleton-${i}`} className="skeleton h-14 w-full rounded-xl" />
             ))}
           </div>
         ) : entries.length === 0 ? (
@@ -111,7 +111,7 @@ export default function LeaderboardPage() {
           <div className="space-y-2">
             {entries.map((entry, i) => (
               <motion.div
-                key={entry.rank}
+                key={`entry-${entry.rank}-${entry.name}-${i}`}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}

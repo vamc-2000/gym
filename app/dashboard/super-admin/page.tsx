@@ -1,15 +1,35 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
-const stats = [
-  { label: "Total Users", value: "12,845", change: "+12%", icon: "👥" },
-  { label: "Total Admins", value: "48", change: "+2", icon: "👮" },
-  { label: "Active Plans", value: "156", change: "+5", icon: "🏋️" },
-  { label: "Monthly Revenue", value: "$42,500", change: "+18%", icon: "💰" },
-];
+import { dashboardService } from "@/lib/services/dashboardService";
 
 export default function SuperAdminDashboard() {
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await dashboardService.getSuperAdminStats();
+        if (res.success) {
+          setStatsData(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch super admin stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const stats = [
+    { label: "Total Users", value: statsData?.totalUsers || "0", change: "+0%", icon: "👥" },
+    { label: "Total Admins", value: statsData?.totalAdmins || "0", change: "+0%", icon: "👮" },
+    { label: "Active Today", value: statsData?.activeToday || "0", change: "+0%", icon: "🏋️" },
+    { label: "System Roles", value: (statsData?.totalUsers || 0) + (statsData?.totalAdmins || 0), change: "+0%", icon: "🛡️" },
+  ];
   return (
     <div className="space-y-8 pb-12">
       {/* Header */}

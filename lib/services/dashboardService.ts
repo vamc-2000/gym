@@ -46,4 +46,16 @@ export const dashboardService = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   completeScheduleItem: (itemId: string) => 
     apiClient<any>("/schedule", { method: "PUT", body: { itemId } }),
+
+  // Admin Methods
+  getAdminUsers: () => apiClient<any>("/admin/users"),
+  getAdminWorkouts: () => apiClient<any>("/admin/workout"),
+  getAdminDiets: () => apiClient<any>("/admin/diet"),
+  sendAdminNotification: (data: { title: string; message: string }) => 
+    apiClient<any>("/admin/notifications", { method: "POST", body: data }),
+
+  // Super Admin Methods
+  getSuperAdminStats: () => apiClient<any>("/super-admin/stats"),
+  getSuperAdminAdmins: () => apiClient<any>("/super-admin/admins"),
+  getSuperAdminUsers: () => apiClient<any>("/admin/users"), // Re-using admin/users list
 };

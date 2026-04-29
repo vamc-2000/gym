@@ -1,15 +1,39 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
-const stats = [
-  { label: "My Assigned Users", value: "128", change: "+12", icon: "👥" },
-  { label: "Active Workout Plans", value: "32", change: "+4", icon: "🏋️" },
-  { label: "Active Diet Plans", value: "24", change: "+2", icon: "🥗" },
-  { label: "Unread Notifications", value: "12", change: "New", icon: "🔔" },
-];
+import { dashboardService } from "@/lib/services/dashboardService";
 
 export default function AdminDashboard() {
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await dashboardService.getAdminUsers();
+        if (res.success) {
+          const users = res.data;
+          setStatsData({
+            totalUsers: users.length,
+            activeUsers: users.filter((u: any) => u.lastLogin).length,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const stats = [
+    { label: "My Assigned Users", value: statsData?.totalUsers || "0", change: "+0", icon: "👥" },
+    { label: "Active Today", value: statsData?.activeUsers || "0", change: "+0", icon: "🏋️" },
+    { label: "Active Diet Plans", value: "24", change: "+2", icon: "🥗" },
+    { label: "Unread Notifications", value: "12", change: "New", icon: "🔔" },
+  ];
   return (
     <div className="space-y-8 pb-12">
       {/* Header */}
