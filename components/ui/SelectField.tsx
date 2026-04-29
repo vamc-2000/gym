@@ -44,46 +44,46 @@ export default function SelectField({
     light:
       "bg-white border-gray-200 text-gray-900 focus-within:border-primary focus-within:ring-primary/20",
     dark:
-      "bg-dash-card border-white/10 text-white focus-within:border-neon-blue focus-within:ring-neon-blue/20",
+      "bg-dash-card border-dash-border-subtle text-dash-text focus-within:border-neon-blue focus-within:ring-neon-blue/20",
     glass:
       "bg-white/5 border-white/10 text-white focus-within:border-auth-accent focus-within:ring-auth-accent/20",
   };
 
   const dropdownStyles = {
     light: "bg-white border-gray-200 shadow-xl",
-    dark: "bg-dash-card border-white/10 shadow-2xl shadow-black/50",
+    dark: "bg-dash-card border-dash-border-subtle shadow-2xl shadow-black/50",
     glass:
-      "bg-gray-900/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/50",
+      "bg-[#1a1033] backdrop-blur-2xl border-white/10 shadow-2xl shadow-black/50",
   };
 
   const optionHoverStyles = {
     light: "hover:bg-gray-100",
-    dark: "hover:bg-white/10",
+    dark: "hover:bg-dash-text/10",
     glass: "hover:bg-white/10",
   };
 
   const optionTextStyles = {
     light: "text-gray-800",
-    dark: "text-white/80",
-    glass: "text-white/80",
+    dark: "text-dash-text-muted",
+    glass: "text-white",
   };
 
   const placeholderStyles = {
     light: "text-gray-400",
-    dark: "text-white/30",
-    glass: "text-white/30",
+    dark: "text-dash-text-dim",
+    glass: "text-white/60",
   };
 
   const labelFloatedBg = {
     light: "bg-white text-primary",
     dark: "bg-dash-card text-neon-blue",
-    glass: "bg-transparent text-auth-accent",
+    glass: "bg-[#2d1b4d] px-1.5 rounded text-white",
   };
 
   const labelRestingColor = {
     light: "text-gray-400",
-    dark: "text-white/40",
-    glass: "text-white/40",
+    dark: "text-dash-text-dim",
+    glass: "text-white/70",
   };
 
   const handleSelect = (val: string) => {
@@ -112,7 +112,7 @@ export default function SelectField({
           <svg
             className={`w-4 h-4 transition-transform duration-200 ${
               open ? "rotate-180" : ""
-            } ${variant === "light" ? "text-gray-400" : "text-white/40"}`}
+            } ${variant === "light" ? "text-gray-400" : "text-dash-text-dim"}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -130,7 +130,7 @@ export default function SelectField({
         <label
           className={`absolute left-4 transition-all duration-200 pointer-events-none ${
             open || hasValue
-              ? "-top-2.5 text-xs px-1 font-medium z-10 " + 
+              ? "-top-3.5 text-xs px-1 font-medium z-10 " + 
                 (error
                   ? "text-red-400 bg-transparent"
                   : labelFloatedBg[variant])
@@ -163,7 +163,7 @@ export default function SelectField({
                     opt.value === value
                       ? variant === "light"
                         ? "bg-primary/10 text-primary font-medium"
-                        : "bg-white/10 text-white font-medium"
+                        : "bg-dash-text/10 text-dash-text font-medium"
                       : optionTextStyles[variant]
                   }`}
                 >

@@ -4,12 +4,15 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function seedAdmins() {
-  const password = await bcrypt.hash("Admin123!", 10);
+  const password = await bcrypt.hash("Admin@2026", 10);
   
   // Super Admin
   await prisma.user.upsert({
     where: { email: "superadmin@gymstreak.com" },
-    update: {},
+    update: {
+      password,
+      role: "SUPER_ADMIN"
+    },
     create: {
       name: "Super Admin",
       email: "superadmin@gymstreak.com",
@@ -24,7 +27,10 @@ async function seedAdmins() {
   // Admin
   await prisma.user.upsert({
     where: { email: "admin@gymstreak.com" },
-    update: {},
+    update: {
+      password,
+      role: "ADMIN"
+    },
     create: {
       name: "Vasu Admin",
       email: "admin@gymstreak.com",

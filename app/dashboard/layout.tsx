@@ -7,11 +7,14 @@ import { NotificationManager, triggerToast } from "@/components/NotificationMana
 import { tokenManager } from "@/lib/auth";
 import { WorkoutProvider } from "@/context/WorkoutContext";
 
+import { useTheme } from "@/context/ThemeContext";
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [userName, setUserName] = useState("Athlete");
 
@@ -74,7 +77,15 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="min-h-screen bg-dash-bg text-white">
+    <div className="min-h-screen bg-dash-bg text-dash-text relative overflow-hidden transition-colors duration-500">
+      {/* Sunny Background Blob */}
+      {theme === "light" && (
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-neon-yellow/20 rounded-full blur-[100px] animate-[solar-pulse_8s_infinite] pointer-events-none z-0" />
+      )}
+      {theme === "light" && (
+        <div className="absolute top-1/2 -left-24 w-64 h-64 bg-neon-blue/10 rounded-full blur-[80px] animate-[solar-pulse_12s_infinite] pointer-events-none z-0" />
+      )}
+
       <WorkoutProvider>
         <NotificationManager />
         <Sidebar

@@ -11,7 +11,7 @@ export class AuthService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async register(userData: any) {
     const existing = await userRepository.findByEmail(userData.email);
-    if (existing) throw new Error("Email already exists");
+    if (existing) throw new Error("Email already registered");
 
     validatePassword(userData.password);
 

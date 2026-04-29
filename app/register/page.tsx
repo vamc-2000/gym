@@ -114,7 +114,7 @@ export default function RegisterPage() {
               <span className="text-2xl">🏋️</span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-1">Join GymStreak</h1>
-            <p className="text-sm text-white/50">Start your transformation today</p>
+            <p className="text-sm text-white/90">Start your transformation today</p>
           </div>
 
           {success ? (
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                 <span className="text-3xl">✅</span>
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Account Created!</h2>
-              <p className="text-sm text-white/50">Redirecting to dashboard...</p>
+              <p className="text-sm text-white/90">Redirecting to dashboard...</p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -217,7 +217,7 @@ export default function RegisterPage() {
                 Create Account
               </SubmitButton>
 
-              <p className="text-center text-sm text-white/40 mt-4">
+              <p className="text-center text-sm text-white/80 mt-4">
                 Already have an account?{" "}
                 <Link
                   href="/login"

@@ -26,24 +26,24 @@ export default function SelectionCard({
       className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-300 cursor-pointer group ${
         selected
           ? "border-auth-accent bg-auth-accent/5 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
-          : "border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/10"
+          : "border-dash-border-subtle bg-dash-text/5 hover:border-dash-text/10 hover:bg-dash-text/10"
       }`}
       aria-pressed={selected}
     >
       {icon && <span className="text-2xl group-hover:scale-110 transition-transform">{icon}</span>}
       <div className="flex-1">
-        <p className={`font-bold text-sm transition-colors ${selected ? "text-auth-accent" : "text-white/80"}`}>
+        <p className={`font-bold text-sm transition-colors ${selected ? "text-auth-accent" : "text-dash-text"}`}>
           {label}
         </p>
         {description && (
-          <p className={`text-xs mt-0.5 transition-colors ${selected ? "text-auth-accent/60" : "text-white/30"}`}>
+          <p className={`text-xs mt-0.5 transition-colors ${selected ? "text-auth-accent/60" : "text-dash-text-dim"}`}>
             {description}
           </p>
         )}
       </div>
       <div
         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          selected ? "border-auth-accent bg-auth-accent" : "border-white/20"
+          selected ? "border-auth-accent bg-auth-accent" : "border-dash-text-dim/20"
         }`}
       >
         {selected && (

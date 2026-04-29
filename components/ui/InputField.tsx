@@ -20,7 +20,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       light:
         "bg-white border-gray-200 text-gray-900 focus:border-primary focus:ring-primary/20",
       dark:
-        "bg-dash-card border-white/10 text-white focus:border-neon-blue focus:ring-neon-blue/20",
+        "bg-dash-card border-dash-border-subtle text-dash-text focus:border-neon-blue focus:ring-neon-blue/20",
       glass:
         "bg-white/5 border-white/10 text-white focus:border-auth-accent focus:ring-auth-accent/20 placeholder-white/20",
     };
@@ -65,7 +65,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             }}
             className={`w-full px-4 py-3.5 ${icon ? "pl-11" : ""
               } ${showStepper ? "pr-24" : ""} rounded-xl border-2 outline-none transition-all duration-300 text-sm focus:ring-4 ${baseStyles[variant]
-              } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-white/10"} ${className}`}
+              } ${error ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/20" : "border-dash-border-subtle"} ${className}`}
             placeholder={focused ? props.placeholder : ""}
           />
 
@@ -90,12 +90,25 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           )}
 
           <label
-            className={`absolute transition-all duration-300 pointer-events-none select-none ${focused || hasValue
-                ? `-top-2.5 left-3 text-[11px] px-2 font-bold z-20 rounded-md ${labelBg[variant]} ${error ? "text-red-400" : variant === "glass" ? "text-auth-accent" : "text-primary"
-                }`
-                : `top-3.5 left-${icon ? "11" : "4"} text-sm ${error ? "text-red-400/60" : "text-white/30"
-                }`
-              }`}
+            className={`absolute transition-all duration-300 pointer-events-none select-none ${
+              focused || hasValue
+                ? `-top-3.5 left-3 text-[11px] px-2 font-bold z-20 rounded-md ${labelBg[variant]} ${
+                    error
+                      ? "text-red-400"
+                      : variant === "glass"
+                      ? "text-white"
+                      : variant === "dark"
+                      ? "text-neon-blue"
+                      : "text-primary"
+                  }`
+                : `top-3.5 left-${icon ? "11" : "4"} text-sm ${
+                    error
+                      ? "text-red-400/60"
+                      : variant === "dark"
+                      ? "text-dash-text-dim"
+                      : "text-white/70"
+                  }`
+            }`}
           >
             {label}
           </label>

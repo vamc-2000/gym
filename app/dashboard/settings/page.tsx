@@ -7,8 +7,11 @@ import { GOALS } from "@/lib/constants";
 import { dashboardService } from "@/lib/services/dashboardService";
 import SelectField from "@/components/ui/SelectField";
 
+import { useTheme } from "@/context/ThemeContext";
+
 export default function SettingsPage() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [goal, setGoal] = useState("");
   const [dietPreference, setDietPreference] = useState("");
   const [updating, setUpdating] = useState(false);
@@ -79,13 +82,13 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">⚙️ Settings</h1>
-        <p className="text-white/40 text-sm">Manage your app preferences</p>
+        <h1 className="text-2xl font-bold text-dash-text mb-1">⚙️ Settings</h1>
+        <p className="text-dash-text-dim text-sm">Manage your app preferences</p>
       </div>
 
       {/* Fitness Goal */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">Fitness Goal</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Fitness Goal</h3>
         <div className="space-y-4">
           <SelectField
             label="Current Goal"
@@ -116,30 +119,30 @@ export default function SettingsPage() {
       </div>
 
       {/* Account */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">Account</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Account</h3>
         <div className="space-y-2">
           <button
             onClick={() => router.push("/dashboard/profile")}
-            className="w-full flex items-center justify-between p-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl text-sm text-dash-text-muted hover:text-dash-text hover:bg-dash-text/5 transition-all text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <span>👤</span>
               <span>Edit Profile</span>
             </div>
-            <svg className="w-4 h-4 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-dash-text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
           <button
             onClick={() => router.push("/dashboard/notifications")}
-            className="w-full flex items-center justify-between p-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-3 rounded-xl text-sm text-dash-text-muted hover:text-dash-text hover:bg-dash-text/5 transition-all text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <span>🔔</span>
               <span>Notification Settings</span>
             </div>
-            <svg className="w-4 h-4 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-dash-text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -147,16 +150,24 @@ export default function SettingsPage() {
       </div>
 
       {/* App info */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">App</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-white/50 text-sm">Version</span>
-            <span className="text-white/30 text-sm">1.0.0</span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-white/50 text-sm">Theme</span>
-            <span className="text-neon-blue text-sm font-medium">Dark Mode</span>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Appearance</h3>
+        <div className="space-y-4">
+          <SelectField
+            label="Theme"
+            variant="dark"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as any)}
+            options={[
+              { value: "dark", label: "🌙 Dark Mode" },
+              { value: "light", label: "☀️ Sunny Morning" },
+              { value: "cyberpunk", label: "🌆 Cyberpunk" },
+              { value: "midnight", label: "🌌 Midnight" },
+            ]}
+          />
+          <div className="flex items-center justify-between py-2 border-t border-dash-border-subtle mt-2">
+            <span className="text-dash-text-dim text-sm">Version</span>
+            <span className="text-dash-text-dim text-sm opacity-50">1.0.0</span>
           </div>
         </div>
       </div>

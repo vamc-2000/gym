@@ -13,12 +13,6 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (mounted && tokenManager.isAuthenticated()) {
-      router.push("/dashboard");
-    }
-  }, [mounted, router]);
-
   if (!mounted) return null;
 
   const landingSections = [
