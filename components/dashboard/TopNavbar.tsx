@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
 
@@ -18,12 +18,14 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
     router.push("/");
   };
 
-  const greeting = () => {
+  const [greeting, setGreeting] = useState("Welcome");
+
+  useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
   return (
     <header className="h-16 bg-dash-card/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
@@ -38,7 +40,7 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
           </svg>
         </button>
         <div className="hidden sm:block">
-          <p className="text-white/40 text-xs">{greeting()}</p>
+          <p className="text-white/40 text-xs">{greeting}</p>
           <p className="text-white font-semibold text-sm">{userName || "Athlete"} <span>💪</span></p>
         </div>
       </div>

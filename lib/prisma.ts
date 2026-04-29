@@ -8,6 +8,7 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: ["query"],
+    datasourceUrl: process.env.DATABASE_URL,
   });
 
 console.log("Prisma initializing with URL:", process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":****@"));

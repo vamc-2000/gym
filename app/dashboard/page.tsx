@@ -84,7 +84,7 @@ export default function DashboardPage() {
         setStats({
           caloriesBurned: 2450,
           workoutsCompleted: 24,
-          currentStreak: streakData?.data?.currentStreak || 7,
+          currentStreak: (streakData?.data as any)?.currentStreak || 7,
           weightProgress: lastWeight ? `${lastWeight} kg` : "75 kg",
         });
       } catch {

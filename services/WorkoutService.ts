@@ -7,7 +7,7 @@ export class WorkoutService {
   async getWorkoutPlan(goal: string, level: string) {
     const workout = await workoutRepository.findByGoalAndLevel(goal, level);
     const diet = await dietRepository.findByGoalAndLevel(goal, level);
-    
+
     return { workout, diet };
   }
 
@@ -41,12 +41,12 @@ export class WorkoutService {
     }
 
     if (!streak.lastWorkoutDate) {
-        await streakRepository.upsert(userId, {
-            currentStreak: 1,
-            longestStreak: Math.max(1, streak.longestStreak),
-            lastWorkoutDate: today,
-        });
-        return;
+      await streakRepository.upsert(userId, {
+        currentStreak: 1,
+        longestStreak: Math.max(1, streak.longestStreak),
+        lastWorkoutDate: today,
+      });
+      return;
     }
 
     const lastDate = new Date(streak.lastWorkoutDate);
