@@ -45,6 +45,21 @@ export class UserController {
       return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
+
+  async updateDietPreference(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const { dietPreference } = await req.json();
+      if (!dietPreference) throw new Error("Diet preference is required");
+
+      const updated = await userService.updateProfile(decoded.userId, { dietPreference });
+      return NextResponse.json({ success: true, data: updated });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
+    }
+  }
 }
 
 export const userController = new UserController();

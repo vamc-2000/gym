@@ -5,6 +5,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import TopNavbar from "@/components/dashboard/TopNavbar";
 import { NotificationManager, triggerToast } from "@/components/NotificationManager";
 import { tokenManager } from "@/lib/auth";
+import { WorkoutProvider } from "@/context/WorkoutContext";
 
 export default function DashboardLayout({
   children,
@@ -74,22 +75,24 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-dash-bg text-white">
-      <NotificationManager />
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
-      <div
-        className={`transition-all duration-300 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
-        }`}
-      >
-        <TopNavbar
-          onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          userName={userName}
+      <WorkoutProvider>
+        <NotificationManager />
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
-        <main className="p-4 lg:p-6">{children}</main>
-      </div>
+        <div
+          className={`transition-all duration-300 ${
+            sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+          }`}
+        >
+          <TopNavbar
+            onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+            userName={userName}
+          />
+          <main className="p-4 lg:p-6">{children}</main>
+        </div>
+      </WorkoutProvider>
     </div>
   );
 }

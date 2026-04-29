@@ -47,6 +47,21 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleMarkRead = async (id: string | undefined) => {
+    if (!id) return;
+    
+    // Optimistic UI update
+    setNotifications((prev) => 
+      prev.map((n) => (n._id === id || (n as any).id === id) ? { ...n, read: true } : n)
+    );
+
+    try {
+      await dashboardService.markNotificationRead(id);
+    } catch (err) {
+      console.error("Failed to mark notification as read", err);
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const typeIcons: Record<string, string> = {
@@ -97,40 +112,53 @@ export default function NotificationsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notif, i) => (
-            <motion.div
-              key={notif._id || i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className={`bg-dash-card rounded-2xl p-5 border transition-all duration-300 ${
-                notif.read ? "border-white/5" : "border-neon-blue/20 glow-blue"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeColors[notif.type] || "bg-white/5"}`}>
-                  <span className="text-lg">{typeIcons[notif.type] || "📌"}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-white text-sm font-semibold">{notif.title}</p>
-                    {!notif.read && (
-                      <span className="w-2 h-2 bg-neon-blue rounded-full animate-pulse-glow" />
-                    )}
+          {notifications.map((notif, i) => {
+            const id = notif._id || (notif as any).id;
+            return (
+              <motion.div
+                key={id || i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                onClick={() => !notif.read && handleMarkRead(id)}
+                className={`bg-dash-card rounded-2xl p-5 border transition-all duration-300 relative group ${
+                  notif.read 
+                    ? "border-white/5 opacity-60" 
+                    : "border-neon-blue/20 glow-blue cursor-pointer hover:border-neon-blue/40"
+                }`}
+              >
+                {!notif.read && (
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] text-neon-blue font-bold uppercase tracking-wider bg-neon-blue/10 px-2 py-1 rounded-md">
+                      Mark as read
+                    </span>
                   </div>
-                  <p className="text-white/40 text-sm">{notif.message}</p>
-                  <p className="text-white/20 text-xs mt-2">
-                    {new Date(notif.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeColors[notif.type] || "bg-white/5"}`}>
+                    <span className="text-lg">{typeIcons[notif.type] || "📌"}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-white text-sm font-semibold">{notif.title}</p>
+                      {!notif.read && (
+                        <span className="w-2 h-2 bg-neon-blue rounded-full animate-pulse-glow" />
+                      )}
+                    </div>
+                    <p className="text-white/40 text-sm">{notif.message}</p>
+                    <p className="text-white/20 text-xs mt-2">
+                      {new Date(notif.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

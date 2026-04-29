@@ -4,12 +4,15 @@ import { apiClient } from "@/lib/api";
 export const dashboardService = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getWorkoutPlan: () => apiClient<any>("/workout/plan"),
+  startWorkout: (workoutId: string) =>
+    apiClient<any>("/workout/start", { method: "POST", body: { workoutId } }),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   completeWorkout: (workoutId: string) =>
     apiClient<any>("/workout/complete", { method: "POST", body: { workoutId } }),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getDietPlan: () => apiClient<any>("/diet/plan"),
+  getDietOptions: () => apiClient<any>("/diet/options"),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getSummary: () => apiClient<any>("/dashboard/summary"),
@@ -21,6 +24,8 @@ export const dashboardService = {
     apiClient<any>("/user/profile", { method: "PUT", body: data }),
   updateGoal: (goal: string) =>
     apiClient<any>("/user/goal", { method: "PUT", body: { goal } }),
+  updateDietPreference: (dietPreference: string) =>
+    apiClient<any>("/user/diet-preference", { method: "PUT", body: { dietPreference } }),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getProgress: () => apiClient<any>("/progress"),
@@ -38,7 +43,9 @@ export const dashboardService = {
   getNotifications: () => apiClient<any>("/notification"),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   markNotificationsRead: () =>
-    apiClient<any>("/notification/read", { method: "PATCH" }),
+    apiClient<any>("/notification/read", { method: "POST" }), // Mark ALL (changed to POST to match route.ts)
+  markNotificationRead: (notificationId: string) =>
+    apiClient<any>("/notification/read", { method: "PATCH", body: { notificationId } }), // Mark SINGLE
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getDailySchedule: () => apiClient<any>("/schedule"),

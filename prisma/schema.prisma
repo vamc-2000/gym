@@ -20,6 +20,7 @@ model User {
   bodyFat      Float?
   goal         String?
   fitnessLevel String?
+  dietPreference String? @default("BOTH") // VEG, NON_VEG, BOTH
   otp          String?
   otpExpiry    DateTime?
   refreshToken String?
@@ -202,6 +203,7 @@ model DietTemplate {
   level         String
   planName      String
   description   String
+  dietType      String   @default("BOTH") // VEG, NON_VEG, BOTH
   calorieTarget String // e.g., "maintenance", "surplus"
   proteinPerKg  Float
   meals         Json // Stores meal schedule
@@ -222,6 +224,7 @@ model AssignedDiet {
   level         String
   planName      String
   description   String
+  dietType      String   @default("BOTH")
   calorieTarget String
   proteinPerKg  Float
   meals         Json // Snapshot of meal schedule at time of assignment

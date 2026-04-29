@@ -10,20 +10,22 @@ import SelectField from "@/components/ui/SelectField";
 export default function SettingsPage() {
   const router = useRouter();
   const [goal, setGoal] = useState("");
+  const [dietPreference, setDietPreference] = useState("");
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const fetchGoal = async () => {
+    const fetchProfile = async () => {
       const res = await dashboardService.getProfile();
       if (res.success && res.data) {
         setGoal(res.data.goal || "");
+        setDietPreference(res.data.dietPreference || "BOTH");
       } else if (res.error?.toLowerCase().includes("unauthorized")) {
         tokenManager.clearTokens();
         router.push("/login");
       }
     };
-    fetchGoal();
+    fetchProfile();
   }, []);
 
   const handleGoalChange = async (newGoal: string) => {
@@ -34,6 +36,24 @@ export default function SettingsPage() {
       const res = await dashboardService.updateGoal(newGoal);
       if (res.success) {
         setMessage("Goal updated! Your plans will regenerate.");
+      } else {
+        setMessage(res.error || "Update failed");
+      }
+    } catch {
+      setMessage("Update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDietPreferenceChange = async (newPref: string) => {
+    setDietPreference(newPref);
+    setUpdating(true);
+    setMessage("");
+    try {
+      const res = await dashboardService.updateDietPreference(newPref);
+      if (res.success) {
+        setMessage("Diet preference updated! Your plans will regenerate.");
       } else {
         setMessage(res.error || "Update failed");
       }
@@ -74,6 +94,18 @@ export default function SettingsPage() {
             onChange={(e) => handleGoalChange(e.target.value)}
             disabled={updating}
             options={GOALS.map((g) => ({ value: g.value, label: `${g.icon} ${g.label}` }))}
+          />
+          <SelectField
+            label="Diet Preference"
+            variant="dark"
+            value={dietPreference}
+            onChange={(e) => handleDietPreferenceChange(e.target.value)}
+            disabled={updating}
+            options={[
+              { value: "BOTH", label: "🍱 Mixed (Veg & Non-Veg)" },
+              { value: "VEG", label: "🥦 Vegetarian" },
+              { value: "NON_VEG", label: "🍗 Non-Vegetarian" },
+            ]}
           />
           {message && (
             <p className={`text-xs ${message.includes("updated") ? "text-neon-green" : "text-red-400"}`}>
