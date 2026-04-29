@@ -172,7 +172,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-gradient-to-br from-purple-950 via-gray-950 to-black animated-gradient">
-      
+
       {/* Animated background blobs */}
       <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-blob" />
       <div className="absolute top-40 -right-20 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
@@ -198,7 +198,7 @@ export default function OnboardingPage() {
               {/* STEP 0: Welcome */}
               {step === 0 && (
                 <div className="text-center py-8">
-                  <motion.div 
+                  <motion.div
                     initial={{ scale: 0, rotate: -45 }}
                     animate={{ scale: 1, rotate: 12 }}
                     className="w-20 h-20 bg-gradient-to-br from-auth-accent to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-auth-accent/30"
@@ -304,7 +304,6 @@ export default function OnboardingPage() {
                         label="Height (cm)"
                         type="number"
                         variant="glass"
-                        showStepper
                         value={data.heightCm}
                         onChange={(e) => update("heightCm", e.target.value)}
                         error={errors.heightCm}
@@ -313,7 +312,6 @@ export default function OnboardingPage() {
                         label="Weight (kg)"
                         type="number"
                         variant="glass"
-                        showStepper
                         value={data.weightKg}
                         onChange={(e) => update("weightKg", e.target.value)}
                         error={errors.weightKg}
@@ -342,7 +340,6 @@ export default function OnboardingPage() {
                         label="Weight (lbs)"
                         type="number"
                         variant="glass"
-                        showStepper
                         value={data.weightLbs}
                         onChange={(e) => update("weightLbs", e.target.value)}
                         error={errors.weightLbs}
@@ -361,7 +358,6 @@ export default function OnboardingPage() {
                     label={data.units === "metric" ? "Target Weight (kg)" : "Target Weight (lbs)"}
                     type="number"
                     variant="glass"
-                    showStepper
                     value={data.units === "metric" ? data.targetWeightKg : data.targetWeightLbs}
                     onChange={(e) => update(data.units === "metric" ? "targetWeightKg" : "targetWeightLbs", e.target.value)}
                     error={errors.targetWeightKg || errors.targetWeightLbs}

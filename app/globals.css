@@ -25,14 +25,19 @@
 }
 
 [data-theme='light'] {
-  --color-neon-blue: #f59e0b; /* Sunny Amber */
-  --color-neon-yellow: #fbbf24; /* Golden */
-  --color-dash-bg: #fffcf0; /* Warm Cream Background */
+  --color-neon-blue: #f59e0b;
+  /* Sunny Amber */
+  --color-neon-yellow: #fbbf24;
+  /* Golden */
+  --color-dash-bg: #fffcf0;
+  /* Warm Cream Background */
   --color-dash-card: #ffffff;
-  --color-dash-border: rgba(245, 158, 11, 0.1); /* Subtle Amber Border */
+  --color-dash-border: rgba(245, 158, 11, 0.1);
+  /* Subtle Amber Border */
   --color-primary: #f59e0b;
   --color-primary-hover: #d97706;
-  --color-text: #451a03; /* Deep Warm Brown Text */
+  --color-text: #451a03;
+  /* Deep Warm Brown Text */
   --color-text-muted: #92400e;
   --color-text-dim: #b45309;
   --color-border-subtle: rgba(245, 158, 11, 0.08);
@@ -41,9 +46,12 @@
 }
 
 [data-theme='cyberpunk'] {
-  --color-neon-blue: #ff00ff; /* Neon Pink */
-  --color-neon-yellow: #00ffff; /* Neon Cyan */
-  --color-dash-bg: #1a0b2e; /* Deep Purple */
+  --color-neon-blue: #ff00ff;
+  /* Neon Pink */
+  --color-neon-yellow: #00ffff;
+  /* Neon Cyan */
+  --color-dash-bg: #1a0b2e;
+  /* Deep Purple */
   --color-dash-card: #2d1b4d;
   --color-dash-border: rgba(255, 0, 255, 0.1);
   --color-primary: #ff00ff;
@@ -57,9 +65,12 @@
 }
 
 [data-theme='midnight'] {
-  --color-neon-blue: #ffd700; /* Gold */
-  --color-neon-yellow: #c0c0c0; /* Silver */
-  --color-dash-bg: #050b1a; /* Deep Navy */
+  --color-neon-blue: #ffd700;
+  /* Gold */
+  --color-neon-yellow: #c0c0c0;
+  /* Silver */
+  --color-dash-bg: #050b1a;
+  /* Deep Navy */
   --color-dash-card: #0a162b;
   --color-dash-border: rgba(255, 215, 0, 0.1);
   --color-primary: #ffd700;
@@ -251,8 +262,19 @@ body {
    Glassmorphism Utilities
    ========================================================= */
 @keyframes solar-pulse {
-  0%, 100% { opacity: 0.8; transform: scale(1); filter: blur(40px); }
-  50% { opacity: 1; transform: scale(1.1); filter: blur(60px); }
+
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    filter: blur(40px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: blur(60px);
+  }
 }
 
 .sunny-glow {
@@ -307,3 +329,14 @@ span[role="img"],
 .cursor-pointer {
   user-select: none;
 }
+
+/* Hide number input spinners (up/down arrows) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}

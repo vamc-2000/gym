@@ -39,7 +39,7 @@ export default function RegisterPage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!form.name.trim()) newErrors.name = "Name is required";
-    
+
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(form.email)) {
@@ -57,7 +57,7 @@ export default function RegisterPage() {
     if (!form.height) newErrors.height = "Height is required";
     if (!form.weight) newErrors.weight = "Weight is required";
     if (!form.gender) newErrors.gender = "Gender is required";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -159,7 +159,6 @@ export default function RegisterPage() {
                   label="Height (cm)"
                   type="number"
                   variant="glass"
-                  showStepper
                   value={form.height}
                   onChange={(e) => update("height", e.target.value)}
                   error={errors.height}
@@ -168,7 +167,6 @@ export default function RegisterPage() {
                   label="Weight (kg)"
                   type="number"
                   variant="glass"
-                  showStepper
                   value={form.weight}
                   onChange={(e) => update("weight", e.target.value)}
                   error={errors.weight}
