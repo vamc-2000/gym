@@ -27,7 +27,7 @@ export const authService = {
 
     if (res.success && res.data) {
       if (res.accessToken && res.refreshToken) {
-        tokenManager.setTokens(res.accessToken, res.refreshToken);
+        tokenManager.setTokens(res.accessToken, res.refreshToken, res.data);
         tokenManager.setUser(res.data);
       }
     }
@@ -45,9 +45,10 @@ export const authService = {
     if (res.success) {
       const token = res.accessToken || res.token;
       const refresh = res.refreshToken || "";
+      const user = res.user || res.data;
       if (token) {
-        tokenManager.setTokens(token, refresh);
-        tokenManager.setUser(res.user || res.data);
+        tokenManager.setTokens(token, refresh, user);
+        tokenManager.setUser(user);
       }
     }
 
@@ -72,13 +73,30 @@ export const authService = {
     if (res.success) {
       const token = res.accessToken || res.token;
       const refresh = res.refreshToken || "";
+      const user = res.user || res.data;
       if (token) {
-        tokenManager.setTokens(token, refresh);
-        tokenManager.setUser(res.user || res.data);
+        tokenManager.setTokens(token, refresh, user);
+        tokenManager.setUser(user);
       }
     }
 
     return res;
+  },
+
+  forgotPassword: async (email: string) => {
+    return apiClient("/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+      requiresAuth: false,
+    });
+  },
+
+  resetPassword: async (payload: any) => {
+    return apiClient("/auth/reset-password", {
+      method: "POST",
+      body: payload,
+      requiresAuth: false,
+    });
   },
 
   logout: () => {

@@ -53,6 +53,8 @@ export default function RegisterPage() {
 
     if (!form.goal) newErrors.goal = "Select a goal";
     if (!form.fitnessLevel) newErrors.fitnessLevel = "Select your level";
+    if (!form.height) newErrors.height = "Height is required";
+    if (!form.weight) newErrors.weight = "Weight is required";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

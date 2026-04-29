@@ -20,11 +20,14 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         const res = await dashboardService.getLeaderboard();
-        if (res.success && res.data) {
+        if (res.success && res.data && res.data.leaderboard) {
           setEntries(
-            Array.isArray(res.data)
-              ? res.data.map((e: Record<string, unknown>, i: number) => ({ ...e, rank: i + 1 }))
-              : []
+            res.data.leaderboard.map((e: any) => ({
+              rank: e.rank,
+              name: e.user?.name || "Unknown",
+              score: e.score,
+              streak: e.user?.streaks?.currentStreak || 0
+            }))
           );
         }
       } catch {

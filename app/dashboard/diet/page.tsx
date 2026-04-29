@@ -19,7 +19,24 @@ export default function DietPage() {
       try {
         const res = await dashboardService.getDietPlan();
         if (res.success && res.data?.meals) {
-          setMeals(res.data.meals);
+          let parsedMeals: Meal[] = [];
+          if (res.data.meals.schedule) {
+            // Map the new backend JSON structure
+            const schedule = res.data.meals.schedule;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parsedMeals = Object.values(schedule).map((m: any) => ({
+              name: m.title,
+              items: m.items,
+              calories: m.macros?.calories
+            }));
+          } else if (Array.isArray(res.data.meals)) {
+            // Fallback for older structure
+            parsedMeals = res.data.meals;
+          }
+          
+          if (parsedMeals.length > 0) {
+            setMeals(parsedMeals);
+          }
         }
       } catch {
         setMeals([

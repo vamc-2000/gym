@@ -2,9 +2,47 @@
 
 import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
+import { useState, useEffect } from "react";
+import { GOALS } from "@/lib/constants";
+import { dashboardService } from "@/lib/services/dashboardService";
+import SelectField from "@/components/ui/SelectField";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const [goal, setGoal] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchGoal = async () => {
+      const res = await dashboardService.getProfile();
+      if (res.success && res.data) {
+        setGoal(res.data.goal || "");
+      } else if (res.error?.toLowerCase().includes("unauthorized")) {
+        tokenManager.clearTokens();
+        router.push("/login");
+      }
+    };
+    fetchGoal();
+  }, []);
+
+  const handleGoalChange = async (newGoal: string) => {
+    setGoal(newGoal);
+    setUpdating(true);
+    setMessage("");
+    try {
+      const res = await dashboardService.updateGoal(newGoal);
+      if (res.success) {
+        setMessage("Goal updated! Your plans will regenerate.");
+      } else {
+        setMessage(res.error || "Update failed");
+      }
+    } catch {
+      setMessage("Update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleLogout = () => {
     tokenManager.clearTokens();
@@ -23,6 +61,26 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-white mb-1">⚙️ Settings</h1>
         <p className="text-white/40 text-sm">Manage your app preferences</p>
+      </div>
+
+      {/* Fitness Goal */}
+      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
+        <h3 className="text-white font-semibold text-sm mb-4">Fitness Goal</h3>
+        <div className="space-y-4">
+          <SelectField
+            label="Current Goal"
+            variant="dark"
+            value={goal}
+            onChange={(e) => handleGoalChange(e.target.value)}
+            disabled={updating}
+            options={GOALS.map((g) => ({ value: g.value, label: `${g.icon} ${g.label}` }))}
+          />
+          {message && (
+            <p className={`text-xs ${message.includes("updated") ? "text-neon-green" : "text-red-400"}`}>
+              {message}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Account */}

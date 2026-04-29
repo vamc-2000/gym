@@ -1,8 +1,11 @@
 import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/UserRepository";
+import { streakRepository } from "../repositories/StreakRepository";
+import { progressRepository } from "../repositories/ProgressRepository";
 import { generateOTP } from "../utils/otp";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import {validatePassword} from "../utils/validate";
+import { notificationService, NotificationCategory, NotificationPriority } from "./NotificationService";
 
 export class AuthService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,10 +16,59 @@ export class AuthService {
     validatePassword(userData.password);
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    return await userRepository.create({
+    const user = await userRepository.create({
       ...userData,
       password: hashedPassword,
+      goal: userData.goal || "Weight Loss",
+      fitnessLevel: userData.level || "Beginner",
+      notificationSettings: {
+        workoutReminders: true,
+        goalProgress: true,
+        nutritionHydration: true,
+        recoveryHealth: true,
+        socialCommunity: true,
+        marketingPromos: false,
+      }
     });
+
+    // Initialize Streak (0 days until they complete a workout)
+    await streakRepository.upsert(user.id, {
+      currentStreak: 0,
+      longestStreak: 0,
+    });
+
+    // Initialize Progress
+    await progressRepository.create({
+      userId: user.id,
+      weight: userData.weight ? parseFloat(userData.weight) : null,
+      date: new Date(),
+      note: "Starting weight",
+    });
+
+    // Initialize Leaderboards
+    const { leaderboardRepository } = await import("../repositories/LeaderboardRepository");
+    await leaderboardRepository.upsert(user.id, {
+      score: 0,
+      category: "Overall"
+    });
+    
+    await leaderboardRepository.upsertDaily(user.id, {
+      score: 0,
+      durationSeconds: 0,
+      caloriesBurned: 0
+    });
+
+    // Generate Welcome Notification
+    await notificationService.sendNotification({
+      userId: user.id,
+      title: "Welcome to GymStreak! 🚀",
+      message: "Your onboarding is complete. Set your schedule and start your Day 1 workout today!",
+      type: "system.admin.announcement",
+      category: NotificationCategory.ADMIN,
+      priority: NotificationPriority.HIGH,
+    });
+
+    return user;
   }
 
   async login(email: string, password: string) {
@@ -62,6 +114,24 @@ export class AuthService {
     const refreshToken = generateRefreshToken(user);
 
     return { user, accessToken, refreshToken };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const user = await userRepository.findByEmail(email);
+    if (!user || !user.otp || !user.otpExpiry || user.otp !== otp || user.otpExpiry < new Date()) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    validatePassword(newPassword);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await userRepository.update(user.id, { 
+      password: hashedPassword,
+      otp: null, 
+      otpExpiry: null 
+    });
+
+    return true;
   }
 }
 
