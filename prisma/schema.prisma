@@ -1,11 +1,14 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
+
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
 
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
@@ -13,15 +16,18 @@ model User {
   email    String @unique
   password String
   role     Role   @default(USER)
+  gender   String?
 
   height       Float?
   weight       Float?
   bodyFat      Float?
   goal         String?
   fitnessLevel String?
+  dietPreference String? @default("BOTH") // VEG, NON_VEG, BOTH
   otp          String?
   otpExpiry    DateTime?
   refreshToken String?
+  lastLogin    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -30,8 +36,12 @@ model User {
   workoutLogs          WorkoutLog[]
   progress             Progress[]
   leaderboard          Leaderboard?
+  dailyLeaderboard     DailyLeaderboard?
   dietLogs             Diet[]
   notifications        Notification[]
+  scheduleItems        ScheduleItem[]
+  assignedWorkouts     AssignedWorkout[]
+  assignedDiets        AssignedDiet[]
 }
 
 enum Role {
@@ -45,6 +55,14 @@ type NotificationSettings {
   dndEnabled           Boolean @default(false)
   dndStart             String  @default("22:00")
   dndEnd               String  @default("06:00")
+
+  // Notification Preferences by Category
+  workoutReminders   Boolean @default(true)
+  goalProgress       Boolean @default(true)
+  nutritionHydration Boolean @default(true)
+  recoveryHealth     Boolean @default(true)
+  socialCommunity    Boolean @default(true)
+  marketingPromos    Boolean @default(false)
 }
 
 model Streak {
@@ -59,28 +77,61 @@ model Streak {
 }
 
 model WorkoutLog {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String          @db.ObjectId
+  user            User            @relation(fields: [userId], references: [id])
+  workoutId       String          @db.ObjectId
+  workout         AssignedWorkout @relation(fields: [workoutId], references: [id])
+  date            DateTime        @default(now())
+  completed       Boolean         @default(false)
+  startTime       DateTime?
+  endTime         DateTime?
+  durationSeconds Int?
+  caloriesBurned  Int?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model WorkoutTemplate {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  workoutId String   @db.ObjectId
-  workout   Workout  @relation(fields: [workoutId], references: [id])
-  date      DateTime @default(now())
-  completed Boolean  @default(false)
+  title     String
+  goal      String
+  level     String
+  exercises Json // Standardized template
+  isActive  Boolean  @default(false)
+  version   Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Workout {
+model AssignedWorkout {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String       @db.ObjectId
+  user        User         @relation(fields: [userId], references: [id])
+  templateId  String?      @db.ObjectId // Reference to original template if needed
   title       String
   goal        String
   level       String
-  exercises   Json
-  dayNumber   Int?
-  weekNumber  Int?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  exercises   Json // Snapshot of exercises at time of assignment
+  assignedAt  DateTime     @default(now())
+  isActive    Boolean      @default(true)
   workoutLogs WorkoutLog[]
+
+  @@index([userId, isActive])
+}
+
+model ExerciseLibrary {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String   @unique
+  category     String // "Strength", "Cardio", "Flexibility"
+  muscleGroup  String[] // ["Chest", "Triceps"]
+  equipment    String[] // ["Dumbbells", "Bench"]
+  instructions String?
+  videoUrl     String?
+  imageUrl     String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // Removed Exercise type as it's now part of weeklyPlan Json
@@ -108,6 +159,33 @@ model Leaderboard {
   lastUpdated DateTime @default(now())
 }
 
+model DailyLeaderboard {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  date        DateTime @default(now())
+  rank        Int?
+  score       Int      @default(0)
+  workouts    Int      @default(0)
+  duration    Int      @default(0)
+  calories    Int      @default(0)
+  lastUpdated DateTime @default(now())
+}
+
+model ScheduleItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  type        String // "workout", "meal", "water", "sleep", "supplement", "custom"
+  time        String // HH:MM format (24h)
+  status      String   @default("upcoming") // "upcoming", "active", "completed", "missed"
+  date        DateTime @default(now()) // The specific calendar date this item belongs to
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Diet {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   userId    String   @db.ObjectId
@@ -122,19 +200,41 @@ model Diet {
   updatedAt DateTime @updatedAt
 }
 
-model DietPlan {
+model DietTemplate {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   goal          String
   level         String
   planName      String
   description   String
+  dietType      String   @default("BOTH") // VEG, NON_VEG, BOTH
   calorieTarget String // e.g., "maintenance", "surplus"
   proteinPerKg  Float
   meals         Json // Stores meal schedule
   minBMI        Float?
   maxBMI        Float?
+  isActive      Boolean  @default(false)
+  version       Int      @default(1)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model AssignedDiet {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
+  templateId    String?  @db.ObjectId // Reference to original template
+  goal          String
+  level         String
+  planName      String
+  description   String
+  dietType      String   @default("BOTH")
+  calorieTarget String
+  proteinPerKg  Float
+  meals         Json // Snapshot of meal schedule at time of assignment
+  assignedAt    DateTime @default(now())
+  isActive      Boolean  @default(true)
+
+  @@index([userId, isActive])
 }
 
 model Notification {
@@ -144,7 +244,10 @@ model Notification {
   title     String
   message   String
   read      Boolean  @default(false)
-  type      String?
+  type      String? // Event name like 'workout.scheduled.reminder'
+  category  String? // Category like 'WORKOUT', 'GOALS', 'NUTRITION', etc.
+  priority  String   @default("LOW") // 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'
+  metadata  Json? // Optional payload (e.g., linked resource IDs)
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -157,3 +260,23 @@ model LeaderboardSnapshot {
   weekStartDate DateTime
   createdAt     DateTime @default(now())
 }
+
+model SystemSettings {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  registrationsEnabled    Boolean  @default(true)
+  adminApprovalRequired   Boolean  @default(false)
+  userEditWorkoutPlan     Boolean  @default(true)
+  userEditDietPlan        Boolean  @default(true)
+  notificationsEnabled    Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
+}
+
+model AdminLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  adminId   String   @db.ObjectId
+  action    String
+  target    String?
+  details   String?
+  createdAt DateTime @default(now())
+}
+

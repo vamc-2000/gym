@@ -1,3 +1,4 @@
 {
-  "prisma.prismaPath": "npx prisma"
+  "css.customData": [],
+  "css.lint.unknownAtRules": "ignore"
 }

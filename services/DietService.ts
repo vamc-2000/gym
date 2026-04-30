@@ -1,25 +1,88 @@
 import { dietRepository } from "../repositories/DietRepository";
 import { calculateBMI } from "../utils/bmi";
 import { userRepository } from "../repositories/UserRepository";
+import { prisma } from "../lib/prisma";
+import { generateStructuredDietPlan } from "./diet.services";
 
 export class DietService {
   async getDietPlan(userId: string) {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error("User not found");
 
-    const weight = user.weight || 0;
-    const height = user.height || 0;
     const goal = user.goal || "Weight Loss";
+    const level = user.fitnessLevel || "Beginner";
+    const dietPreference = user.dietPreference || "BOTH";
 
-    const bmi = calculateBMI(weight, height);
-    const plan = await dietRepository.findByGoalAndBMI(goal, bmi);
-    
-    if (!plan) {
-      // Return a basic plan if no specific BMI match found
-      return await dietRepository.findByGoalAndBMI(goal, 22); 
+    // Check if user already has an active assigned diet
+    let assignedDiet = await prisma.assignedDiet.findFirst({
+      where: { userId, goal, level, dietType: dietPreference, isActive: true },
+      orderBy: { assignedAt: 'desc' }
+    });
+
+    if (!assignedDiet) {
+      // Try to find a template matching goal, level, AND dietPreference
+      let template = await prisma.dietTemplate.findFirst({
+        where: { goal, level, dietType: dietPreference, isActive: true }
+      });
+      
+      let meals: any;
+
+      if (template) {
+        meals = template.meals;
+      } else {
+        // Fallback: Generate a structured plan on the fly
+        meals = generateStructuredDietPlan(goal, dietPreference as any);
+      }
+
+      if (meals) {
+        await prisma.assignedDiet.updateMany({
+          where: { userId, isActive: true },
+          data: { isActive: false }
+        });
+
+        assignedDiet = await prisma.assignedDiet.create({
+          data: {
+            userId,
+            templateId: template?.id || null,
+            goal: goal,
+            level: level,
+            planName: template?.planName || `${goal} ${dietPreference} Plan`,
+            description: template?.description || `Auto-generated ${dietPreference} plan for ${goal}`,
+            dietType: dietPreference,
+            calorieTarget: template?.calorieTarget || "maintenance",
+            proteinPerKg: template?.proteinPerKg || 2.0,
+            meals: meals as any
+          }
+        });
+      }
     }
 
-    return plan;
+    return assignedDiet;
+  }
+
+  async getAllDietOptions(userId: string) {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new Error("User not found");
+
+    const goal = user.goal || "Weight Loss";
+    const level = user.fitnessLevel || "Beginner";
+
+    const types = ["VEG", "NON_VEG", "BOTH"];
+    const options = await Promise.all(types.map(async (type) => {
+      let template = await prisma.dietTemplate.findFirst({
+        where: { goal, level, dietType: type, isActive: true }
+      });
+      
+      if (!template) {
+        template = await prisma.dietTemplate.findFirst({ 
+          where: { goal, dietType: type, isActive: true } 
+        });
+      }
+
+      return { type, template };
+    }));
+
+    return options;
   }
 }
 

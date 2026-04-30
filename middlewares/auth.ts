@@ -9,7 +9,7 @@ export const authMiddleware = (req: NextRequest) => {
 
   const token = authHeader.split(" ")[1];
   const decoded = verifyAccessToken(token);
-  return decoded;
+  return decoded as { userId: string, role?: string } | null;
 };
 
 export const checkRole = (decoded: any, allowedRoles: string[]) => {

@@ -8,18 +8,79 @@
    ========================================================= */
 
 :root {
-  /* Brand colors */
+  /* Default Dark Theme */
   --color-neon-blue: #00f5ff;
   --color-neon-yellow: #facc15;
-
-  /* Dashboard palette */
   --color-dash-bg: #0a0a0f;
   --color-dash-card: #111118;
   --color-dash-border: rgba(255, 255, 255, 0.06);
-
-  /* Primary action */
   --color-primary: #00f5ff;
   --color-primary-hover: #00d4dd;
+  --color-text: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.6);
+  --color-text-dim: rgba(255, 255, 255, 0.4);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-glass-bg: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='light'] {
+  --color-neon-blue: #f59e0b;
+  /* Sunny Amber */
+  --color-neon-yellow: #fbbf24;
+  /* Golden */
+  --color-dash-bg: #fffcf0;
+  /* Warm Cream Background */
+  --color-dash-card: #ffffff;
+  --color-dash-border: rgba(245, 158, 11, 0.1);
+  /* Subtle Amber Border */
+  --color-primary: #f59e0b;
+  --color-primary-hover: #d97706;
+  --color-text: #451a03;
+  /* Deep Warm Brown Text */
+  --color-text-muted: #92400e;
+  --color-text-dim: #b45309;
+  --color-border-subtle: rgba(245, 158, 11, 0.08);
+  --color-glass-bg: rgba(255, 255, 255, 0.8);
+  --color-glass-border: rgba(245, 158, 11, 0.2);
+}
+
+[data-theme='cyberpunk'] {
+  --color-neon-blue: #ff00ff;
+  /* Neon Pink */
+  --color-neon-yellow: #00ffff;
+  /* Neon Cyan */
+  --color-dash-bg: #1a0b2e;
+  /* Deep Purple */
+  --color-dash-card: #2d1b4d;
+  --color-dash-border: rgba(255, 0, 255, 0.1);
+  --color-primary: #ff00ff;
+  --color-primary-hover: #e600e6;
+  --color-text: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.6);
+  --color-text-dim: rgba(255, 255, 255, 0.4);
+  --color-border-subtle: rgba(255, 0, 255, 0.1);
+  --color-glass-bg: rgba(255, 0, 255, 0.05);
+  --color-glass-border: rgba(255, 0, 255, 0.2);
+}
+
+[data-theme='midnight'] {
+  --color-neon-blue: #ffd700;
+  /* Gold */
+  --color-neon-yellow: #c0c0c0;
+  /* Silver */
+  --color-dash-bg: #050b1a;
+  /* Deep Navy */
+  --color-dash-card: #0a162b;
+  --color-dash-border: rgba(255, 215, 0, 0.1);
+  --color-primary: #ffd700;
+  --color-primary-hover: #e6c200;
+  --color-text: #f0f4f8;
+  --color-text-muted: rgba(240, 244, 248, 0.6);
+  --color-text-dim: rgba(240, 244, 248, 0.4);
+  --color-border-subtle: rgba(255, 215, 0, 0.1);
+  --color-glass-bg: rgba(255, 215, 0, 0.05);
+  --color-glass-border: rgba(255, 215, 0, 0.2);
 }
 
 
@@ -38,7 +99,7 @@ html {
 
 body {
   background-color: var(--color-dash-bg);
-  color: #ffffff;
+  color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -200,10 +261,35 @@ body {
 /* =========================================================
    Glassmorphism Utilities
    ========================================================= */
+@keyframes solar-pulse {
+
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    filter: blur(40px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: blur(60px);
+  }
+}
+
+.sunny-glow {
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
+}
+
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-glass-border);
+  transition: all 0.3s ease;
+}
+
+[data-theme='light'] .glass-panel {
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.05);
 }
 
 .glass-panel-purple {
@@ -212,11 +298,8 @@ body {
   border: 1px solid rgba(168, 85, 247, 0.2);
 }
 
-.glass-panel-blue {
-  background: rgba(30, 58, 138, 0.1);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
+
+
 
 /* =========================================================
    Global Click & Focus Reset
@@ -243,3 +326,14 @@ span[role="img"],
 .cursor-pointer {
   user-select: none;
 }
+
+/* Hide number input spinners (up/down arrows) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}

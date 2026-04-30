@@ -15,15 +15,25 @@ export const tokenManager = {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   },
 
-  setTokens: (accessToken: string, refreshToken: string) => {
+  setTokens: (accessToken: string, refreshToken: string, user?: any) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    
+    // Set cookies for middleware access
+    document.cookie = `accessToken=${accessToken}; path=/; max-age=3600; SameSite=Lax`;
+    if (user?.role) {
+      document.cookie = `userRole=${user.role}; path=/; max-age=3600; SameSite=Lax`;
+    }
   },
 
   clearTokens: () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    
+    // Clear cookies
+    document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   },
 
   getUser: () => {

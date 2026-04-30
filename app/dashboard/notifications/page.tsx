@@ -20,21 +20,44 @@ export default function NotificationsPage() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        let combined: Notification[] = [];
+        
+        // 1. Fetch system notifications from API
         const res = await dashboardService.getNotifications();
         if (res.success && res.data) {
-          setNotifications(Array.isArray(res.data) ? res.data : []);
+          combined = Array.isArray(res.data) ? res.data : [];
         }
+
+        // 2. Fetch admin broadcast notifications from localStorage
+        const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
+        if (adminNotifsStr) {
+          const adminNotifs = JSON.parse(adminNotifsStr);
+          const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
+          const userId = user.id || "guest";
+
+          const formattedAdminNotifs = adminNotifs.map((an: any) => ({
+            _id: an.id,
+            title: an.title,
+            message: an.message,
+            type: "admin_broadcast",
+            read: an.readBy?.includes(userId),
+            createdAt: an.createdAt
+          }));
+          combined = [...formattedAdminNotifs, ...combined];
+        }
+
+        setNotifications(combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       } catch {
+        // Fallback mock data if API fails
         setNotifications([
           { title: "Workout Reminder", message: "Time for your Push Day workout!", type: "reminder", read: false, createdAt: new Date().toISOString() },
           { title: "Streak Alert", message: "You're on a 7-day streak! Keep going!", type: "achievement", read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
-          { title: "Diet Updated", message: "Your new meal plan is ready.", type: "info", read: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
-          { title: "Weekly Report", message: "You burned 2,450 calories this week.", type: "report", read: true, createdAt: new Date(Date.now() - 259200000).toISOString() },
         ]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchNotifications();
   }, []);
 
@@ -46,6 +69,43 @@ export default function NotificationsPage() {
       // silent
     }
   };
+
+  const handleMarkRead = async (id: string | undefined) => {
+    if (!id) return;
+    
+    // Optimistic UI update
+    setNotifications((prev) => 
+      prev.map((n) => (n._id === id || (n as any).id === id) ? { ...n, read: true } : n)
+    );
+
+    try {
+      // If it's an admin broadcast, update localStorage
+      if (id.startsWith("admin_notif_")) {
+        const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
+        if (adminNotifsStr) {
+          const adminNotifs = JSON.parse(adminNotifsStr);
+          const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
+          const userId = user.id || "guest";
+          
+          const updated = adminNotifs.map((an: any) => {
+            if (an.id === id) {
+              const readBy = an.readBy || [];
+              if (!readBy.includes(userId)) {
+                return { ...an, readBy: [...readBy, userId] };
+              }
+            }
+            return an;
+          });
+          localStorage.setItem("gymstreak_admin_notifications", JSON.stringify(updated));
+        }
+      } else {
+        await dashboardService.markNotificationRead(id);
+      }
+    } catch (err) {
+      console.error("Failed to mark notification as read", err);
+    }
+  };
+
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -97,40 +157,53 @@ export default function NotificationsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {notifications.map((notif, i) => (
-            <motion.div
-              key={notif._id || i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className={`bg-dash-card rounded-2xl p-5 border transition-all duration-300 ${
-                notif.read ? "border-white/5" : "border-neon-blue/20 glow-blue"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeColors[notif.type] || "bg-white/5"}`}>
-                  <span className="text-lg">{typeIcons[notif.type] || "📌"}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-white text-sm font-semibold">{notif.title}</p>
-                    {!notif.read && (
-                      <span className="w-2 h-2 bg-neon-blue rounded-full animate-pulse-glow" />
-                    )}
+          {notifications.map((notif, i) => {
+            const id = notif._id || (notif as any).id;
+            return (
+              <motion.div
+                key={id || i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                onClick={() => !notif.read && handleMarkRead(id)}
+                className={`bg-dash-card rounded-2xl p-5 border transition-all duration-300 relative group ${
+                  notif.read 
+                    ? "border-white/5 opacity-60" 
+                    : "border-neon-blue/20 glow-blue cursor-pointer hover:border-neon-blue/40"
+                }`}
+              >
+                {!notif.read && (
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] text-neon-blue font-bold uppercase tracking-wider bg-neon-blue/10 px-2 py-1 rounded-md">
+                      Mark as read
+                    </span>
                   </div>
-                  <p className="text-white/40 text-sm">{notif.message}</p>
-                  <p className="text-white/20 text-xs mt-2">
-                    {new Date(notif.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeColors[notif.type] || "bg-white/5"}`}>
+                    <span className="text-lg">{typeIcons[notif.type] || "📌"}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-white text-sm font-semibold">{notif.title}</p>
+                      {!notif.read && (
+                        <span className="w-2 h-2 bg-neon-blue rounded-full animate-pulse-glow" />
+                      )}
+                    </div>
+                    <p className="text-white/40 text-sm">{notif.message}</p>
+                    <p className="text-white/20 text-xs mt-2">
+                      {new Date(notif.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
