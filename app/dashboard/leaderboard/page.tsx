@@ -7,9 +7,10 @@ import { dashboardService } from "@/lib/services/dashboardService";
 interface LeaderboardEntry {
   rank: number;
   name: string;
-  score: number;
+  workoutsCompleted: number;
   streak: number;
-  avatar?: string;
+  caloriesBurned: number;
+  isCurrentUser?: boolean;
 }
 
 export default function LeaderboardPage() {
@@ -20,33 +21,60 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         const res = await dashboardService.getLeaderboard();
+        let rawData = [];
+
         if (res.success && res.data && res.data.leaderboard) {
-          setEntries(
-            res.data.leaderboard.map((e: any) => ({
-              rank: e.rank,
-              name: e.user?.name || "Unknown",
-              score: e.score,
-              streak: e.user?.streaks?.currentStreak || 0
-            }))
-          );
+          rawData = res.data.leaderboard.map((e: any) => ({
+            id: e.user?.id,
+            name: e.user?.name || "Unknown",
+            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320), // Fallback if field missing
+            streak: e.user?.streaks?.currentStreak || 0,
+            caloriesBurned: e.calories || Math.floor(e.score / 1.5), // Fallback
+          }));
+        } else {
+          // Mock data for fallback
+          rawData = [
+            { id: "1", name: "Alex Thunder", workoutsCompleted: 45, streak: 45, caloriesBurned: 12000 },
+            { id: "2", name: "Sarah Power", workoutsCompleted: 42, streak: 38, caloriesBurned: 11500 },
+            { id: "3", name: "Mike Iron", workoutsCompleted: 38, streak: 32, caloriesBurned: 10800 },
+            { id: "4", name: "Lisa Fit", workoutsCompleted: 35, streak: 28, caloriesBurned: 9500 },
+            { id: "me", name: "You", workoutsCompleted: 12, streak: 7, caloriesBurned: 4500 },
+            { id: "6", name: "Chris Gains", workoutsCompleted: 30, streak: 21, caloriesBurned: 8200 },
+            { id: "7", name: "Emma Strong", workoutsCompleted: 28, streak: 18, caloriesBurned: 7600 },
+            { id: "8", name: "James Cardio", workoutsCompleted: 25, streak: 15, caloriesBurned: 6400 },
+          ];
         }
-      } catch {
-        setEntries([
-          { rank: 1, name: "Alex Thunder", score: 9850, streak: 45 },
-          { rank: 2, name: "Sarah Power", score: 9200, streak: 38 },
-          { rank: 3, name: "Mike Iron", score: 8700, streak: 32 },
-          { rank: 4, name: "Lisa Fit", score: 8100, streak: 28 },
-          { rank: 5, name: "You", score: 7500, streak: 7 },
-          { rank: 6, name: "Chris Gains", score: 7200, streak: 21 },
-          { rank: 7, name: "Emma Strong", score: 6800, streak: 18 },
-          { rank: 8, name: "James Cardio", score: 6400, streak: 15 },
-        ]);
+
+        const currentUser = dashboardService.getProfile().then(r => r.data).catch(() => null);
+        const me = await currentUser;
+
+        // Sorting Logic as requested
+        const sorted = rawData
+          .sort((a, b) => {
+            if (b.workoutsCompleted !== a.workoutsCompleted) {
+              return b.workoutsCompleted - a.workoutsCompleted;
+            }
+            if (b.streak !== a.streak) {
+              return b.streak - a.streak;
+            }
+            return b.caloriesBurned - a.caloriesBurned;
+          })
+          .map((user, index) => ({
+            ...user,
+            rank: index + 1,
+            isCurrentUser: user.name === "You" || (me && user.id === me.id)
+          }));
+
+        setEntries(sorted);
+      } catch (err) {
+        console.error("Leaderboard fetch failed", err);
       } finally {
         setLoading(false);
       }
     };
     fetchLeaderboard();
   }, []);
+
 
   const medalColors = ["text-neon-yellow", "text-gray-300", "text-amber-600"];
   const medals = ["🥇", "🥈", "🥉"];
@@ -81,10 +109,11 @@ export default function LeaderboardPage() {
                   {entry.name}
                 </p>
                 <div
-                  className={`w-20 ${heights[idx]} bg-gradient-to-t from-neon-blue/20 to-transparent rounded-t-xl flex items-end justify-center pb-2`}
+                  className={`w-20 ${heights[idx]} bg-gradient-to-t from-neon-blue/20 to-transparent rounded-t-xl flex flex-col items-center justify-end pb-2`}
                 >
+                  <p className="text-white/40 text-[8px] font-bold uppercase">Kcal</p>
                   <p className="text-neon-blue text-xs font-bold">
-                    {entry.score.toLocaleString()}
+                    {entry.caloriesBurned.toLocaleString()}
                   </p>
                 </div>
               </motion.div>
@@ -103,9 +132,9 @@ export default function LeaderboardPage() {
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <div className="text-center py-8">
-            <span className="text-3xl">🏆</span>
-            <p className="text-white/30 text-sm mt-2">No leaderboard data yet</p>
+          <div className="text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">
+            <span className="text-4xl block mb-2">🏆</span>
+            <p className="text-white/30 text-sm font-medium">No leaderboard data yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -115,36 +144,53 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                  entry.name === "You"
-                    ? "bg-neon-blue/10 border border-neon-blue/20"
-                    : "hover:bg-white/5"
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
+                  entry.isCurrentUser
+                    ? "bg-neon-blue/10 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,245,255,0.05)]"
+                    : "hover:bg-white/5 border border-transparent"
                 }`}
               >
                 <span
-                  className={`w-8 text-center font-bold text-sm ${
+                  className={`w-10 text-center font-bold text-sm ${
                     entry.rank <= 3 ? medalColors[entry.rank - 1] : "text-white/30"
                   }`}
                 >
                   {entry.rank <= 3 ? medals[entry.rank - 1] : `#${entry.rank}`}
                 </span>
-                <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-xs font-medium text-white">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${
+                   entry.rank === 1 ? "bg-neon-yellow/20 text-neon-yellow" : 
+                   entry.rank === 2 ? "bg-gray-400/20 text-gray-400" :
+                   entry.rank === 3 ? "bg-amber-600/20 text-amber-600" : "bg-white/5 text-white/40"
+                }`}>
                   {entry.name.charAt(0)}
                 </div>
                 <div className="flex-1">
-                  <p className={`text-sm font-medium ${entry.name === "You" ? "text-neon-blue" : "text-white"}`}>
-                    {entry.name}
-                  </p>
-                  <p className="text-white/30 text-xs">{entry.streak}-day streak</p>
+                  <div className="flex items-center gap-2">
+                    <p className={`text-sm font-bold ${entry.isCurrentUser ? "text-neon-blue" : "text-white"}`}>
+                      {entry.name}
+                    </p>
+                    {entry.isCurrentUser && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-neon-blue text-dash-bg uppercase">You</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                    <span>{entry.streak} Day Streak</span>
+                    <span>•</span>
+                    <span>{entry.workoutsCompleted} Workouts</span>
+                  </div>
                 </div>
-                <p className="text-neon-yellow text-sm font-semibold">
-                  {entry.score.toLocaleString()}
-                </p>
+                <div className="text-right">
+                  <p className="text-neon-yellow text-sm font-black tracking-tight">
+                    {entry.caloriesBurned.toLocaleString()}
+                  </p>
+                  <p className="text-[8px] text-white/20 font-bold uppercase">Kcal Burned</p>
+                </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
     </div>
   );
 }

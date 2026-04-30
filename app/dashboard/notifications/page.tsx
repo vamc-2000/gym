@@ -20,21 +20,44 @@ export default function NotificationsPage() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        let combined: Notification[] = [];
+        
+        // 1. Fetch system notifications from API
         const res = await dashboardService.getNotifications();
         if (res.success && res.data) {
-          setNotifications(Array.isArray(res.data) ? res.data : []);
+          combined = Array.isArray(res.data) ? res.data : [];
         }
+
+        // 2. Fetch admin broadcast notifications from localStorage
+        const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
+        if (adminNotifsStr) {
+          const adminNotifs = JSON.parse(adminNotifsStr);
+          const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
+          const userId = user.id || "guest";
+
+          const formattedAdminNotifs = adminNotifs.map((an: any) => ({
+            _id: an.id,
+            title: an.title,
+            message: an.message,
+            type: "admin_broadcast",
+            read: an.readBy?.includes(userId),
+            createdAt: an.createdAt
+          }));
+          combined = [...formattedAdminNotifs, ...combined];
+        }
+
+        setNotifications(combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       } catch {
+        // Fallback mock data if API fails
         setNotifications([
           { title: "Workout Reminder", message: "Time for your Push Day workout!", type: "reminder", read: false, createdAt: new Date().toISOString() },
           { title: "Streak Alert", message: "You're on a 7-day streak! Keep going!", type: "achievement", read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
-          { title: "Diet Updated", message: "Your new meal plan is ready.", type: "info", read: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
-          { title: "Weekly Report", message: "You burned 2,450 calories this week.", type: "report", read: true, createdAt: new Date(Date.now() - 259200000).toISOString() },
         ]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchNotifications();
   }, []);
 
@@ -56,11 +79,33 @@ export default function NotificationsPage() {
     );
 
     try {
-      await dashboardService.markNotificationRead(id);
+      // If it's an admin broadcast, update localStorage
+      if (id.startsWith("admin_notif_")) {
+        const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
+        if (adminNotifsStr) {
+          const adminNotifs = JSON.parse(adminNotifsStr);
+          const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
+          const userId = user.id || "guest";
+          
+          const updated = adminNotifs.map((an: any) => {
+            if (an.id === id) {
+              const readBy = an.readBy || [];
+              if (!readBy.includes(userId)) {
+                return { ...an, readBy: [...readBy, userId] };
+              }
+            }
+            return an;
+          });
+          localStorage.setItem("gymstreak_admin_notifications", JSON.stringify(updated));
+        }
+      } else {
+        await dashboardService.markNotificationRead(id);
+      }
     } catch (err) {
       console.error("Failed to mark notification as read", err);
     }
   };
+
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

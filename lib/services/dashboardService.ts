@@ -18,10 +18,11 @@ export const dashboardService = {
   getSummary: () => apiClient<any>("/dashboard/summary"),
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getProfile: () => apiClient<any>("/user/profile"),
+  getProfile: () => apiClient<any>("/users/me"),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateProfile: (data: any) =>
-    apiClient<any>("/user/profile", { method: "PUT", body: data }),
+    apiClient<any>("/users/profile", { method: "PUT", body: data }),
+
   updateGoal: (goal: string) =>
     apiClient<any>("/user/goal", { method: "PUT", body: { goal } }),
   updateDietPreference: (dietPreference: string) =>
@@ -62,7 +63,16 @@ export const dashboardService = {
     apiClient<any>("/admin/notifications", { method: "POST", body: data }),
 
   // Super Admin Methods
-  getSuperAdminStats: () => apiClient<any>("/super-admin/stats"),
-  getSuperAdminAdmins: () => apiClient<any>("/super-admin/admins"),
-  getSuperAdminUsers: () => apiClient<any>("/admin/users"), // Re-using admin/users list
+  getSuperAdminStats: () => apiClient<any>("/super-admin/dashboard"),
+  getSuperAdminAdmins: () => apiClient<any>("/admins"),
+  createAdmin: (data: any) => apiClient<any>("/admins", { method: "POST", body: data }),
+  updateAdmin: (id: string, data: any) => apiClient<any>(`/admins/${id}`, { method: "PUT", body: data }),
+  deleteAdmin: (id: string) => apiClient<any>(`/admins/${id}`, { method: "DELETE" }),
+  updateAdminStatus: (id: string, status: string) => apiClient<any>(`/admins/${id}/status`, { method: "PATCH", body: { status } }),
+  getSystemSettings: () => apiClient<any>("/system-settings"),
+  updateSystemSettings: (data: any) => apiClient<any>("/system-settings", { method: "PUT", body: data }),
+  getAdminLogs: () => apiClient<any>("/admin-logs"),
+  exportBackup: () => apiClient<any>("/backup/export", { method: "POST" }),
+  getSuperAdminUsers: () => apiClient<any>("/admin/users"), 
 };
+

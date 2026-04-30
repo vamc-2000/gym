@@ -10,11 +10,12 @@ interface WorkoutContextType {
   isActive: boolean;
   isPaused: boolean;
   workoutId: string | null;
+  completedDays: string[]; // IDs of completed workout days
   startTimer: (id: string | null) => Promise<void>;
   pauseTimer: () => void;
   resumeTimer: () => void;
   resetTimer: () => void;
-  completeWorkout: () => Promise<void>;
+  completeWorkout: (dayId?: string) => Promise<void>;
   formatTime: (totalSeconds: number) => string;
 }
 
@@ -26,6 +27,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [workoutId, setWorkoutId] = useState<string | null>(null);
+  const [completedDays, setCompletedDays] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize from localStorage
@@ -35,6 +37,9 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     const savedIsPaused = localStorage.getItem("isWorkoutPaused") === "true";
     const savedElapsed = parseInt(localStorage.getItem("workoutElapsed") || "0");
     const savedWorkoutId = localStorage.getItem("activeWorkoutId");
+    const savedCompleted = JSON.parse(localStorage.getItem("completedWorkoutDays") || "[]");
+
+    setCompletedDays(savedCompleted);
 
     if (savedIsActive) {
       setIsActive(true);
@@ -78,7 +83,10 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const startTimer = async (id: string | null) => {
     try {
       if (id) {
-        await dashboardService.startWorkout(id);
+        // If it's a UUID, it's a backend ID
+        if (id.length > 5) {
+          await dashboardService.startWorkout(id);
+        }
         setWorkoutId(id);
         localStorage.setItem("activeWorkoutId", id);
       }
@@ -127,22 +135,34 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  const completeWorkout = async () => {
+  const completeWorkout = async (dayId?: string) => {
     try {
-      if (workoutId) {
+      // In a real app, workoutId is the ID of the AssignedWorkout
+      // but for frontend purposes we use dayId
+      if (workoutId && workoutId.length > 5) {
         await dashboardService.completeWorkout(workoutId);
+      }
+
+      if (dayId) {
+        const updated = [...completedDays, dayId];
+        setCompletedDays(updated);
+        localStorage.setItem("completedWorkoutDays", JSON.stringify(updated));
       }
 
       resetTimer();
 
       triggerToast(
         "Workout completed successfully!",
-        "Now follow your diet plan.",
+        "Workouts completed count increased. Next day unlocked!",
         "success"
       );
 
+      // Save count to localStorage if backend not updated
+      const count = parseInt(localStorage.getItem("workoutsCompletedCount") || "0");
+      localStorage.setItem("workoutsCompletedCount", (count + 1).toString());
+
       setTimeout(() => {
-        router.push("/dashboard/diet");
+        router.push("/dashboard/user");
       }, 1500);
     } catch (e) {
       triggerToast("Error", "Failed to complete workout", "error");
@@ -156,6 +176,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         isActive,
         isPaused,
         workoutId,
+        completedDays,
         startTimer,
         pauseTimer,
         resumeTimer,

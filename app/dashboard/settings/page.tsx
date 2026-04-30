@@ -86,37 +86,9 @@ export default function SettingsPage() {
         <p className="text-dash-text-dim text-sm">Manage your app preferences</p>
       </div>
 
-      {/* Fitness Goal */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
-        <h3 className="text-dash-text font-semibold text-sm mb-4">Fitness Goal</h3>
-        <div className="space-y-4">
-          <SelectField
-            label="Current Goal"
-            variant="dark"
-            value={goal}
-            onChange={(e) => handleGoalChange(e.target.value)}
-            disabled={updating}
-            options={GOALS.map((g) => ({ value: g.value, label: `${g.icon} ${g.label}` }))}
-          />
-          <SelectField
-            label="Diet Preference"
-            variant="dark"
-            value={dietPreference}
-            onChange={(e) => handleDietPreferenceChange(e.target.value)}
-            disabled={updating}
-            options={[
-              { value: "BOTH", label: "🍱 Mixed (Veg & Non-Veg)" },
-              { value: "VEG", label: "🥦 Vegetarian" },
-              { value: "NON_VEG", label: "🍗 Non-Vegetarian" },
-            ]}
-          />
-          {message && (
-            <p className={`text-xs ${message.includes("updated") ? "text-neon-green" : "text-red-400"}`}>
-              {message}
-            </p>
-          )}
-        </div>
-      </div>
+      {/* Fitness Goal section removed to simplify settings as requested */}
+
+
 
       {/* Account */}
       <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">

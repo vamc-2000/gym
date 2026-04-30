@@ -34,9 +34,9 @@ const roleBasedItems: Record<string, any[]> = {
     { href: "/dashboard/super-admin", label: "Platform Overview", icon: "📊" },
     { href: "/dashboard/super-admin/admins", label: "Manage Admins", icon: "👮" },
     { href: "/dashboard/super-admin/users", label: "Manage All Users", icon: "👥" },
-    { href: "/dashboard/super-admin/revenue", label: "Revenue/Subs", icon: "💰" },
     { href: "/dashboard/super-admin/settings", label: "System Settings", icon: "🛠️" },
   ],
+
 };
 
 interface SidebarProps {

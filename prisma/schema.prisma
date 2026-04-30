@@ -1,10 +1,14 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
+
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
+
 
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
@@ -256,3 +260,23 @@ model LeaderboardSnapshot {
   weekStartDate DateTime
   createdAt     DateTime @default(now())
 }
+
+model SystemSettings {
+  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
+  registrationsEnabled    Boolean  @default(true)
+  adminApprovalRequired   Boolean  @default(false)
+  userEditWorkoutPlan     Boolean  @default(true)
+  userEditDietPlan        Boolean  @default(true)
+  notificationsEnabled    Boolean  @default(true)
+  updatedAt               DateTime @updatedAt
+}
+
+model AdminLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  adminId   String   @db.ObjectId
+  action    String
+  target    String?
+  details   String?
+  createdAt DateTime @default(now())
+}
+
