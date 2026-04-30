@@ -1,8 +1,7 @@
-import { dietRepository } from "../repositories/DietRepository";
-import { calculateBMI } from "../utils/bmi";
 import { userRepository } from "../repositories/UserRepository";
 import { prisma } from "../lib/prisma";
 import { generateStructuredDietPlan } from "./diet.services";
+
 
 export class DietService {
   async getDietPlan(userId: string) {
@@ -21,17 +20,18 @@ export class DietService {
 
     if (!assignedDiet) {
       // Try to find a template matching goal, level, AND dietPreference
-      let template = await prisma.dietTemplate.findFirst({
+      const template = await prisma.dietTemplate.findFirst({
         where: { goal, level, dietType: dietPreference, isActive: true }
       });
       
-      let meals: any;
+      let meals: unknown;
 
       if (template) {
         meals = template.meals;
       } else {
         // Fallback: Generate a structured plan on the fly
         meals = generateStructuredDietPlan(goal, dietPreference as any);
+
       }
 
       if (meals) {
@@ -52,10 +52,12 @@ export class DietService {
             calorieTarget: template?.calorieTarget || "maintenance",
             proteinPerKg: template?.proteinPerKg || 2.0,
             meals: meals as any
+
           }
         });
       }
     }
+
 
     return assignedDiet;
   }

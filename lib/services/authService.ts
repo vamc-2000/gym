@@ -18,7 +18,14 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  password: string;
+}
+
 export const authService = {
+
   register: async (payload: RegisterPayload) => {
     const res = await apiClient("/auth/register", {
       method: "POST",
@@ -27,9 +34,10 @@ export const authService = {
     });
 
     if (res.success && res.data) {
+      const data = res.data as any;
       if (res.accessToken && res.refreshToken) {
-        tokenManager.setTokens(res.accessToken, res.refreshToken, res.data);
-        tokenManager.setUser(res.data);
+        tokenManager.setTokens(res.accessToken, res.refreshToken, data);
+        tokenManager.setUser(data);
       }
     }
 
@@ -43,13 +51,13 @@ export const authService = {
       requiresAuth: false,
     });
 
-    if (res.success) {
+    if (res.success && res.data) {
+      const data = res.data as any;
       const token = res.accessToken || res.token;
       const refresh = res.refreshToken || "";
-      const user = res.user || res.data;
       if (token) {
-        tokenManager.setTokens(token, refresh, user);
-        tokenManager.setUser(user);
+        tokenManager.setTokens(token, refresh, data);
+        tokenManager.setUser(data);
       }
     }
 
@@ -92,7 +100,8 @@ export const authService = {
     });
   },
 
-  resetPassword: async (payload: any) => {
+  resetPassword: async (payload: ResetPasswordPayload) => {
+
     return apiClient("/auth/reset-password", {
       method: "POST",
       body: payload,

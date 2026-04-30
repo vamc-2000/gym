@@ -12,15 +12,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("gymstreak_theme") as Theme;
+      return saved || "dark";
+    }
+    return "dark";
+  });
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("gymstreak_theme") as Theme;
-    if (savedTheme) {
-      setThemeState(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    }
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

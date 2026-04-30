@@ -3,12 +3,13 @@ import { prisma } from "../lib/prisma";
 import { authMiddleware } from "../middlewares/auth";
 
 export class AdminDietController {
-  private validateDietPlan(meals: any) {
-    if (!meals || !meals.schedule) return { valid: false, message: "Diet plan must have a schedule." };
+  private validateDietPlan(meals: unknown) {
+    const mealsTyped = meals as { schedule?: Record<string, unknown> };
+    if (!mealsTyped || !mealsTyped.schedule) return { valid: false, message: "Diet plan must have a schedule." };
     
     // Example validation: must have breakfast, lunch, and dinner
     const requiredMeals = ["breakfast", "lunch", "dinner"];
-    const scheduleKeys = Object.keys(meals.schedule);
+    const scheduleKeys = Object.keys(mealsTyped.schedule);
     
     const missing = requiredMeals.filter(m => !scheduleKeys.includes(m));
     if (missing.length > 0) {
@@ -49,8 +50,9 @@ export class AdminDietController {
         }
       });
       return NextResponse.json({ success: true, data: template });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -93,8 +95,9 @@ export class AdminDietController {
         }
       });
       return NextResponse.json({ success: true, data: template });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -109,8 +112,9 @@ export class AdminDietController {
 
       await prisma.dietTemplate.delete({ where: { id } });
       return NextResponse.json({ success: true, message: "Template deleted" });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 }

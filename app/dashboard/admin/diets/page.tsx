@@ -58,8 +58,8 @@ export default function AdminDietsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">🥗 Diet Templates</h1>
-          <p className="text-white/40 text-sm">Design nutritional plans for different goals</p>
+          <h1 className="text-2xl font-bold text-dash-text mb-1">🥗 Diet Templates</h1>
+          <p className="text-dash-text-dim text-sm">Design nutritional plans for different goals</p>
         </div>
         <button 
           onClick={() => { setSelectedDiet(null); setIsModalOpen(true); }}
@@ -71,7 +71,7 @@ export default function AdminDietsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          [1,2,3].map(i => <div key={i} className="h-48 rounded-2xl bg-white/5 animate-pulse" />)
+          [1,2,3].map(i => <div key={i} className="h-48 rounded-2xl bg-dash-text/5 animate-pulse" />)
         ) : (
           diets.map((diet) => (
             <motion.div
@@ -79,24 +79,24 @@ export default function AdminDietsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => { setSelectedDiet(diet); setIsModalOpen(true); }}
-              className="glass-panel p-6 rounded-2xl border border-white/5 group hover:border-white/20 transition-all cursor-pointer relative"
+              className="glass-panel p-6 rounded-2xl border border-dash-border-subtle group hover:border-dash-text/10 transition-all cursor-pointer relative"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="px-2 py-1 rounded bg-white/5 text-white/40 text-[10px] font-bold uppercase">{diet.calories} kcal</span>
+                <span className="px-2 py-1 rounded bg-dash-text/5 text-dash-text-dim text-[10px] font-bold uppercase">{diet.calories} kcal</span>
                 <div className="flex gap-2">
                   <span className="text-xl">🥗</span>
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-1 group-hover:text-neon-yellow transition-colors">{diet.title}</h3>
-              <p className="text-white/40 text-sm mb-4">{diet.goal}</p>
+              <h3 className="text-lg font-bold text-dash-text group-hover:text-neon-yellow transition-colors">{diet.title}</h3>
+              <p className="text-dash-text-dim text-sm mb-4">{diet.goal}</p>
               
               <div className="flex flex-wrap gap-2 mb-6">
-                <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/30 uppercase font-bold">P: {diet.protein}</span>
-                <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/30 uppercase font-bold">C: {diet.carbs}</span>
-                <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/30 uppercase font-bold">F: {diet.fats}</span>
+                <span className="text-[10px] bg-dash-text/5 px-2 py-0.5 rounded text-dash-text-dim opacity-50 uppercase font-bold">P: {diet.protein}</span>
+                <span className="text-[10px] bg-dash-text/5 px-2 py-0.5 rounded text-dash-text-dim opacity-50 uppercase font-bold">C: {diet.carbs}</span>
+                <span className="text-[10px] bg-dash-text/5 px-2 py-0.5 rounded text-dash-text-dim opacity-50 uppercase font-bold">F: {diet.fats}</span>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+              <div className="pt-4 border-t border-dash-border-subtle flex items-center justify-between">
                 <button 
                   onClick={(e) => handleDeleteDiet(e, diet.id)}
                   className="text-xs font-bold text-red-400/50 hover:text-red-400 transition-colors"

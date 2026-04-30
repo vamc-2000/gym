@@ -1,8 +1,9 @@
 import { workoutRepository } from "../repositories/WorkoutRepository";
-import { workoutLogRepository } from "../repositories/WorkoutLogRepository";
 import { streakRepository } from "../repositories/StreakRepository";
 import { dietRepository } from "../repositories/DietRepository";
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
+
 
 import { notificationService, NotificationCategory, NotificationPriority } from "./NotificationService";
 
@@ -35,7 +36,7 @@ export class WorkoutService {
             title: template.title,
             goal: template.goal,
             level: template.level,
-            exercises: template.exercises as any
+            exercises: template.exercises as Prisma.InputJsonValue
           }
         });
       }
@@ -50,7 +51,23 @@ export class WorkoutService {
     
     // Enrich with exercise metadata if available
     if (assignedWorkout && assignedWorkout.exercises) {
-      const exercises = assignedWorkout.exercises as any;
+      interface Exercise {
+        name: string;
+        metadata?: unknown;
+        inactive?: boolean;
+      }
+      interface Day {
+        routine: Exercise[];
+      }
+      interface Week {
+        days: Day[];
+      }
+      interface WorkoutSchedule {
+        weeks: Week[];
+      }
+      
+      const exercises = assignedWorkout.exercises as unknown as WorkoutSchedule;
+
       if (exercises.weeks) {
         for (const week of exercises.weeks) {
           for (const day of week.days) {

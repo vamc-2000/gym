@@ -20,8 +20,19 @@ export type WorkoutDay = {
   isCompleted?: boolean;
 };
 
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
+  fitnessLevel?: string;
+  goal?: string;
+};
+
 export type DashboardState = {
-  user: any;
+  user: AuthUser | null;
+
+
   goal: string;
   stats: {
     workoutsCompleted: number;

@@ -68,11 +68,6 @@ export default function SelectField({
     glass: "text-white",
   };
 
-  const placeholderStyles = {
-    light: "text-gray-400",
-    dark: "text-dash-text-dim",
-    glass: "text-white/60",
-  };
 
   const labelFloatedBg = {
     light: "bg-white text-primary",

@@ -44,6 +44,8 @@ export default function RegisterPage() {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (!form.email.toLowerCase().endsWith("@gmail.com")) {
+      newErrors.email = "Only @gmail.com emails are allowed";
     }
 
     if (!form.password) {

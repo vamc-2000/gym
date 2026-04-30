@@ -23,6 +23,10 @@ export default function VerifyOTPPage() {
       setError("Enter a valid email");
       return;
     }
+    if (!email.toLowerCase().endsWith("@gmail.com")) {
+      setError("Only @gmail.com emails are allowed");
+      return;
+    }
 
     setLoading(true);
     setError("");
