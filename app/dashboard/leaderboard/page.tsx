@@ -153,24 +153,21 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                  entry.isCurrentUser
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${entry.isCurrentUser
                     ? "bg-neon-blue/10 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,245,255,0.05)]"
                     : "hover:bg-white/5 border border-transparent"
-                }`}
+                  }`}
               >
                 <span
-                  className={`w-10 text-center font-bold text-sm ${
-                    entry.rank <= 3 ? medalColors[entry.rank - 1] : "text-white/30"
-                  }`}
+                  className={`w-10 text-center font-bold text-sm ${entry.rank <= 3 ? medalColors[entry.rank - 1] : "text-white/30"
+                    }`}
                 >
                   {entry.rank <= 3 ? medals[entry.rank - 1] : `#${entry.rank}`}
                 </span>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${
-                   entry.rank === 1 ? "bg-neon-yellow/20 text-neon-yellow" : 
-                   entry.rank === 2 ? "bg-gray-400/20 text-gray-400" :
-                   entry.rank === 3 ? "bg-amber-600/20 text-amber-600" : "bg-white/5 text-white/40"
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${entry.rank === 1 ? "bg-neon-yellow/20 text-neon-yellow" :
+                    entry.rank === 2 ? "bg-gray-400/20 text-gray-400" :
+                      entry.rank === 3 ? "bg-amber-600/20 text-amber-600" : "bg-white/5 text-white/40"
+                  }`}>
                   {entry.name.charAt(0)}
                 </div>
                 <div className="flex-1">
