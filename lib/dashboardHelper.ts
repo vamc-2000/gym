@@ -1,8 +1,9 @@
 import { WORKOUT_PLANS } from "./workoutPlans";
-import { DashboardState, WorkoutDay } from "@/types/dashboard";
+import { DashboardState, WorkoutDay, AuthUser } from "@/types/dashboard";
 
 
-export const getDashboardState = (user: any): DashboardState => {
+export const getDashboardState = (user: AuthUser | null): DashboardState => {
+
   const userId = user?.id || "guest";
   const today = new Date().toISOString().split('T')[0];
   
@@ -33,22 +34,23 @@ export const getDashboardState = (user: any): DashboardState => {
 
   const completedDays: string[] = JSON.parse(localStorage.getItem("completedWorkoutDays") || "[]");
   
-  // 5. Determine Next Workout
-  const nextWorkout = plan.find(day => !completedDays.includes(day.id)) || plan[0] || null;
+  const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const todayIndex = new Date().getDay();
+  const todayName = weekDays[todayIndex];
+
+  // 5. Determine Next Workout - prioritize today if it matches the plan day
+  const todayWorkout = plan.find(day => day.day === todayName);
+  const nextWorkout = todayWorkout || plan.find(day => !completedDays.includes(day.id)) || plan[0] || null;
   
   // 6. Calculate Nutrition based on goal
   const nutrition = calculateNutrition(goal);
   
-  // 7. Mock Weekly Activity based on workouts completed
-  const weeklyActivity = [
-    { day: "Mon", calories: 450 },
-    { day: "Tue", calories: 0 },
-    { day: "Wed", calories: 520 },
-    { day: "Thu", calories: 310 },
-    { day: "Fri", calories: 0 },
-    { day: "Sat", calories: 0 },
-    { day: "Sun", calories: 0 },
-  ];
+  // 7. Dynamic Weekly Activity (Remove dummy data, start fresh)
+  const shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weeklyActivity = shortDays.map(day => ({
+    day,
+    calories: day === shortDays[todayIndex] ? 0 : 0 // Set all to 0 for a clean start
+  }));
 
   return {
     user,

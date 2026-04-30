@@ -20,7 +20,8 @@ export default function SuperAdminDashboard() {
           dashboardService.getSuperAdminAdmins()
         ]);
         if (statsRes.success) setStatsData(statsRes.data);
-        if (adminsRes.success) setAdmins(adminsRes.data.slice(0, 5));
+        if (adminsRes.success) setAdmins((adminsRes.data as any[]).slice(0, 5));
+
       } catch (err) {
         console.error("Failed to fetch super admin data", err);
       } finally {
@@ -54,7 +55,7 @@ export default function SuperAdminDashboard() {
     { label: "System Health", value: "100%", icon: "🛡️", color: "green-400" },
   ];
 
-  if (loading) return <div className="text-white p-8">Loading Overview...</div>;
+  if (loading) return <div className="text-dash-text p-8">Loading Overview...</div>;
 
   return (
     <div className="space-y-8 pb-12">
@@ -109,7 +110,7 @@ export default function SuperAdminDashboard() {
               admins.map((admin, i) => (
                 <div key={i} className="flex items-center justify-between p-4 bg-dash-text/5 rounded-xl border border-dash-border-subtle">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-blue to-purple-500 flex items-center justify-center text-xs font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-blue to-purple-500 flex items-center justify-center text-xs font-bold text-white">
                       {admin.name.charAt(0)}
                     </div>
                     <div>

@@ -1,19 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+
 import { motion } from "framer-motion";
 
 import { tokenManager } from "@/lib/auth";
 
-const commonItems = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+}
+
+const commonItems: NavItem[] = [
   { href: "/dashboard/notifications", label: "Notifications", icon: "🔔" },
   { href: "/dashboard/profile", label: "Profile", icon: "👤" },
   { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
 ];
 
-const roleBasedItems: Record<string, any[]> = {
+const roleBasedItems: Record<string, NavItem[]> = {
   USER: [
     { href: "/dashboard/user", label: "Dashboard", icon: "📊" },
     { href: "/dashboard/schedule", label: "Schedule", icon: "📅" },
@@ -49,7 +56,6 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
   const pathname = usePathname();
   const role = userRole || tokenManager.getUser()?.role || "USER";
   const navItems = [...(roleBasedItems[role] || roleBasedItems.USER), ...commonItems];
-  const [_searchOpen, _setSearchOpen] = useState(false);
 
   return (
     <>
@@ -62,7 +68,7 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out ${
           collapsed ? "-translate-x-full lg:translate-x-0 lg:w-20" : "translate-x-0 w-64"
         } bg-dash-card border-r border-dash-border-subtle`}
       >
@@ -100,7 +106,7 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
         </div>
 
         {/* Nav links */}
-        <nav className="mt-4 px-3 space-y-1">
+        <nav className="flex-1 mt-4 px-3 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -125,6 +131,20 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
             );
           })}
         </nav>
+
+        {/* Logout at bottom */}
+        <div className="p-3 border-t border-dash-border-subtle">
+          <button
+            onClick={() => {
+              tokenManager.clearTokens();
+              window.location.href = "/";
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dash-text-dim hover:text-red-400 hover:bg-red-400/5 transition-all duration-200 group cursor-pointer"
+          >
+            <span className="text-lg">🚪</span>
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
       </aside>
     </>
   );

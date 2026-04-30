@@ -1,5 +1,7 @@
 // Token management utilities
 
+import { AuthUser } from "@/types/dashboard";
+
 const ACCESS_TOKEN_KEY = "gymstreak_access_token";
 const REFRESH_TOKEN_KEY = "gymstreak_refresh_token";
 const USER_KEY = "gymstreak_user";
@@ -15,7 +17,7 @@ export const tokenManager = {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   },
 
-  setTokens: (accessToken: string, refreshToken: string, user?: any) => {
+  setTokens: (accessToken: string, refreshToken: string, user?: AuthUser) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     
@@ -36,7 +38,7 @@ export const tokenManager = {
     document.cookie = "userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   },
 
-  getUser: () => {
+  getUser: (): AuthUser | null => {
     if (typeof window === "undefined") return null;
     const user = localStorage.getItem(USER_KEY);
     try {
@@ -46,10 +48,10 @@ export const tokenManager = {
     }
   },
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setUser: (user: any) => {
+  setUser: (user: AuthUser) => {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
+
 
   isAuthenticated: (): boolean => {
     return !!tokenManager.getAccessToken();

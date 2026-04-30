@@ -58,8 +58,8 @@ export default function AdminWorkoutsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">🏋️ Workout Templates</h1>
-          <p className="text-white/40 text-sm">Create and manage global training programs</p>
+          <h1 className="text-2xl font-bold text-dash-text mb-1">🏋️ Workout Templates</h1>
+          <p className="text-dash-text-dim text-sm">Create and manage global training programs</p>
         </div>
         <button 
           onClick={() => { setSelectedWorkout(null); setIsModalOpen(true); }}
@@ -71,7 +71,7 @@ export default function AdminWorkoutsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          [1,2,3].map(i => <div key={i} className="h-48 rounded-2xl bg-white/5 animate-pulse" />)
+          [1,2,3].map(i => <div key={i} className="h-48 rounded-2xl bg-dash-text/5 animate-pulse" />)
         ) : (
           workouts.map((workout) => (
             <motion.div
@@ -79,10 +79,10 @@ export default function AdminWorkoutsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => { setSelectedWorkout(workout); setIsModalOpen(true); }}
-              className="glass-panel p-6 rounded-2xl border border-white/5 group hover:border-white/20 transition-all cursor-pointer relative"
+              className="glass-panel p-6 rounded-2xl border border-dash-border-subtle group hover:border-dash-text/10 transition-all cursor-pointer relative"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className={`px-2 py-1 rounded bg-white/5 text-[10px] font-bold uppercase ${
+                <span className={`px-2 py-1 rounded bg-dash-text/5 text-[10px] font-bold uppercase ${
                   workout.level === 'Beginner' ? 'text-green-400' : 
                   workout.level === 'Intermediate' ? 'text-yellow-400' : 'text-red-400'
                 }`}>
@@ -90,21 +90,21 @@ export default function AdminWorkoutsPage() {
                 </span>
                 <span className="text-xl">🏋️</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-1 group-hover:text-neon-blue transition-colors">{workout.title}</h3>
-              <p className="text-white/40 text-sm mb-4">{workout.goal}</p>
+              <h3 className="text-lg font-bold text-dash-text mb-1 group-hover:text-neon-blue transition-colors">{workout.title}</h3>
+              <p className="text-dash-text-dim text-sm mb-4">{workout.goal}</p>
               
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-white/20 uppercase font-bold">Exercises</span>
-                  <span className="text-sm text-white font-mono">{workout.exercises?.length || 0}</span>
+                  <span className="text-[10px] text-dash-text-dim opacity-30 uppercase font-bold">Exercises</span>
+                  <span className="text-sm text-dash-text font-mono">{workout.exercises?.length || 0}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-white/20 uppercase font-bold">Duration</span>
-                  <span className="text-sm text-white font-mono">{workout.duration}</span>
+                  <span className="text-[10px] text-dash-text-dim opacity-30 uppercase font-bold">Duration</span>
+                  <span className="text-sm text-dash-text font-mono">{workout.duration}</span>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+              <div className="pt-4 border-t border-dash-border-subtle flex items-center justify-between">
                 <button 
                   onClick={(e) => handleDeleteWorkout(e, workout.id)}
                   className="text-xs font-bold text-red-400/50 hover:text-red-400 transition-colors"

@@ -24,10 +24,13 @@ export class UserController {
       
       // Validation for Fitness Level
       if (body.fitnessLevel) {
+        const inputLevel = body.fitnessLevel.toLowerCase();
         const validLevels = ["beginner", "intermediate", "advanced"];
-        if (!validLevels.includes(body.fitnessLevel.toLowerCase())) {
+        if (!validLevels.includes(inputLevel)) {
           return NextResponse.json({ success: false, error: "Invalid fitness level" }, { status: 400 });
         }
+        // Standardize to Title Case for database consistency with constants
+        body.fitnessLevel = inputLevel.charAt(0).toUpperCase() + inputLevel.slice(1);
       }
 
       const updated = await userService.updateProfile(decoded.userId, body);

@@ -19,6 +19,15 @@ export enum NotificationPriority {
   LOW = "LOW"
 }
 
+export interface NotificationSettings {
+  workoutReminders: boolean;
+  goalProgress: boolean;
+  nutritionHydration: boolean;
+  recoveryHealth: boolean;
+  socialCommunity: boolean;
+  marketingPromos: boolean;
+}
+
 export interface SendNotificationParams {
   userId: string;
   title: string;
@@ -26,8 +35,9 @@ export interface SendNotificationParams {
   type: string;
   category: NotificationCategory | string;
   priority?: NotificationPriority | string;
-  metadata?: any;
+  metadata?: unknown;
 }
+
 
 export class NotificationService {
   async sendNotification(params: SendNotificationParams) {
@@ -36,8 +46,7 @@ export class NotificationService {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error("User not found");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const settings = (user.notificationSettings as Record<string, any>) || {};
+    const settings = (user.notificationSettings as unknown as NotificationSettings) || {};
     
     // Check category preferences
     if (priority !== NotificationPriority.CRITICAL) {
@@ -56,7 +65,7 @@ export class NotificationService {
       type,
       category,
       priority,
-      metadata: metadata ? metadata : undefined,
+      metadata: metadata ? (metadata as import("@prisma/client/runtime/library").JsonValue) : undefined,
     });
   }
 
@@ -84,10 +93,11 @@ export class NotificationService {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async updateSettings(userId: string, settings: any) {
-    return await userRepository.update(userId, { notificationSettings: settings });
+  async updateSettings(userId: string, settings: NotificationSettings) {
+    return await userRepository.update(userId, { notificationSettings: settings as any });
+
   }
+
 }
 
 export const notificationService = new NotificationService();

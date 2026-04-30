@@ -15,10 +15,12 @@ export default function StreakPage() {
       try {
         const res = await dashboardService.getStreak();
         if (res.success && res.data) {
-          setStreak(res.data.currentStreak || 0);
-          setLongestStreak(res.data.longestStreak || 0);
-          setWeekDays(res.data.weekDays || [true, true, true, false, true, true, false]);
+          const data = res.data as any;
+          setStreak(data.currentStreak || 0);
+          setLongestStreak(data.longestStreak || 0);
+          setWeekDays(data.weekDays || [true, true, true, false, true, true, false]);
         }
+
       } catch {
         setStreak(7);
         setLongestStreak(14);
@@ -35,8 +37,8 @@ export default function StreakPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">🔥 Streak</h1>
-        <p className="text-white/40 text-sm">Consistency builds champions</p>
+        <h1 className="text-2xl font-bold text-dash-text mb-1">🔥 Streak</h1>
+        <p className="text-dash-text-dim text-sm">Consistency builds champions</p>
       </div>
 
       {/* Current streak hero */}
@@ -51,26 +53,26 @@ export default function StreakPage() {
           <>
             <div className="text-6xl mb-2">🔥</div>
             <p className="text-5xl font-bold text-neon-yellow mb-2">{streak}</p>
-            <p className="text-white/50 text-sm">Day Streak</p>
+            <p className="text-dash-text-dim text-sm">Day Streak</p>
           </>
         )}
       </motion.div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-dash-card rounded-2xl p-6 border border-white/5 text-center">
-          <p className="text-white/40 text-xs mb-1">Current Streak</p>
+        <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle text-center">
+          <p className="text-dash-text-dim text-xs mb-1">Current Streak</p>
           <p className="text-2xl font-bold text-neon-blue">{loading ? "—" : `${streak} days`}</p>
         </div>
-        <div className="bg-dash-card rounded-2xl p-6 border border-white/5 text-center">
-          <p className="text-white/40 text-xs mb-1">Longest Streak</p>
+        <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle text-center">
+          <p className="text-dash-text-dim text-xs mb-1">Longest Streak</p>
           <p className="text-2xl font-bold text-neon-purple">{loading ? "—" : `${longestStreak} days`}</p>
         </div>
       </div>
 
       {/* Weekly visualization */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-6">This Week</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-6">This Week</h3>
         <div className="flex justify-between gap-2">
           {dayLabels.map((day, i) => (
             <motion.div
@@ -84,12 +86,12 @@ export default function StreakPage() {
                 className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all ${
                   weekDays[i]
                     ? "bg-neon-yellow/20 border border-neon-yellow/30 glow-yellow"
-                    : "bg-white/5 border border-white/5"
+                    : "bg-dash-text/5 border border-dash-border-subtle"
                 }`}
               >
                 <span className="text-lg">{weekDays[i] ? "🔥" : "⚪"}</span>
               </div>
-              <span className={`text-xs ${weekDays[i] ? "text-neon-yellow" : "text-white/30"}`}>
+              <span className={`text-xs ${weekDays[i] ? "text-neon-yellow" : "text-dash-text-dim"}`}>
                 {day}
               </span>
             </motion.div>
@@ -98,8 +100,8 @@ export default function StreakPage() {
       </div>
 
       {/* Milestones */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">Milestones</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Milestones</h3>
         <div className="space-y-3">
           {[
             { milestone: 3, label: "3-Day Starter", emoji: "⭐" },
@@ -116,8 +118,8 @@ export default function StreakPage() {
             >
               <span className="text-xl">{streak >= m.milestone ? m.emoji : "🔒"}</span>
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">{m.label}</p>
-                <p className="text-white/30 text-xs">{m.milestone} days</p>
+                <p className="text-dash-text text-sm font-medium">{m.label}</p>
+                <p className="text-dash-text-dim text-xs">{m.milestone} days</p>
               </div>
               {streak >= m.milestone && (
                 <span className="text-neon-green text-xs font-medium">✓ Achieved</span>

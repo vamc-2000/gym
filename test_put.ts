@@ -8,7 +8,8 @@ async function test() {
   const user = await prisma.user.findFirst();
   if (!user) return console.log('user not found');
   
-  const token = generateAccessToken(user);
+  const token = generateAccessToken(user as any);
+
   
   const req = new NextRequest('http://localhost:3000/api/user/profile', {
     method: 'PUT',

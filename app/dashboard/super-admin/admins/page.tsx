@@ -25,7 +25,8 @@ export default function SuperAdminAdminsPage() {
     try {
       const res = await dashboardService.getSuperAdminAdmins();
       if (res.success) {
-        setAdmins(res.data);
+        setAdmins(res.data as any[]);
+
       }
     } catch (err) {
       triggerToast("Error", "Failed to fetch admins", "error");
@@ -96,8 +97,8 @@ export default function SuperAdminAdminsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">👮 Manage Administrators</h1>
-          <p className="text-white/40 text-sm">Control platform staff and system permissions</p>
+          <h1 className="text-3xl font-bold text-dash-text mb-1">👮 Manage Administrators</h1>
+          <p className="text-dash-text-dim text-sm">Control platform staff and system permissions</p>
         </div>
         <button 
           onClick={() => {
@@ -111,35 +112,35 @@ export default function SuperAdminAdminsPage() {
         </button>
       </div>
 
-      <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+      <div className="glass-panel rounded-3xl border border-dash-border-subtle overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-white/5 text-white/30 text-[10px] font-black uppercase tracking-widest">
+            <thead className="bg-dash-text/5 text-dash-text-dim opacity-30 text-[10px] font-black uppercase tracking-widest">
               <tr>
                 <th className="px-8 py-5">Admin Identity</th>
                 <th className="px-8 py-5">Last Activity</th>
                 <th className="px-8 py-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-dash-border-subtle">
               {loading ? (
-                <tr><td colSpan={3} className="px-8 py-20 text-center text-white/10 animate-pulse font-bold tracking-widest uppercase">Loading Secure Data...</td></tr>
+                <tr><td colSpan={3} className="px-8 py-20 text-center text-dash-text-dim opacity-10 animate-pulse font-bold tracking-widest uppercase">Loading Secure Data...</td></tr>
               ) : admins.length > 0 ? (
                 admins.map((admin) => (
-                  <tr key={admin.id} className="hover:bg-white/5 transition-colors group">
+                  <tr key={admin.id} className="hover:bg-dash-text/5 transition-colors group">
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg">
                           {admin.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-white font-bold text-sm">{admin.name}</p>
-                          <p className="text-white/30 text-xs">{admin.email}</p>
+                          <p className="text-dash-text font-bold text-sm">{admin.name}</p>
+                          <p className="text-dash-text-dim opacity-30 text-xs">{admin.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <p className="text-white/40 text-xs">
+                      <p className="text-dash-text-dim opacity-40 text-xs">
                         {admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : "Never logged in"}
                       </p>
                     </td>
@@ -148,7 +149,7 @@ export default function SuperAdminAdminsPage() {
                         <button 
                           disabled={!!actionLoading}
                           onClick={() => openEditModal(admin)}
-                          className="px-4 py-2 bg-white/5 border border-white/5 text-white/60 hover:text-white hover:border-white/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                          className="px-4 py-2 bg-dash-text/5 border border-dash-border-subtle text-dash-text-dim opacity-60 hover:text-dash-text hover:border-dash-text-dim/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
                         >
                           Edit
                         </button>
@@ -164,7 +165,7 @@ export default function SuperAdminAdminsPage() {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={3} className="px-8 py-20 text-center text-white/20">No administrators found.</td></tr>
+                <tr><td colSpan={3} className="px-8 py-20 text-center text-dash-text-dim opacity-20">No administrators found.</td></tr>
               )}
             </tbody>
           </table>
@@ -182,15 +183,15 @@ export default function SuperAdminAdminsPage() {
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md bg-dash-card border border-white/10 rounded-3xl p-8 shadow-2xl"
-            >
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {editingAdmin ? "Edit Administrator" : "Add New Administrator"}
-              </h2>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-md bg-dash-card border border-dash-border-subtle rounded-3xl p-8 shadow-2xl"
+              >
+                <h2 className="text-2xl font-bold text-dash-text mb-6">
+                  {editingAdmin ? "Edit Administrator" : "Add New Administrator"}
+                </h2>
               
               <div className="space-y-4 mb-8">
                 <InputField 
@@ -220,13 +221,13 @@ export default function SuperAdminAdminsPage() {
                 )}
               </div>
 
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 bg-white/5 text-white/40 font-bold rounded-xl border border-white/5 hover:bg-white/10 transition-all"
-                >
-                  Cancel
-                </button>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 py-3 bg-dash-text/5 text-dash-text-dim opacity-40 font-bold rounded-xl border border-dash-border-subtle hover:bg-dash-text/10 transition-all"
+                  >
+                    Cancel
+                  </button>
                 <SubmitButton 
                   onClick={handleCreateOrUpdate}
                   loading={actionLoading === "form"}

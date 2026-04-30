@@ -3,13 +3,14 @@ import { prisma } from "../lib/prisma";
 import { authMiddleware } from "../middlewares/auth";
 
 export class AdminWorkoutController {
-  private validateExerciseCount(level: string, exercises: any) {
-    let counts: number[] = [];
+  private validateExerciseCount(level: string, exercises: unknown) {
+    const counts: number[] = [];
     
     // Parse through weeks and days to find the max/min exercises per day
-    if (exercises?.weeks) {
-      exercises.weeks.forEach((week: any) => {
-        week.days.forEach((day: any) => {
+    const exercisesTyped = exercises as { weeks?: { days?: { routine?: { name: string }[], type?: string }[] }[] };
+    if (exercisesTyped?.weeks) {
+      exercisesTyped.weeks.forEach((week) => {
+        week.days?.forEach((day) => {
           if (day.routine && Array.isArray(day.routine)) {
             // Only count if it's not a rest day
             if (day.type !== "Complete Rest" && day.type !== "LISS Cardio") {
@@ -19,6 +20,7 @@ export class AdminWorkoutController {
         });
       });
     }
+
 
     if (counts.length === 0) return { valid: true }; // No routines defined yet
 
@@ -78,8 +80,9 @@ export class AdminWorkoutController {
         }
       });
       return NextResponse.json({ success: true, data: template });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -117,8 +120,9 @@ export class AdminWorkoutController {
         }
       });
       return NextResponse.json({ success: true, data: template });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -133,10 +137,12 @@ export class AdminWorkoutController {
 
       await prisma.workoutTemplate.delete({ where: { id } });
       return NextResponse.json({ success: true, message: "Template deleted" });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
+
 }
 
 export const adminWorkoutController = new AdminWorkoutController();

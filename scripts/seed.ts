@@ -177,6 +177,15 @@ async function seed() {
   // Clear existing plans to avoid duplicates and schema errors
   await prisma.workoutTemplate.deleteMany({});
   await prisma.dietTemplate.deleteMany({});
+  
+  // Clear dummy data to prevent duplicates on multiple runs
+  await prisma.progress.deleteMany({
+    where: { user: { email: { contains: "dummy" } } }
+  });
+  await prisma.notification.deleteMany({
+    where: { user: { email: { contains: "dummy" } } }
+  });
+
 
   for (const w of seedData.workouts) {
     await prisma.workoutTemplate.create({

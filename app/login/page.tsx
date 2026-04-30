@@ -24,6 +24,8 @@ export default function LoginPage() {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (!email.toLowerCase().endsWith("@gmail.com")) {
+      newErrors.email = "Only @gmail.com emails are allowed";
     }
 
     if (!password) {

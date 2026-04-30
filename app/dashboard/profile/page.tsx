@@ -17,9 +17,10 @@ export default function ProfilePage() {
     name: "",
     email: "",
     phone: "",
-    fitnessLevel: "beginner",
+    fitnessLevel: "Beginner",
     preferredWorkoutTime: "07:00",
     dndEnabled: false,
+    dietaryPreference: "Non-Vegetarian",
   });
 
 
@@ -29,14 +30,16 @@ export default function ProfilePage() {
       try {
         const res = await dashboardService.getProfile();
         if (res.success && res.data) {
-          const u = res.data;
+          const u = res.data as any;
+
           setForm({
             name: u.name || "",
             email: u.email || "",
             phone: u.phone || "",
-            fitnessLevel: u.fitnessLevel || "beginner",
+            fitnessLevel: u.fitnessLevel || "Beginner",
             preferredWorkoutTime: u.notificationSettings?.preferredWorkoutTime || "07:00",
             dndEnabled: u.notificationSettings?.dndEnabled || false,
+            dietaryPreference: u.dietaryPreference || "Non-Vegetarian",
           });
 
 
@@ -48,7 +51,7 @@ export default function ProfilePage() {
             ...prev,
             name: user.name || "",
             email: user.email || "",
-            fitnessLevel: user.fitnessLevel || "beginner",
+            fitnessLevel: user.fitnessLevel || "Beginner",
           }));
         }
       } finally {
@@ -71,6 +74,7 @@ export default function ProfilePage() {
         name: form.name,
         phone: form.phone,
         fitnessLevel: form.fitnessLevel,
+        dietaryPreference: form.dietaryPreference,
         notificationSettings: {
           preferredWorkoutTime: form.preferredWorkoutTime,
           dndEnabled: form.dndEnabled,
@@ -109,7 +113,7 @@ export default function ProfilePage() {
     return (
       <div className="space-y-6">
         <div className="skeleton h-8 w-40" />
-        <div className="bg-dash-card rounded-2xl p-6 border border-white/5 space-y-4">
+        <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="skeleton h-12 w-full rounded-xl" />
           ))}
@@ -121,13 +125,13 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">👤 Profile</h1>
-        <p className="text-white/40 text-sm">Manage your personal information</p>
+        <h1 className="text-2xl font-bold text-dash-text mb-1">👤 Profile</h1>
+        <p className="text-dash-text-dim text-sm">Manage your personal information</p>
       </div>
 
       {/* Basic Info */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5 space-y-4">
-        <h3 className="text-white font-semibold text-sm mb-4">Account Details</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle space-y-4">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Account Details</h3>
         <InputField
           label="Full Name"
           variant="dark"
@@ -148,18 +152,29 @@ export default function ProfilePage() {
             value={form.fitnessLevel}
             onChange={(e) => update("fitnessLevel", e.target.value)}
             options={[
-              { value: "beginner", label: "🟢 Beginner" },
-              { value: "intermediate", label: "🟡 Intermediate" },
-              { value: "advanced", label: "🔴 Advanced" },
+              { value: "Beginner", label: "🟢 Beginner" },
+              { value: "Intermediate", label: "🟡 Intermediate" },
+              { value: "Advanced", label: "🔴 Advanced" },
             ]}
           />
         )}
+        <SelectField
+          label="Dietary Preference"
+          variant="dark"
+          value={form.dietaryPreference}
+          onChange={(e) => update("dietaryPreference", e.target.value)}
+          options={[
+            { value: "Non-Vegetarian", label: "🍖 Non-Vegetarian" },
+            { value: "Vegetarian", label: "🥦 Vegetarian" },
+            { value: "Vegan", label: "🌱 Vegan" },
+          ]}
+        />
       </div>
 
       {/* Notification settings */}
 
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">Notifications</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Notifications</h3>
         <div className="space-y-4">
           <InputField
             label="Preferred Workout Time"
@@ -170,13 +185,13 @@ export default function ProfilePage() {
           />
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white text-sm">Do Not Disturb</p>
-              <p className="text-white/30 text-xs">Mute notifications during rest hours</p>
+              <p className="text-dash-text text-sm">Do Not Disturb</p>
+              <p className="text-dash-text-dim text-xs">Mute notifications during rest hours</p>
             </div>
             <button
               onClick={() => update("dndEnabled", !form.dndEnabled)}
               className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${
-                form.dndEnabled ? "bg-neon-blue" : "bg-white/10"
+                form.dndEnabled ? "bg-neon-blue" : "bg-dash-text/10"
               }`}
             >
               <div
