@@ -18,6 +18,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
   const resolvedParams = await params;
+  // We'll reuse updateAdmin or create a specific status update method if needed
   return superAdminController.updateAdmin(req, { params: resolvedParams });
 }
 

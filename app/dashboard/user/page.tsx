@@ -48,6 +48,7 @@ export default function UserDashboard() {
           return b.caloriesBurned - a.caloriesBurned;
         });
 
+
         const myIndex = sorted.findIndex((e: LeaderboardRankEntry) => e.id === user?.id);
 
         if (myIndex !== -1) {
