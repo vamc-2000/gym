@@ -28,18 +28,26 @@ export default function UserDashboard() {
     try {
       const res = await dashboardService.getLeaderboard();
       if (res.success && res.data && res.data.leaderboard) {
-        const sorted = res.data.leaderboard.map((e: any) => ({
+        interface LeaderboardRankEntry {
+          id: string;
+          workoutsCompleted: number;
+          streak: number;
+          caloriesBurned: number;
+        }
+
+        const sorted: LeaderboardRankEntry[] = res.data.leaderboard.map((e: any) => ({
           id: e.user?.id,
           workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320),
           streak: e.user?.streaks?.currentStreak || 0,
           caloriesBurned: e.calories || Math.floor(e.score / 1.5),
-        })).sort((a, b) => {
+        })).sort((a: LeaderboardRankEntry, b: LeaderboardRankEntry) => {
           if (b.workoutsCompleted !== a.workoutsCompleted) return b.workoutsCompleted - a.workoutsCompleted;
           if (b.streak !== a.streak) return b.streak - a.streak;
           return b.caloriesBurned - a.caloriesBurned;
         });
 
-        const myIndex = sorted.findIndex(e => e.id === user?.id);
+        const myIndex = sorted.findIndex((e: LeaderboardRankEntry) => e.id === user?.id);
+
         if (myIndex !== -1) {
           newState.stats.leaderboardRank = (myIndex + 1).toString();
           localStorage.setItem(`gymstreak_rank_${user?.id}`, (myIndex + 1).toString());

@@ -21,15 +21,23 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         const res = await dashboardService.getLeaderboard();
-        let rawData = [];
+        interface RawDataEntry {
+          id: string;
+          name: string;
+          workoutsCompleted: number;
+          streak: number;
+          caloriesBurned: number;
+        }
+
+        let rawData: RawDataEntry[] = [];
 
         if (res.success && res.data && res.data.leaderboard) {
           rawData = res.data.leaderboard.map((e: any) => ({
-            id: e.user?.id,
+            id: e.user?.id || "guest",
             name: e.user?.name || "Unknown",
-            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320), // Fallback if field missing
+            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320),
             streak: e.user?.streaks?.currentStreak || 0,
-            caloriesBurned: e.calories || Math.floor(e.score / 1.5), // Fallback
+            caloriesBurned: e.calories || Math.floor(e.score / 1.5),
           }));
         } else {
           // Mock data for fallback
@@ -45,12 +53,12 @@ export default function LeaderboardPage() {
           ];
         }
 
-        const currentUser = dashboardService.getProfile().then(r => r.data).catch(() => null);
-        const me = await currentUser;
+        const currentUserRes = await dashboardService.getProfile();
+        const me = currentUserRes.success ? currentUserRes.data : null;
 
         // Sorting Logic as requested
         const sorted = rawData
-          .sort((a, b) => {
+          .sort((a: RawDataEntry, b: RawDataEntry) => {
             if (b.workoutsCompleted !== a.workoutsCompleted) {
               return b.workoutsCompleted - a.workoutsCompleted;
             }
@@ -59,6 +67,7 @@ export default function LeaderboardPage() {
             }
             return b.caloriesBurned - a.caloriesBurned;
           })
+
           .map((user, index) => ({
             ...user,
             rank: index + 1,
@@ -144,24 +153,21 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                  entry.isCurrentUser
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${entry.isCurrentUser
                     ? "bg-neon-blue/10 border border-neon-blue/20 shadow-[0_0_15px_rgba(0,245,255,0.05)]"
                     : "hover:bg-white/5 border border-transparent"
-                }`}
+                  }`}
               >
                 <span
-                  className={`w-10 text-center font-bold text-sm ${
-                    entry.rank <= 3 ? medalColors[entry.rank - 1] : "text-white/30"
-                  }`}
+                  className={`w-10 text-center font-bold text-sm ${entry.rank <= 3 ? medalColors[entry.rank - 1] : "text-white/30"
+                    }`}
                 >
                   {entry.rank <= 3 ? medals[entry.rank - 1] : `#${entry.rank}`}
                 </span>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${
-                   entry.rank === 1 ? "bg-neon-yellow/20 text-neon-yellow" : 
-                   entry.rank === 2 ? "bg-gray-400/20 text-gray-400" :
-                   entry.rank === 3 ? "bg-amber-600/20 text-amber-600" : "bg-white/5 text-white/40"
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold ${entry.rank === 1 ? "bg-neon-yellow/20 text-neon-yellow" :
+                    entry.rank === 2 ? "bg-gray-400/20 text-gray-400" :
+                      entry.rank === 3 ? "bg-amber-600/20 text-amber-600" : "bg-white/5 text-white/40"
+                  }`}>
                   {entry.name.charAt(0)}
                 </div>
                 <div className="flex-1">
