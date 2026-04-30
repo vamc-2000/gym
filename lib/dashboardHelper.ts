@@ -1,4 +1,6 @@
 import { WORKOUT_PLANS } from "./workoutPlans";
+import { DashboardState, WorkoutDay } from "@/types/dashboard";
+
 
 export const getDashboardState = (user: any): DashboardState => {
   const userId = user?.id || "guest";

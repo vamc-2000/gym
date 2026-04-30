@@ -7,8 +7,10 @@ export type Exercise = {
   weight?: string;
   muscleGroup: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
+  duration?: string;
   notes?: string;
 };
+
 
 export type WorkoutDay = {
   id: string;
