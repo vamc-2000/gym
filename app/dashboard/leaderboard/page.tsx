@@ -21,15 +21,23 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         const res = await dashboardService.getLeaderboard();
-        let rawData = [];
+        interface RawDataEntry {
+          id: string;
+          name: string;
+          workoutsCompleted: number;
+          streak: number;
+          caloriesBurned: number;
+        }
+
+        let rawData: RawDataEntry[] = [];
 
         if (res.success && res.data && res.data.leaderboard) {
           rawData = res.data.leaderboard.map((e: any) => ({
-            id: e.user?.id,
+            id: e.user?.id || "guest",
             name: e.user?.name || "Unknown",
-            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320), // Fallback if field missing
+            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320),
             streak: e.user?.streaks?.currentStreak || 0,
-            caloriesBurned: e.calories || Math.floor(e.score / 1.5), // Fallback
+            caloriesBurned: e.calories || Math.floor(e.score / 1.5),
           }));
         } else {
           // Mock data for fallback
@@ -45,12 +53,12 @@ export default function LeaderboardPage() {
           ];
         }
 
-        const currentUser = dashboardService.getProfile().then(r => r.data).catch(() => null);
-        const me = await currentUser;
+        const currentUserRes = await dashboardService.getProfile();
+        const me = currentUserRes.success ? currentUserRes.data : null;
 
         // Sorting Logic as requested
         const sorted = rawData
-          .sort((a, b) => {
+          .sort((a: RawDataEntry, b: RawDataEntry) => {
             if (b.workoutsCompleted !== a.workoutsCompleted) {
               return b.workoutsCompleted - a.workoutsCompleted;
             }
@@ -59,6 +67,7 @@ export default function LeaderboardPage() {
             }
             return b.caloriesBurned - a.caloriesBurned;
           })
+
           .map((user, index) => ({
             ...user,
             rank: index + 1,
