@@ -21,7 +21,8 @@ export default function SuperAdminSettingsPage() {
       try {
         const res = await dashboardService.getSystemSettings();
         if (res.success && res.data) {
-          setSettings(res.data);
+          setSettings(res.data as any);
+
         }
       } catch (err) {
         console.error("Failed to fetch settings", err);
@@ -70,7 +71,7 @@ export default function SuperAdminSettingsPage() {
     }
   };
 
-  if (loading) return <div className="text-white p-8 animate-pulse font-bold tracking-widest uppercase">Loading System Parameters...</div>;
+  if (loading) return <div className="text-dash-text p-8 animate-pulse font-bold tracking-widest uppercase">Loading System Parameters...</div>;
 
   const settingsList = [
     { key: "registrationsEnabled", label: "App Access Control", desc: "Allow or block new user registrations", icon: "🚪" },
@@ -83,23 +84,23 @@ export default function SuperAdminSettingsPage() {
   return (
     <div className="space-y-8 max-w-3xl pb-12">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">🛠️ System Configuration</h1>
-        <p className="text-white/40 text-sm">Fine-tune global platform behavior and data permissions</p>
+        <h1 className="text-3xl font-bold text-dash-text mb-2">🛠️ System Configuration</h1>
+        <p className="text-dash-text-dim text-sm">Fine-tune global platform behavior and data permissions</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {settingsList.map((item) => (
           <div 
             key={item.key} 
-            className="glass-panel p-6 rounded-3xl border border-white/5 flex items-center justify-between group hover:border-neon-blue/20 transition-all duration-500"
+            className="glass-panel p-6 rounded-3xl border border-dash-border-subtle flex items-center justify-between group hover:border-neon-blue/20 transition-all duration-500"
           >
             <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-dash-text/5 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                 {item.icon}
               </div>
               <div>
-                <h3 className="text-white font-bold text-sm tracking-tight">{item.label}</h3>
-                <p className="text-white/30 text-xs mt-0.5">{item.desc}</p>
+                <h3 className="text-dash-text font-bold text-sm tracking-tight">{item.label}</h3>
+                <p className="text-dash-text-dim text-xs mt-0.5">{item.desc}</p>
               </div>
             </div>
             
@@ -107,7 +108,7 @@ export default function SuperAdminSettingsPage() {
               disabled={!!saving}
               onClick={() => toggleSetting(item.key)}
               className={`w-14 h-7 rounded-full transition-all relative p-1 cursor-pointer shadow-inner ${
-                (settings as any)[item.key] ? "bg-neon-blue shadow-neon-blue/20" : "bg-white/10"
+                (settings as any)[item.key] ? "bg-neon-blue shadow-neon-blue/20" : "bg-dash-text/10"
               } ${saving === item.key ? "opacity-50 animate-pulse" : ""}`}
             >
               <div
@@ -120,16 +121,16 @@ export default function SuperAdminSettingsPage() {
         ))}
       </div>
       
-      <div className="pt-8 border-t border-white/5">
-        <div className="glass-panel p-8 rounded-3xl border border-dashed border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="pt-8 border-t border-dash-border-subtle">
+        <div className="glass-panel p-8 rounded-3xl border border-dashed border-dash-border-subtle flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
-            <h3 className="text-white font-bold mb-1">Data Management</h3>
-            <p className="text-white/30 text-xs">Export all platform data including users, admins, and templates.</p>
+            <h3 className="text-dash-text font-bold mb-1">Data Management</h3>
+            <p className="text-dash-text-dim text-xs">Export all platform data including users, admins, and templates.</p>
           </div>
           <button 
             disabled={saving === "backup"}
             onClick={handleBackup}
-            className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all flex items-center gap-3 disabled:opacity-50"
+            className="px-8 py-4 bg-dash-text/5 border border-dash-border-subtle text-dash-text font-bold rounded-2xl hover:bg-dash-text/10 transition-all flex items-center gap-3 disabled:opacity-50"
           >
             <span>{saving === "backup" ? "📦 Exporting..." : "💾 Export System Backup"}</span>
           </button>
@@ -139,7 +140,7 @@ export default function SuperAdminSettingsPage() {
       <div className="flex justify-end gap-4 pt-4">
         <button 
           onClick={() => triggerToast("Info", "Cache cleared locally", "info")}
-          className="text-xs font-bold text-dash-text-dim hover:text-white transition-colors"
+          className="text-xs font-bold text-dash-text-dim hover:text-dash-text transition-colors"
         >
           🚨 Flush Application Cache
         </button>

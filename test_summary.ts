@@ -8,7 +8,8 @@ async function test() {
   const user = await prisma.user.findFirst({ where: { email: 'saivamsid4@gmail.com' } });
   if (!user) return console.log('user not found');
   
-  const token = generateAccessToken(user);
+  const token = generateAccessToken(user as any);
+
   
   // mock request
   const req = new NextRequest('http://localhost:3000/api/dashboard/summary', {

@@ -47,35 +47,35 @@ export default function AdminNotificationsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">📢 Push Notifications</h1>
-        <p className="text-white/40 text-sm">Send instant updates to your assigned users</p>
+        <h1 className="text-2xl font-bold text-dash-text mb-1">📢 Push Notifications</h1>
+        <p className="text-dash-text-dim text-sm">Send instant updates to your assigned users</p>
       </div>
 
-      <div className="glass-panel p-8 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <span className="text-9xl">📢</span>
         </div>
         
         <form onSubmit={handleSend} className="space-y-6 relative z-10">
           <div className="space-y-2">
-            <label className="text-xs text-white/40 font-bold uppercase tracking-widest">Notification Title</label>
+            <label className="text-xs text-dash-text-dim font-bold uppercase tracking-widest">Notification Title</label>
             <input 
               type="text" 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., New Workout Available!" 
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-neon-blue focus:bg-white/10 transition-all"
+              className="w-full bg-dash-text/5 border border-dash-border-subtle rounded-2xl px-5 py-4 text-dash-text outline-none focus:border-neon-blue focus:bg-dash-text/10 transition-all"
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs text-white/40 font-bold uppercase tracking-widest">Message Content</label>
+            <label className="text-xs text-dash-text-dim font-bold uppercase tracking-widest">Message Content</label>
             <textarea 
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={5}
               placeholder="Enter your message here..." 
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white outline-none focus:border-neon-blue focus:bg-white/10 transition-all resize-none"
+              className="w-full bg-dash-text/5 border border-dash-border-subtle rounded-2xl px-5 py-4 text-dash-text outline-none focus:border-neon-blue focus:bg-dash-text/10 transition-all resize-none"
               required
             />
           </div>
@@ -84,7 +84,7 @@ export default function AdminNotificationsPage() {
               <span className="w-2 h-2 rounded-full bg-neon-blue animate-pulse" />
               Global Broadcast Mode
             </div>
-            <p className="text-[10px] text-white/20 font-bold">RECIPIENTS: ALL USERS</p>
+            <p className="text-[10px] text-dash-text-dim opacity-30 font-bold">RECIPIENTS: ALL USERS</p>
           </div>
           <button 
             type="submit"

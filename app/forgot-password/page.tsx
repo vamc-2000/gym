@@ -21,6 +21,10 @@ export default function ForgotPasswordPage() {
       setError("Email is required");
       return;
     }
+    if (!email.toLowerCase().endsWith("@gmail.com")) {
+      setError("Only @gmail.com emails are allowed");
+      return;
+    }
 
     setLoading(true);
     setError("");

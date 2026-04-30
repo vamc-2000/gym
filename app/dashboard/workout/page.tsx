@@ -212,7 +212,7 @@ export default function WorkoutPage() {
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-12 h-12 border-4 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
-      <div className="text-white/40 text-sm font-medium">Loading Workout Plan...</div>
+      <div className="text-dash-text-dim text-sm font-medium">Loading Workout Plan...</div>
     </div>
   );
 
@@ -229,8 +229,8 @@ export default function WorkoutPage() {
     <div className="space-y-8 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Training Schedule</h1>
-          <p className="text-white/40 text-sm">Customize your weekly routine and track progress</p>
+          <h1 className="text-3xl font-bold text-dash-text mb-2">Training Schedule</h1>
+          <p className="text-dash-text-dim text-sm">Your weekly routine and progress</p>
         </div>
         
         {isActive && (
@@ -241,12 +241,12 @@ export default function WorkoutPage() {
           >
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold text-neon-blue tracking-widest">Active Session</span>
-              <span className="text-2xl font-mono font-bold text-white leading-none mt-1">{formatTime(seconds)}</span>
+              <span className="text-2xl font-mono font-bold text-dash-text leading-none mt-1">{formatTime(seconds)}</span>
             </div>
             <div className="flex gap-2">
               <button 
                 onClick={isPaused ? resumeTimer : pauseTimer}
-                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+                className="p-2.5 bg-dash-text/5 hover:bg-dash-text/10 border border-dash-border-subtle rounded-xl text-dash-text transition-all"
               >
                 {isPaused ? "▶️" : "⏸️"}
               </button>
@@ -294,7 +294,7 @@ export default function WorkoutPage() {
                 <div className="flex items-center gap-2 text-neon-blue mb-1">
                   <span className="text-xs font-bold uppercase tracking-widest">{day.day}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white">{day.title}</h3>
+                <h3 className="text-2xl font-bold text-dash-text">{day.title}</h3>
               </div>
 
               <div className="flex-1 space-y-4 mb-8">
@@ -302,13 +302,14 @@ export default function WorkoutPage() {
                   <ExerciseCard 
                     key={ex.id}
                     exercise={ex}
-                    onEdit={(ex) => handleEditExercise(day.id, ex)}
-                    onDelete={(id) => handleDeleteExercise(day.id, id)}
-                    isReadOnly={isAdmin || isCompleted || isLocked}
+                    onEdit={(ex) => isAdmin && handleEditExercise(day.id, ex)}
+                    onDelete={(id) => isAdmin && handleDeleteExercise(day.id, id)}
+                    isReadOnly={!isAdmin || isCompleted || isLocked}
                   />
+
                 ))}
                 
-                {!isAdmin && !isCompleted && !isLocked && (
+                {isAdmin && !isCompleted && !isLocked && (
                   <button 
                     onClick={() => handleAddExercise(day.id)}
                     className="w-full py-3 border-2 border-dashed border-dash-border-subtle rounded-xl text-dash-text-dim text-sm font-bold hover:border-neon-blue/30 hover:text-neon-blue transition-all"
@@ -355,7 +356,7 @@ export default function WorkoutPage() {
                   )
                 )}
                 {isAdmin && (
-                  <div className="w-full py-4 rounded-2xl bg-white/5 text-white/40 font-bold text-sm text-center border border-white/10">
+                  <div className="w-full py-4 rounded-2xl bg-dash-text/5 text-dash-text-dim font-bold text-sm text-center border border-dash-border-subtle">
                     Admin View Mode
                   </div>
                 )}

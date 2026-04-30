@@ -31,8 +31,9 @@ export class SuperAdminController {
         success: true,
         data: { totalUsers, totalAdmins, activeToday }
       });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -54,8 +55,9 @@ export class SuperAdminController {
         }
       });
       return NextResponse.json({ success: true, data: admins });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -86,8 +88,9 @@ export class SuperAdminController {
       });
 
       return NextResponse.json({ success: true, data: newAdmin });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -111,8 +114,9 @@ export class SuperAdminController {
       });
 
       return NextResponse.json({ success: true });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -128,8 +132,9 @@ export class SuperAdminController {
       });
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -143,8 +148,9 @@ export class SuperAdminController {
         settings = await prisma.systemSettings.create({ data: {} });
       }
       return NextResponse.json({ success: true, data: settings });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -167,8 +173,9 @@ export class SuperAdminController {
       }
 
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -182,8 +189,9 @@ export class SuperAdminController {
         take: 50
       });
       return NextResponse.json({ success: true, data: logs });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -205,10 +213,12 @@ export class SuperAdminController {
       };
 
       return NextResponse.json({ success: true, data: backup });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 }
+
 
 export const superAdminController = new SuperAdminController();

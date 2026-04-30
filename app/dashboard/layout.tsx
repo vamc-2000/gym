@@ -44,7 +44,8 @@ export default function DashboardLayout({
           const nowMins = new Date().getMinutes().toString().padStart(2, '0');
           const currentHM = `${nowHours}:${nowMins}`;
           
-          res.data.forEach((item: any) => {
+          (res.data as any[]).forEach((item: any) => {
+
             if (item.time === currentHM && item.status === "upcoming") {
               // Ensure we don't trigger multiple times for the same minute
               const triggeredKey = `triggered_${item.id}`;

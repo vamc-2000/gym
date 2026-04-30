@@ -40,4 +40,9 @@ async function seedAdmins() {
   await prisma.$disconnect();
 }
 
-seedAdmins();
+seedAdmins()
+  .catch((e) => {
+    console.error("Error seeding admins:", e);
+    process.exit(1);
+  });
+

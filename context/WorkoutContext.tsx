@@ -23,39 +23,51 @@ const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined);
 
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [workoutId, setWorkoutId] = useState<string | null>(null);
-  const [completedDays, setCompletedDays] = useState<string[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Initialize from localStorage
-  useEffect(() => {
-    const savedStartTime = localStorage.getItem("workoutStartTime");
+  // Initial state from localStorage
+  const [seconds, setSeconds] = useState(() => {
+    if (typeof window === "undefined") return 0;
     const savedIsActive = localStorage.getItem("isWorkoutActive") === "true";
     const savedIsPaused = localStorage.getItem("isWorkoutPaused") === "true";
     const savedElapsed = parseInt(localStorage.getItem("workoutElapsed") || "0");
-    const savedWorkoutId = localStorage.getItem("activeWorkoutId");
-    const savedCompleted = JSON.parse(localStorage.getItem("completedWorkoutDays") || "[]");
-
-    setCompletedDays(savedCompleted);
-
+    const savedStartTime = localStorage.getItem("workoutStartTime");
+    
     if (savedIsActive) {
-      setIsActive(true);
-      setWorkoutId(savedWorkoutId);
-      if (savedIsPaused) {
-        setIsPaused(true);
-        setSeconds(savedElapsed);
-      } else if (savedStartTime) {
-        const elapsed = Math.floor((Date.now() - parseInt(savedStartTime)) / 1000);
-        setSeconds(elapsed);
-        setIsPaused(false);
+      if (savedIsPaused) return savedElapsed;
+      if (savedStartTime) {
+        return Math.floor((Date.now() - parseInt(savedStartTime)) / 1000);
       }
     }
-  }, []);
+    return 0;
+  });
+
+  const [isActive, setIsActive] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("isWorkoutActive") === "true";
+  });
+
+  const [isPaused, setIsPaused] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("isWorkoutPaused") === "true";
+  });
+
+  const [workoutId, setWorkoutId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("activeWorkoutId");
+  });
+
+  const [completedDays, setCompletedDays] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("completedWorkoutDays") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Timer Interval
+
   useEffect(() => {
     if (isActive && !isPaused) {
       timerRef.current = setInterval(() => {
@@ -100,7 +112,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       setIsPaused(false);
       setSeconds(0);
       triggerToast("Timer Started!", "Your workout is now live. Stay focused!", "workout");
-    } catch (e) {
+    } catch {
       triggerToast("Notice", "Starting workout locally.", "info");
       setIsActive(true);
       setSeconds(0);
@@ -137,10 +149,16 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   const completeWorkout = async (dayId?: string) => {
     try {
-      // In a real app, workoutId is the ID of the AssignedWorkout
-      // but for frontend purposes we use dayId
+      // Complete workout via backend
       if (workoutId && workoutId.length > 5) {
         await dashboardService.completeWorkout(workoutId);
+      }
+
+      // Update streak via backend
+      try {
+        await dashboardService.completeStreakWorkout();
+      } catch {
+        // Streak update failed silently — user still gets local credit
       }
 
       if (dayId) {
@@ -153,7 +171,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
       triggerToast(
         "Workout completed successfully!",
-        "Workouts completed count increased. Next day unlocked!",
+        "Your streak has been updated! 🔥",
         "success"
       );
 
@@ -164,10 +182,11 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       setTimeout(() => {
         router.push("/dashboard/user");
       }, 1500);
-    } catch (e) {
+    } catch {
       triggerToast("Error", "Failed to complete workout", "error");
     }
   };
+
 
   return (
     <WorkoutContext.Provider

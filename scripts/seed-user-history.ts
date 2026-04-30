@@ -31,9 +31,9 @@ async function seedUserHistory(email: string) {
   console.log(`🌱 Generating 14 days of workout history...`);
   
   let totalDuration = 0;
-  let totalCalories = 0;
   
   for (let i = 14; i >= 0; i--) {
+
     const d = new Date();
     d.setDate(d.getDate() - i);
     d.setHours(8, 0, 0, 0); // Started at 8 AM
@@ -61,7 +61,7 @@ async function seedUserHistory(email: string) {
     });
 
     totalDuration += durationSeconds;
-    totalCalories += caloriesBurned;
+
 
     // Weight progress
     const baseWeight = user.weight || 75;
@@ -133,9 +133,10 @@ async function seedUserHistory(email: string) {
 const emailArgs = process.argv.slice(2);
 const email = emailArgs[0] || 'saivamsid4@gmail.com';
 
-seedUserHistory(email).catch(e => {
+seedUserHistory(email).catch((e: unknown) => {
   console.error(e);
   process.exit(1);
 }).finally(() => {
   prisma.$disconnect();
 });
+

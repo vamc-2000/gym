@@ -78,8 +78,9 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Invalid credentials");
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = generateAccessToken(user as any);
+    const refreshToken = generateRefreshToken(user as any);
+
 
     await userRepository.update(user.id, { 
       refreshToken,
@@ -97,8 +98,15 @@ export class AuthService {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
     await userRepository.update(user.id, { otp, otpExpiry });
-    // In production, send email here
-    console.log(`OTP for ${email}: ${otp}`);
+    
+    // Send actual email
+    const { sendOTPEmail } = await import("../lib/mail");
+    const sent = await sendOTPEmail(email, otp);
+    
+    if (!sent) {
+      console.warn(`Failed to send email to ${email}, but OTP is: ${otp} (check server logs)`);
+    }
+    
     return otp;
   }
 
@@ -110,8 +118,9 @@ export class AuthService {
 
     await userRepository.update(user.id, { otp: null, otpExpiry: null });
     
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = generateAccessToken(user as any);
+    const refreshToken = generateRefreshToken(user as any);
+
 
     return { user, accessToken, refreshToken };
   }

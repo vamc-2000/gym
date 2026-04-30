@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+
 import { Exercise } from "@/types/dashboard";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,36 +18,28 @@ export const ExerciseFormModal: React.FC<ExerciseFormModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const [formData, setFormData] = useState<Partial<Exercise>>({
+  const defaultFormData = {
     name: "",
     sets: 3,
     reps: 12,
     restTime: "60 sec",
     muscleGroup: "Full Body",
-    difficulty: "Intermediate",
+    difficulty: "Intermediate" as Exercise["difficulty"],
     weight: "",
     notes: "",
-  });
+  };
 
+  const [formData, setFormData] = useState<Partial<Exercise>>(initialData || defaultFormData);
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    } else {
-      setFormData({
-        name: "",
-        sets: 3,
-        reps: 12,
-        restTime: "60 sec",
-        muscleGroup: "Full Body",
-        difficulty: "Intermediate",
-        weight: "",
-        notes: "",
-      });
-    }
+
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
+    setFormData(initialData || defaultFormData);
     setErrors({});
-  }, [initialData, isOpen]);
+  }
+
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -156,7 +149,8 @@ export const ExerciseFormModal: React.FC<ExerciseFormModalProps> = ({
               <label className="block text-xs font-bold text-dash-text-dim uppercase mb-1.5">Difficulty</label>
               <select
                 value={formData.difficulty}
-                onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as Exercise["difficulty"] })}
+
                 className="w-full bg-dash-bg/50 border border-dash-border-subtle rounded-xl px-4 py-3 text-white text-sm focus:border-neon-blue outline-none transition-all"
               >
                 <option value="Beginner">Beginner</option>

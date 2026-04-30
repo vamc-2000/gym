@@ -15,8 +15,9 @@ export function NotificationManager() {
 
   useEffect(() => {
     // Listen for custom events to trigger toasts
-    const handleNotification = (e: CustomEvent<Toast>) => {
-      const newToast = { ...e.detail, id: Math.random().toString(36).substr(2, 9) };
+    const handleNotification = (e: Event) => {
+      const customEvent = e as CustomEvent<Toast>;
+      const newToast = { ...customEvent.detail, id: Math.random().toString(36).substr(2, 9) };
       setToasts(prev => [...prev, newToast]);
       
       // Auto dismiss after 5 seconds
@@ -25,10 +26,11 @@ export function NotificationManager() {
       }, 5000);
     };
 
-    window.addEventListener("app-notification" as any, handleNotification as EventListener);
+
+    window.addEventListener("app-notification", handleNotification);
     
     return () => {
-      window.removeEventListener("app-notification" as any, handleNotification as EventListener);
+      window.removeEventListener("app-notification", handleNotification);
     };
   }, []);
 

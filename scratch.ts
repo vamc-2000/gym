@@ -1,8 +1,8 @@
-require('dotenv').config({ path: '.env.local' });
-require('dotenv').config({ path: '.env' });
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
 
-const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+
 async function main() {
   const users = await prisma.user.findMany({ take: 1, orderBy: { createdAt: 'desc' } });
   console.log('Latest user:', users[0]);
@@ -15,4 +15,12 @@ async function main() {
     console.log('Progress:', progress);
   }
 }
-main().finally(() => prisma.$disconnect());
+
+main()
+  .catch((e: unknown) => {
+
+    console.error(e);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

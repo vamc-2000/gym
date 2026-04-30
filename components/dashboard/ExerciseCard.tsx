@@ -81,7 +81,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           )}
           {exercise.notes && (
             <p className="text-[11px] text-dash-text-muted italic">
-              "{exercise.notes}"
+              &quot;{exercise.notes}&quot;
             </p>
           )}
         </div>
