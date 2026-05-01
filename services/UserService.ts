@@ -15,13 +15,46 @@ export class UserService {
     const user = await userRepository.findById(userId);
     if (!user) throw new Error("User not found");
 
-    const result = await userRepository.update(userId, updateData);
+    // 1. Clean and Map Data
+    const cleanedData: any = {};
+    const validFields = [
+      'name', 'email', 'gender', 'height', 'weight', 'bodyFat', 
+      'goal', 'fitnessLevel', 'dietPreference', 'notificationSettings'
+    ];
 
-    // If goal or fitness level changed, deactivate current assigned plans
+    // Map frontend specific names
+    if (updateData.dietaryPreference) {
+      updateData.dietPreference = updateData.dietaryPreference;
+    }
+
+    // Only allow valid fields and filter out invalid ones like 'phone'
+    validFields.forEach(field => {
+      if (updateData[field] !== undefined && updateData[field] !== "") {
+        // Cast numeric fields
+        if (['height', 'weight', 'bodyFat'].includes(field)) {
+          cleanedData[field] = parseFloat(updateData[field]) || null;
+        } else {
+          cleanedData[field] = updateData[field];
+        }
+      }
+    });
+
+    // Special handling for nested notificationSettings if it exists
+    if (updateData.notificationSettings) {
+      cleanedData.notificationSettings = {
+        ...user.notificationSettings,
+        ...updateData.notificationSettings
+      };
+    }
+
+    const result = await userRepository.update(userId, cleanedData);
+
+    // If goal, fitness level, or diet preference changed, deactivate current assigned plans
     // so they are regenerated on next access
     if (
       (updateData.goal && updateData.goal !== user.goal) ||
-      (updateData.fitnessLevel && updateData.fitnessLevel !== user.fitnessLevel)
+      (updateData.fitnessLevel && updateData.fitnessLevel !== user.fitnessLevel) ||
+      (updateData.dietPreference && updateData.dietPreference !== user.dietPreference)
     ) {
       const { prisma } = await import("../lib/prisma");
       await prisma.assignedWorkout.updateMany({

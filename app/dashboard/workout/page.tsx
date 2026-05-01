@@ -114,31 +114,23 @@ export default function WorkoutPage() {
     resumeTimer, 
     resetTimer, 
     completeWorkout, 
-    formatTime 
+    formatTime,
+    currentWorkoutDay 
   } = useWorkout();
 
   useEffect(() => {
     const user = tokenManager.getUser();
-    const level = (user?.fitnessLevel || "beginner").toLowerCase();
+    const level = user?.fitnessLevel || "Beginner";
     
-    const savedPlan = localStorage.getItem(`gymstreak_workout_plan_${user?.id}_${level}`);
-    if (savedPlan) {
-      setPlan(JSON.parse(savedPlan));
-      setLoading(false);
-    } else {
-      // Use predefined plan for level
-      const initialPlan = WORKOUT_PLANS[level] || WORKOUT_PLANS.beginner;
-      setPlan(initialPlan);
-      localStorage.setItem(`gymstreak_workout_plan_${user?.id}_${level}`, JSON.stringify(initialPlan));
-      setLoading(false);
-    }
+    const selectedPlan = WORKOUT_PLANS[level] || [];
+    setPlan(selectedPlan);
+    setLoading(false);
   }, []);
 
   const savePlan = (newPlan: WorkoutDay[]) => {
     const user = tokenManager.getUser();
-    const level = (user?.fitnessLevel || "beginner").toLowerCase();
     setPlan(newPlan);
-    localStorage.setItem(`gymstreak_workout_plan_${user?.id}_${level}`, JSON.stringify(newPlan));
+    localStorage.setItem(`gymstreak_workout_plan_${user?.id}`, JSON.stringify(newPlan));
   };
 
 
@@ -218,11 +210,26 @@ export default function WorkoutPage() {
 
   const userRole = tokenManager.getUser()?.role;
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-  const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+  const todayLabel = `Day ${currentWorkoutDay}`;
 
-  // Filter plan to show only today's workout
-  const todaysWorkout = plan.filter(day => day.day === currentDay);
-  const displayPlan = todaysWorkout.length > 0 ? todaysWorkout : plan.slice(0, 1); // Fallback to first day if not found
+  // Show full plan
+  const displayPlan = plan;
+
+  if (!displayPlan || displayPlan.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 bg-dash-card border border-dash-border-subtle rounded-3xl p-12 text-center">
+        <div className="text-4xl">🧘</div>
+        <h2 className="text-xl font-bold text-dash-text">No plan found for your current level</h2>
+        <p className="text-dash-text-dim max-w-xs">We are currently preparing personalized workouts for your profile. Please check back soon or try updating your level.</p>
+        <button 
+          onClick={() => window.location.href = '/dashboard/profile'}
+          className="mt-4 px-6 py-2 bg-neon-blue/10 hover:bg-neon-blue/20 border border-neon-blue/30 rounded-full text-neon-blue text-sm font-bold transition-all"
+        >
+          Update Profile
+        </button>
+      </div>
+    );
+  }
 
 
   return (
@@ -264,7 +271,10 @@ export default function WorkoutPage() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {displayPlan.map((day, i) => {
           const isCompleted = completedDays.includes(day.id);
-          const isLocked = i > 0 && !completedDays.includes(plan[i-1].id) && !isCompleted;
+          // A day is locked if it's a future day
+          const dayNumber = parseInt(day.day.replace("Day ", ""));
+          const isLocked = dayNumber > currentWorkoutDay;
+          const isToday = day.day === todayLabel;
 
           return (
             <motion.div
@@ -273,9 +283,10 @@ export default function WorkoutPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`glass-panel p-8 rounded-3xl border ${
+                isToday ? 'border-neon-blue/50 shadow-[0_0_20px_rgba(0,245,255,0.1)]' :
                 isCompleted ? 'border-neon-green/30 bg-neon-green/5' : 
-                isLocked ? 'opacity-50 grayscale' : 'border-dash-border-subtle'
-              } flex flex-col relative overflow-hidden`}
+                isLocked ? 'opacity-50 grayscale pointer-events-none' : 'border-dash-border-subtle'
+              } flex flex-col relative overflow-hidden transition-all duration-500`}
             >
               <div className="absolute top-4 right-4 flex items-center gap-2">
                 {isCompleted && (
@@ -283,7 +294,7 @@ export default function WorkoutPage() {
                     <span>✓</span> COMPLETED
                   </div>
                 )}
-                {day.day === currentDay && (
+                {isToday && (
                   <div className="bg-neon-blue text-dash-bg px-3 py-1 rounded-full text-[10px] font-bold">
                     TODAY
                   </div>
@@ -298,16 +309,30 @@ export default function WorkoutPage() {
               </div>
 
               <div className="flex-1 space-y-4 mb-8">
-                {day.exercises.map((ex) => (
-                  <ExerciseCard 
-                    key={ex.id}
-                    exercise={ex}
-                    onEdit={(ex) => isAdmin && handleEditExercise(day.id, ex)}
-                    onDelete={(id) => isAdmin && handleDeleteExercise(day.id, id)}
-                    isReadOnly={!isAdmin || isCompleted || isLocked}
-                  />
-
-                ))}
+                {isLocked ? (
+                  <div className="flex flex-col items-center justify-center py-20 px-4 bg-dash-bg/20 rounded-3xl border border-dashed border-dash-border-subtle group-hover:border-neon-blue/20 transition-all">
+                    <span className="text-5xl mb-4 group-hover:scale-110 transition-transform">🔒</span>
+                    <p className="text-dash-text font-black text-lg uppercase tracking-widest">Day {dayNumber} Locked</p>
+                    <p className="text-dash-text-dim text-xs mt-2 font-medium">Complete Day {dayNumber - 1} to reveal this session.</p>
+                  </div>
+                ) : day.exercises.length > 0 ? (
+                  day.exercises.map((ex) => (
+                    <ExerciseCard 
+                      key={ex.id}
+                      exercise={ex}
+                      onEdit={(ex) => isAdmin && handleEditExercise(day.id, ex)}
+                      onDelete={(id) => isAdmin && handleDeleteExercise(day.id, id)}
+                      isReadOnly={!isAdmin || isCompleted}
+                      hideInstructions={false}
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-10 px-4 bg-dash-bg/20 rounded-2xl border border-dashed border-dash-border-subtle">
+                    <span className="text-4xl mb-3">🧘</span>
+                    <p className="text-dash-text font-bold text-sm">Active Recovery / Rest</p>
+                    <p className="text-dash-text-dim text-[11px] text-center mt-1">Take this time to recover and prepare for your next session.</p>
+                  </div>
+                )}
                 
                 {isAdmin && !isCompleted && !isLocked && (
                   <button 
@@ -330,7 +355,7 @@ export default function WorkoutPage() {
                     </button>
                   ) : isLocked ? (
                     <div className="w-full py-4 rounded-2xl bg-dash-text/5 text-dash-text-dim font-bold text-sm text-center border border-dash-border-subtle">
-                      🔒 Complete Day {i} to unlock
+                      🔒 Day {dayNumber} is Locked
                     </div>
                   ) : (
                     <div className="flex gap-4">

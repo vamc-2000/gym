@@ -164,9 +164,9 @@ export default function ProfilePage() {
           value={form.dietaryPreference}
           onChange={(e) => update("dietaryPreference", e.target.value)}
           options={[
-            { value: "Non-Vegetarian", label: "🍖 Non-Vegetarian" },
-            { value: "Vegetarian", label: "🥦 Vegetarian" },
-            { value: "Vegan", label: "🌱 Vegan" },
+            { value: "Veg", label: "🥦 Veg" },
+            { value: "Non-Veg", label: "🍖 Non-Veg" },
+            { value: "Both", label: "🍱 Both" },
           ]}
         />
       </div>

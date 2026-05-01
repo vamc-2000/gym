@@ -12,23 +12,23 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("gymstreak_theme") as Theme;
-      return saved || "dark";
-    }
-    return "dark";
-  });
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    const saved = localStorage.getItem("gymstreak_theme") as Theme;
+    if (saved) {
+      setThemeState(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    // No longer setting global attribute to avoid affecting landing pages
   }, [theme]);
 
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("gymstreak_theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
   };
 
   return (

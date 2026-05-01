@@ -21,6 +21,7 @@ export class AuthService {
       password: hashedPassword,
       goal: userData.goal || "Weight Loss",
       fitnessLevel: userData.level || "Beginner",
+      workoutStartDate: new Date(),
       notificationSettings: {
         workoutReminders: true,
         goalProgress: true,
@@ -68,7 +69,10 @@ export class AuthService {
       priority: NotificationPriority.HIGH,
     });
 
-    return user;
+    const accessToken = generateAccessToken(user as any);
+    const refreshToken = generateRefreshToken(user as any);
+
+    return { user, accessToken, refreshToken };
   }
 
   async login(email: string, password: string) {
@@ -82,12 +86,18 @@ export class AuthService {
     const refreshToken = generateRefreshToken(user as any);
 
 
-    await userRepository.update(user.id, { 
+    const updateData: any = { 
       refreshToken,
       lastLogin: new Date()
-    });
+    };
 
-    return { user, accessToken, refreshToken };
+    if (!user.workoutStartDate) {
+      updateData.workoutStartDate = new Date();
+    }
+
+    const updatedUser = await userRepository.update(user.id, updateData);
+
+    return { user: updatedUser, accessToken, refreshToken };
   }
 
   async sendOTP(email: string) {

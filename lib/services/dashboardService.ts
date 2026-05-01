@@ -5,13 +5,14 @@ export const dashboardService = {
   getWorkoutPlan: () => apiClient<unknown>("/workout/plan"),
   startWorkout: (workoutId: string) =>
     apiClient<unknown>("/workout/start", { method: "POST", body: { workoutId } }),
-  completeWorkout: (workoutId: string) =>
-    apiClient<unknown>("/workout/complete", { method: "POST", body: { workoutId } }),
+  completeWorkout: (workoutId: string, dayNumber?: number) =>
+    apiClient<unknown>("/workouts/complete", { method: "POST", body: { workoutId, dayNumber } }),
 
   getDietPlan: () => apiClient<unknown>("/diet/plan"),
   getDietOptions: () => apiClient<unknown>("/diet/options"),
 
   getSummary: () => apiClient<unknown>("/dashboard/summary"),
+  getUserSummary: () => apiClient<unknown>("/dashboard/user-summary"),
 
   getProfile: () => apiClient<unknown>("/users/me"),
   updateProfile: (data: unknown) =>

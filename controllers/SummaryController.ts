@@ -10,54 +10,96 @@ export class SummaryController {
     const userId = decoded.userId;
 
     try {
-      // Fetch all required data in parallel
-      const [streak, progress, logs, notifications, user] = await Promise.all([
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      // Fetch optimized data in parallel
+      const [
+        streak, 
+        progress, 
+        workoutsCount, 
+        caloriesAgg, 
+        todayLog,
+        recentLogs,
+        notifications, 
+        user, 
+        leaderboard, 
+        dietPlan, 
+        unreadCount
+      ] = await Promise.all([
         prisma.streak.findUnique({ where: { userId } }),
         prisma.progress.findMany({ where: { userId }, orderBy: { date: "desc" }, take: 1 }),
-        prisma.workoutLog.findMany({ where: { userId }, orderBy: { date: "desc" } }),
+        prisma.workoutLog.count({ where: { userId, completed: true } }),
+        prisma.workoutLog.aggregate({
+          where: { userId, completed: true },
+          _sum: { caloriesBurned: true }
+        }),
+        prisma.workoutLog.findFirst({
+          where: { userId, completed: true, date: { gte: today } }
+        }),
+        prisma.workoutLog.findMany({
+          where: { userId, completed: true },
+          orderBy: { date: "desc" },
+          take: 3
+        }),
         prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
-        prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+        prisma.user.findUnique({ where: { id: userId } }),
+        prisma.leaderboard.findUnique({ where: { userId } }),
+        prisma.assignedDiet.findFirst({ where: { userId, isActive: true } }),
+        prisma.notification.count({ where: { userId, read: false } })
       ]);
 
       const currentStreak = streak?.currentStreak || 0;
-      const weightProgress = progress.length > 0 && progress[0].weight ? `${progress[0].weight} kg` : "—";
-      const workoutsCompleted = logs.length;
-      
-      // Calculate calories burned: Assume 320 calories per workout on average
-      const caloriesBurned = workoutsCompleted * 320;
+      const highestStreak = streak?.longestStreak || 0;
+      const workoutsCompleted = workoutsCount;
+      const totalCaloriesBurned = caloriesAgg._sum.caloriesBurned || 0;
+      const todayCaloriesBurned = todayLog?.caloriesBurned || 0;
+      const todayWorkoutStatus = todayLog ? "Done" : "Pending";
+
+      // Leaderboard Rank
+      const leaderboardRank = leaderboard?.rank || "—";
+      const currentScore = leaderboard?.score || 0;
 
       // Weekly Workout Data for chart (last 7 days)
       const weeklyWorkoutData = [];
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      
+      // Fetch daily calories for the last 7 days in parallel
+      const dailyQueries = [];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         d.setHours(0,0,0,0);
-        
         const nextD = new Date(d);
         nextD.setDate(d.getDate() + 1);
-
-        const count = logs.filter(l => new Date(l.date) >= d && new Date(l.date) < nextD).length;
-        weeklyWorkoutData.push({ day: days[d.getDay()], workouts: count });
+        
+        dailyQueries.push(
+          prisma.workoutLog.aggregate({
+            where: { userId, completed: true, date: { gte: d, lt: nextD } },
+            _sum: { caloriesBurned: true }
+          }).then(res => ({ day: days[d.getDay()], calories: res._sum.caloriesBurned || 0 }))
+        );
       }
+      const weeklyResults = await Promise.all(dailyQueries);
+      weeklyWorkoutData.push(...weeklyResults);
 
-      // Calories Trend Data for chart (last 6 weeks)
-      const caloriesTrendData = [];
-      for (let i = 5; i >= 0; i--) {
-        // Just mock this dynamically for now based on workouts, since we don't have extensive diet logs yet
-        // In a real app we would sum up daily diet calories over each week
-        const baseCalories = 2000 + (Math.random() * 500);
-        caloriesTrendData.push({ week: `W${6-i}`, calories: Math.floor(baseCalories) });
-      }
-
-      // Activities mapped from notifications
-      const activities = notifications.map(n => ({
-        icon: n.category === "WORKOUT" ? "🏋️" : n.category === "NUTRITION" ? "🥗" : "🔔",
-        title: n.title,
-        description: n.message,
-        time: "Recent", // In a real app, calculate timeago from n.createdAt
-        type: n.category?.toLowerCase() || "general"
-      }));
+      // Recent Activity combining logs and notifications
+      const activities = [
+        ...recentLogs.map(l => ({
+          icon: "🏋️",
+          title: "Workout Completed",
+          description: `Burned ${l.caloriesBurned} kcal`,
+          time: new Date(l.date).toLocaleDateString(),
+          type: "workout"
+        })),
+        ...notifications.slice(0, 3).map(n => ({
+          icon: n.category === "NUTRITION" ? "🥗" : "🔔",
+          title: n.title,
+          description: n.message,
+          time: "Recent",
+          type: n.category?.toLowerCase() || "general"
+        }))
+      ].sort((a, b) => 0.5 - Math.random()).slice(0, 5);
 
       // Goal Progress (assuming 30 workouts is a milestone)
       const goalProgress = Math.min(Math.round((workoutsCompleted / 30) * 100), 100);
@@ -65,21 +107,29 @@ export class SummaryController {
       return NextResponse.json({
         success: true,
         data: {
-          userName: user?.name || "User",
-          stats: {
-            caloriesBurned,
-            workoutsCompleted,
-            currentStreak,
-            weightProgress
+          user: {
+            name: user?.name || "User",
+            email: user?.email,
+            fitnessLevel: user?.fitnessLevel,
+            goal: user?.goal
           },
+          todayWorkoutStatus,
+          todayCaloriesBurned,
+          totalCaloriesBurned,
+          currentStreak,
+          highestStreak,
+          workoutsCompleted,
+          todayDietPlan: dietPlan?.planName || "Standard Plan",
+          progressPercentage: goalProgress,
+          leaderboardRank,
+          unreadNotifications: unreadCount,
+          score: currentScore,
           charts: {
             weeklyWorkoutData,
-            caloriesTrendData
           },
           activities: activities.length > 0 ? activities : [
             { icon: "👋", title: "Welcome to GymStreak", description: "Start your first workout to see activity!", time: "Now", type: "system" }
           ],
-          goalProgress
         }
       });
     } catch (error: unknown) {

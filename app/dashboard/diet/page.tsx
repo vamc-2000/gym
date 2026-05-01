@@ -74,9 +74,10 @@ export default function DietPage() {
 
           // Override with profile preference if available
           if (profileRes.success && profileRes.data) {
-            const pref = (profileRes.data as any).dietaryPreference;
-            if (pref === "Vegetarian" || pref === "Vegan") initialType = "VEG";
-            else if (pref === "Non-Vegetarian") initialType = "NON_VEG";
+            const pref = (profileRes.data as any).dietPreference || (profileRes.data as any).dietaryPreference;
+            if (pref === "VEG") initialType = "VEG";
+            else if (pref === "NON_VEG") initialType = "NON_VEG";
+            else if (pref === "BOTH") initialType = "VEG";
           }
 
           setSelectedType(initialType);
@@ -192,8 +193,16 @@ export default function DietPage() {
       ) : (
         <div className="space-y-6">
           {meals.length === 0 && (
-            <div className="text-center py-12 bg-dash-text/5 rounded-2xl border border-dashed border-dash-border-subtle">
-              <p className="text-dash-text-dim">No items found for this plan type.</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center gap-4 bg-dash-text/5 rounded-2xl border border-dashed border-dash-border-subtle">
+              <div className="text-4xl">🥗</div>
+              <h3 className="text-dash-text font-bold">No plan found for your current level</h3>
+              <p className="text-dash-text-dim text-sm max-w-xs">We couldn't find a matching diet plan. Please ensure your goal and level are set correctly in your profile.</p>
+              <button 
+                onClick={() => window.location.href = '/dashboard/profile'}
+                className="px-6 py-2 bg-neon-green/10 hover:bg-neon-green/20 border border-neon-green/30 rounded-full text-neon-green text-sm font-bold transition-all"
+              >
+                Go to Profile
+              </button>
             </div>
           )}
           {meals.map((meal, i) => {

@@ -26,13 +26,16 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
     router.push("/");
   };
 
-  const [greeting] = useState(() => {
-    if (typeof window === "undefined") return "Welcome";
+  const [greeting, setGreeting] = useState("Welcome");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
     const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
-  });
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
   const [unreadCount, setUnreadCount] = useState(0);
 

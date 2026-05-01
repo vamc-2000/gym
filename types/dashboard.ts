@@ -9,6 +9,9 @@ export type Exercise = {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   duration?: string;
   notes?: string;
+  imageUrl?: string;
+  instructions?: string[];
+  caloriesBurn: number;
 };
 
 
@@ -27,6 +30,7 @@ export type AuthUser = {
   role: "USER" | "ADMIN" | "SUPER_ADMIN";
   fitnessLevel?: string;
   goal?: string;
+  workoutStartDate?: string;
 };
 
 export type DashboardState = {
@@ -37,8 +41,16 @@ export type DashboardState = {
   stats: {
     workoutsCompleted: number;
     caloriesBurned: number;
+    todayCaloriesBurned: number;
+    currentStreak: number;
+    highestStreak: number;
+    score: number;
     currentBMI: string;
     leaderboardRank: string;
+    todayWorkoutStatus: string;
+    todayDietPlan: string;
+    progressPercentage: number;
+    unreadNotifications: number;
   };
   weeklyActivity: { day: string; calories: number }[];
   hydration: {
@@ -57,4 +69,12 @@ export type DashboardState = {
   };
   workoutPlan: WorkoutDay[];
   nextWorkout: WorkoutDay | null;
+  currentWorkoutDay: number;
+  activities: {
+    icon: string;
+    title: string;
+    description: string;
+    time: string;
+    type: string;
+  }[];
 };

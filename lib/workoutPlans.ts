@@ -1,70 +1,80 @@
-import { WorkoutDay } from "@/types/dashboard";
+import { WorkoutDay, Exercise } from "@/types/dashboard";
+
+const generatePlan = (baseLevel: "Beginner" | "Intermediate" | "Advanced"): WorkoutDay[] => {
+  return Array.from({ length: 30 }, (_, i) => {
+    const dayNum = i + 1;
+    const cycleDay = (i % 7) + 1;
+
+    // Within each level, we still have a slight progression or variation
+    let title = "";
+    let exercises: Exercise[] = [];
+
+    if (cycleDay === 7) {
+      title = "😴 Rest & Recovery";
+      exercises = [
+        {
+          id: `ex-${baseLevel}-${dayNum}-1`,
+          name: "Complete Rest",
+          sets: 1,
+          reps: "Rest Day",
+          restTime: "All Day",
+          muscleGroup: "Recovery",
+          difficulty: baseLevel,
+          instructions: ["Rest and recover.", "Hydrate.", "Sleep 8 hours."],
+          caloriesBurn: 0
+        }
+      ];
+    } else if (cycleDay === 6) {
+      title = "🧘 Active Recovery";
+      exercises = [
+        {
+          id: `ex-${baseLevel}-${dayNum}-1`,
+          name: baseLevel === "Advanced" ? "Power Yoga" : "Gentle Stretching",
+          sets: 1,
+          reps: "20 min",
+          restTime: "None",
+          muscleGroup: "Flexibility",
+          difficulty: baseLevel,
+          instructions: ["Focus on breathing.", "Hold each pose."],
+          caloriesBurn: 120
+        }
+      ];
+    } else {
+      if (baseLevel === "Beginner") {
+        title = `🏋️ Beginner Foundation Day ${dayNum}`;
+        exercises = [
+          { id: `ex-beg-${dayNum}-1`, name: "Bodyweight Squats", sets: 3, reps: "10-12", restTime: "60s", muscleGroup: "Legs", difficulty: "Beginner", instructions: ["Feet shoulder width.", "Back straight."], caloriesBurn: 50 },
+          { id: `ex-beg-${dayNum}-2`, name: "Knee Pushups", sets: 3, reps: "8-10", restTime: "60s", muscleGroup: "Chest", difficulty: "Beginner", instructions: ["On knees.", "Body straight."], caloriesBurn: 40 },
+          { id: `ex-beg-${dayNum}-3`, name: "Bird Dog", sets: 3, reps: "10 each", restTime: "45s", muscleGroup: "Core", difficulty: "Beginner", instructions: ["On all fours.", "Opposite arm/leg."], caloriesBurn: 30 }
+        ];
+      } else if (baseLevel === "Intermediate") {
+        title = `💪 Intermediate Power Day ${dayNum}`;
+        exercises = [
+          { id: `ex-int-${dayNum}-1`, name: "Goblet Squats", sets: 4, reps: "12", restTime: "60s", muscleGroup: "Legs", difficulty: "Intermediate", instructions: ["Hold weight at chest.", "Deep squat."], caloriesBurn: 70 },
+          { id: `ex-int-${dayNum}-2`, name: "Standard Pushups", sets: 4, reps: "15", restTime: "60s", muscleGroup: "Chest", difficulty: "Intermediate", instructions: ["Hands wide.", "Tight core."], caloriesBurn: 60 },
+          { id: `ex-int-${dayNum}-3`, name: "Mountain Climbers", sets: 3, reps: "30s", restTime: "45s", muscleGroup: "Core", difficulty: "Intermediate", instructions: ["High plank.", "Drive knees."], caloriesBurn: 80 }
+        ];
+      } else {
+        title = `🔥 Advanced Peak Day ${dayNum}`;
+        exercises = [
+          { id: `ex-adv-${dayNum}-1`, name: "Pistol Squats", sets: 4, reps: "8 each", restTime: "90s", muscleGroup: "Legs", difficulty: "Advanced", instructions: ["Single leg.", "Balance."], caloriesBurn: 90 },
+          { id: `ex-adv-${dayNum}-2`, name: "Diamond Pushups", sets: 4, reps: "20", restTime: "60s", muscleGroup: "Chest", difficulty: "Advanced", instructions: ["Hands together.", "Chest to floor."], caloriesBurn: 80 },
+          { id: `ex-adv-${dayNum}-3`, name: "L-Sit Hold", sets: 4, reps: "20s", restTime: "60s", muscleGroup: "Core", difficulty: "Advanced", instructions: ["Raise legs.", "Keep arms straight."], caloriesBurn: 70 }
+        ];
+      }
+    }
+
+    return {
+      id: `day-${baseLevel}-${dayNum}`,
+      day: `Day ${dayNum}`,
+      title,
+      exercises
+    };
+  });
+};
 
 export const WORKOUT_PLANS: Record<string, WorkoutDay[]> = {
-  beginner: [
-    {
-      id: "beg-1",
-      day: "Monday",
-      title: "Full Body Basics",
-      exercises: [
-        { id: "e-b1", name: "Bodyweight Squats", sets: 3, reps: "10-12", restTime: "60 sec", muscleGroup: "Legs", difficulty: "Beginner" },
-        { id: "e-b2", name: "Wall Pushups", sets: 3, reps: "8-10", restTime: "60 sec", muscleGroup: "Chest", difficulty: "Beginner" },
-        { id: "e-b3", name: "Walking", duration: "15 min", sets: 1, reps: "1", restTime: "None", muscleGroup: "Cardio", difficulty: "Beginner" }
-      ]
-    },
-    {
-      id: "beg-2",
-      day: "Wednesday",
-      title: "Core & Balance",
-      exercises: [
-        { id: "e-b4", name: "Bird Dog", sets: 3, reps: "10 per side", restTime: "45 sec", muscleGroup: "Core", difficulty: "Beginner" },
-        { id: "e-b5", name: "Plank", sets: 3, reps: "20-30 sec", restTime: "60 sec", muscleGroup: "Core", difficulty: "Beginner" },
-        { id: "e-b6", name: "Knee-to-Chest", sets: 3, reps: "12", restTime: "45 sec", muscleGroup: "Flexibility", difficulty: "Beginner" }
-      ]
-    }
-  ],
-  intermediate: [
-    {
-      id: "int-1",
-      day: "Monday",
-      title: "Strength + Conditioning",
-      exercises: [
-        { id: "e-i1", name: "Goblet Squats", sets: 4, reps: "10-12", restTime: "60 sec", muscleGroup: "Legs", difficulty: "Intermediate" },
-        { id: "e-i2", name: "Pushups", sets: 4, reps: "12-15", restTime: "60 sec", muscleGroup: "Chest", difficulty: "Intermediate" },
-        { id: "e-i3", name: "HIIT Bike", duration: "20 min", sets: 1, reps: "1", restTime: "None", muscleGroup: "Cardio", difficulty: "Intermediate" }
-      ]
-    },
-    {
-      id: "int-2",
-      day: "Wednesday",
-      title: "Upper Body Hypertrophy",
-      exercises: [
-        { id: "e-i4", name: "Dumbbell Press", sets: 4, reps: "10-12", restTime: "90 sec", muscleGroup: "Chest", difficulty: "Intermediate" },
-        { id: "e-i5", name: "Pull Ups", sets: 3, reps: "6-8", restTime: "120 sec", muscleGroup: "Back", difficulty: "Intermediate" },
-        { id: "e-i6", name: "Bicep Curls", sets: 3, reps: "12", restTime: "60 sec", muscleGroup: "Arms", difficulty: "Intermediate" }
-      ]
-    }
-  ],
-  advanced: [
-    {
-      id: "adv-1",
-      day: "Monday",
-      title: "Advanced Strength",
-      exercises: [
-        { id: "e-a1", name: "Barbell Squats", sets: 5, reps: "5-8", restTime: "120 sec", muscleGroup: "Legs", difficulty: "Advanced" },
-        { id: "e-a2", name: "Bench Press", sets: 5, reps: "5-8", restTime: "120 sec", muscleGroup: "Chest", difficulty: "Advanced" },
-        { id: "e-a3", name: "HIIT Sprints", duration: "25 min", sets: 1, reps: "1", restTime: "None", muscleGroup: "Cardio", difficulty: "Advanced" }
-      ]
-    },
-    {
-      id: "adv-2",
-      day: "Wednesday",
-      title: "Power & Explosiveness",
-      exercises: [
-        { id: "e-a4", name: "Deadlift", sets: 5, reps: "3-5", restTime: "180 sec", muscleGroup: "Back/Legs", difficulty: "Advanced" },
-        { id: "e-a5", name: "Box Jumps", sets: 4, reps: "8", restTime: "90 sec", muscleGroup: "Legs", difficulty: "Advanced" },
-        { id: "e-a6", name: "Weighted Pull Ups", sets: 4, reps: "6-8", restTime: "120 sec", muscleGroup: "Back", difficulty: "Advanced" }
-      ]
-    }
-  ]
+  Beginner: generatePlan("Beginner"),
+  Intermediate: generatePlan("Intermediate"),
+  Advanced: generatePlan("Advanced")
 };

@@ -7,7 +7,7 @@ export class ScheduleService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    return await prisma.scheduleItem.findMany({
+    const items = await prisma.scheduleItem.findMany({
       where: {
         userId,
         date: {
@@ -17,6 +17,17 @@ export class ScheduleService {
       },
       orderBy: { time: 'asc' }
     });
+
+    // Deduplicate items based on title and time to fix "two this for each" issue
+    const uniqueItems = items.reduce((acc: any[], current) => {
+      const isDuplicate = acc.find(item => item.title === current.title && item.time === current.time);
+      if (!isDuplicate) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    return uniqueItems;
   }
 
   async generateDailySchedule(userId: string, date: Date) {

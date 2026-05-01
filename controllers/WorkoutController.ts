@@ -39,8 +39,8 @@ export class WorkoutController {
     if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
-      const { workoutId } = await req.json();
-      const log = await workoutService.completeWorkout(decoded.userId, workoutId);
+      const { workoutId, dayNumber } = await req.json();
+      const log = await workoutService.completeWorkout(decoded.userId, workoutId, dayNumber);
       return NextResponse.json({ success: true, data: log });
     } catch (error: unknown) {
       return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });

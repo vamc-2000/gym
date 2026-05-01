@@ -33,10 +33,13 @@ export const authService = {
       requiresAuth: false,
     });
 
-    if (res.success && res.data) {
-      const data = res.data as any;
-      if (res.accessToken && res.refreshToken) {
-        tokenManager.setTokens(res.accessToken, res.refreshToken, data);
+    if (res.success) {
+      const data = res.data || res.user || res;
+      const accessToken = res.accessToken || (res.data as any)?.accessToken;
+      const refreshToken = res.refreshToken || (res.data as any)?.refreshToken;
+      
+      if (accessToken && refreshToken) {
+        tokenManager.setTokens(accessToken, refreshToken, data);
         tokenManager.setUser(data);
       }
     }
@@ -51,10 +54,11 @@ export const authService = {
       requiresAuth: false,
     });
 
-    if (res.success && res.data) {
-      const data = res.data as any;
-      const token = res.accessToken || res.token;
-      const refresh = res.refreshToken || "";
+    if (res.success) {
+      const data = res.data || res.user || res;
+      const token = res.accessToken || res.token || (res.data as any)?.accessToken;
+      const refresh = res.refreshToken || (res.data as any)?.refreshToken || "";
+      
       if (token) {
         tokenManager.setTokens(token, refresh, data);
         tokenManager.setUser(data);

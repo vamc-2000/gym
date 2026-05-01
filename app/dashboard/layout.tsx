@@ -7,9 +7,21 @@ import { NotificationManager, triggerToast } from "@/components/NotificationMana
 import { tokenManager } from "@/lib/auth";
 import { WorkoutProvider } from "@/context/WorkoutContext";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
 export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ThemeProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </ThemeProvider>
+  );
+}
+
+function DashboardContent({
   children,
 }: {
   children: React.ReactNode;
@@ -17,8 +29,10 @@ export default function DashboardLayout({
   const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [userName, setUserName] = useState("Athlete");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const user = tokenManager.getUser();
       if (user?.name) {
@@ -78,7 +92,7 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="min-h-screen bg-dash-bg text-dash-text relative overflow-hidden transition-colors duration-500">
+    <div data-theme={theme} className="min-h-screen bg-dash-bg text-dash-text relative overflow-hidden transition-colors duration-500">
       {/* Sunny Background Blob */}
       {theme === "light" && (
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-neon-yellow/20 rounded-full blur-[100px] animate-[solar-pulse_8s_infinite] pointer-events-none z-0" />

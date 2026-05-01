@@ -35,7 +35,6 @@ export default function SchedulePage() {
       if (res.success && res.data) {
         const data = res.data as any[];
         setItems(data);
-        checkAlerts(data);
       }
 
     } catch {
@@ -43,18 +42,6 @@ export default function SchedulePage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const checkAlerts = (scheduleItems: ScheduleItem[]) => {
-    const nowHours = new Date().getHours().toString().padStart(2, '0');
-    const nowMins = new Date().getMinutes().toString().padStart(2, '0');
-    const currentHM = `${nowHours}:${nowMins}`;
-    
-    scheduleItems.forEach(item => {
-      if (item.time === currentHM && item.status === "upcoming") {
-        triggerToast("Reminder!", `It's time for: ${item.title}`, item.type);
-      }
-    });
   };
 
   const markComplete = async (id: string) => {
