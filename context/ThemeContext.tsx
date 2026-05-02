@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 type Theme = "dark" | "light" | "cyberpunk" | "midnight";
 
@@ -14,18 +14,28 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("gymstreak_theme") as Theme;
-    if (savedTheme) {
-      setThemeState(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
+  const initializeTheme = useCallback(() => {
+    const saved = localStorage.getItem("gymstreak_theme") as Theme;
+    if (saved && saved !== theme) {
+      setThemeState(saved);
     }
-  }, []);
+  }, [theme]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      initializeTheme();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [initializeTheme]);
+
+  useEffect(() => {
+    // No longer setting global attribute to avoid affecting landing pages
+  }, [theme]);
+
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("gymstreak_theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
   };
 
   return (

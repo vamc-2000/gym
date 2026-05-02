@@ -24,12 +24,14 @@ export default function LoginPage() {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (!email.toLowerCase().endsWith("@gmail.com") && !email.toLowerCase().endsWith("@gymstreak.com")) {
+      newErrors.email = "Only @gmail.com or @gymstreak.com emails are allowed";
     }
 
     if (!password) {
       newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     setErrors(newErrors);

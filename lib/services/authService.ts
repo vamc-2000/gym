@@ -18,18 +18,35 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  password: string;
+}
+
+export interface AuthData {
+  user: any;
+  accessToken: string;
+  refreshToken: string;
+}
+
 export const authService = {
+
   register: async (payload: RegisterPayload) => {
-    const res = await apiClient("/auth/register", {
+    const res = await apiClient<AuthData>("/auth/register", {
       method: "POST",
       body: payload,
       requiresAuth: false,
     });
 
-    if (res.success && res.data) {
-      if (res.accessToken && res.refreshToken) {
-        tokenManager.setTokens(res.accessToken, res.refreshToken, res.data);
-        tokenManager.setUser(res.data);
+    if (res.success) {
+      const data = res.data?.user || res.data;
+      const accessToken = res.data?.accessToken;
+      const refreshToken = res.data?.refreshToken;
+
+      if (accessToken && refreshToken) {
+        tokenManager.setTokens(accessToken, refreshToken, data);
+        tokenManager.setUser(data);
       }
     }
 
@@ -37,19 +54,20 @@ export const authService = {
   },
 
   login: async (payload: LoginPayload) => {
-    const res = await apiClient("/auth/login", {
+    const res = await apiClient<AuthData>("/auth/login", {
       method: "POST",
       body: payload,
       requiresAuth: false,
     });
 
     if (res.success) {
-      const token = res.accessToken || res.token;
-      const refresh = res.refreshToken || "";
-      const user = res.user || res.data;
+      const data = res.data?.user || res.data;
+      const token = res.data?.accessToken;
+      const refresh = res.data?.refreshToken || "";
+
       if (token) {
-        tokenManager.setTokens(token, refresh, user);
-        tokenManager.setUser(user);
+        tokenManager.setTokens(token, refresh, data);
+        tokenManager.setUser(data);
       }
     }
 
@@ -65,18 +83,16 @@ export const authService = {
   },
 
   verifyOTP: async (email: string, otp: string) => {
-    const res = await apiClient("/auth/verify-otp", {
+    const res = await apiClient<AuthData>("/auth/verify-otp", {
       method: "POST",
       body: { email, otp },
       requiresAuth: false,
     });
 
-    if (res.success) {
-      const token = res.accessToken || res.token;
-      const refresh = res.refreshToken || "";
-      const user = res.user || res.data;
-      if (token) {
-        tokenManager.setTokens(token, refresh, user);
+    if (res.success && res.data) {
+      const { accessToken, refreshToken, user } = res.data;
+      if (accessToken) {
+        tokenManager.setTokens(accessToken, refreshToken || "", user);
         tokenManager.setUser(user);
       }
     }
@@ -92,7 +108,8 @@ export const authService = {
     });
   },
 
-  resetPassword: async (payload: any) => {
+  resetPassword: async (payload: ResetPasswordPayload) => {
+
     return apiClient("/auth/reset-password", {
       method: "POST",
       body: payload,

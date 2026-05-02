@@ -1,377 +1,471 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { useWorkout } from "@/context/WorkoutContext";
-import { Exercise, WorkoutDay } from "@/types/dashboard";
-import { ExerciseCard } from "@/components/dashboard/ExerciseCard";
-import { ExerciseFormModal } from "@/components/dashboard/ExerciseFormModal";
 import { triggerToast } from "@/components/NotificationManager";
-
-const DEFAULT_WORKOUT_PLAN: WorkoutDay[] = [
-  {
-    id: "day-1",
-    day: "Monday",
-    title: "Full Body Circuit",
-    exercises: [
-      { id: "e1", name: "Burpees", sets: 3, reps: 12, restTime: "45 sec", muscleGroup: "Full Body", difficulty: "Intermediate" },
-      { id: "e2", name: "Jump Squats", sets: 3, reps: 15, restTime: "45 sec", muscleGroup: "Legs", difficulty: "Intermediate" },
-      { id: "e3", name: "Mountain Climbers", sets: 3, reps: "30 sec", restTime: "30 sec", muscleGroup: "Core", difficulty: "Intermediate" },
-      { id: "e4", name: "Push-ups", sets: 3, reps: 12, restTime: "60 sec", muscleGroup: "Chest", difficulty: "Beginner" },
-      { id: "e5", name: "Plank", sets: 3, reps: "45 sec", restTime: "30 sec", muscleGroup: "Core", difficulty: "Beginner" },
-    ]
-  },
-  {
-    id: "day-2",
-    day: "Tuesday",
-    title: "LISS Cardio",
-    exercises: [
-      { id: "e6", name: "Treadmill Walk", sets: 1, reps: "30 min", restTime: "None", muscleGroup: "Cardio", difficulty: "Beginner", notes: "Low intensity" },
-      { id: "e7", name: "Cycling", sets: 1, reps: "20 min", restTime: "None", muscleGroup: "Cardio", difficulty: "Beginner", notes: "Low intensity" },
-      { id: "e8", name: "Elliptical Trainer", sets: 1, reps: "15 min", restTime: "None", muscleGroup: "Cardio", difficulty: "Beginner" },
-      { id: "e9", name: "Stretching", sets: 1, reps: "10 min", restTime: "None", muscleGroup: "Flexibility", difficulty: "Beginner" },
-      { id: "e10", name: "Breathing Cooldown", sets: 1, reps: "5 min", restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-    ]
-  },
-  {
-    id: "day-3",
-    day: "Wednesday",
-    title: "Upper Body & Core",
-    exercises: [
-      { id: "e11", name: "Push-ups", sets: 4, reps: 12, restTime: "60 sec", muscleGroup: "Chest", difficulty: "Beginner" },
-      { id: "e12", name: "Dumbbell Rows", sets: 4, reps: 10, restTime: "60 sec", muscleGroup: "Back", difficulty: "Intermediate" },
-      { id: "e13", name: "Plank", sets: 3, reps: "45 sec", restTime: "30 sec", muscleGroup: "Core", difficulty: "Beginner" },
-      { id: "e14", name: "Shoulder Press", sets: 3, reps: 12, restTime: "60 sec", muscleGroup: "Shoulders", difficulty: "Intermediate" },
-      { id: "e15", name: "Bicycle Crunches", sets: 3, reps: 20, restTime: "30 sec", muscleGroup: "Core", difficulty: "Beginner" },
-    ]
-  },
-  {
-    id: "day-4",
-    day: "Thursday",
-    title: "HIIT Intervals",
-    exercises: [
-      { id: "e16", name: "Sprint Intervals", sets: 8, reps: "30s sprint / 60s walk", restTime: "None", muscleGroup: "Cardio", difficulty: "Advanced" },
-      { id: "e17", name: "High Knees", sets: 4, reps: "30 sec", restTime: "30 sec", muscleGroup: "Cardio", difficulty: "Intermediate" },
-      { id: "e18", name: "Jumping Jacks", sets: 4, reps: 40, restTime: "30 sec", muscleGroup: "Cardio", difficulty: "Beginner" },
-      { id: "e19", name: "Battle Rope", sets: 4, reps: "30 sec", restTime: "45 sec", muscleGroup: "Arms", difficulty: "Advanced" },
-      { id: "e20", name: "Burpees", sets: 3, reps: 10, restTime: "60 sec", muscleGroup: "Full Body", difficulty: "Intermediate" },
-    ]
-  },
-  {
-    id: "day-5",
-    day: "Friday",
-    title: "Lower Body Burn",
-    exercises: [
-      { id: "e21", name: "Walking Lunges", sets: 4, reps: "12 each leg", restTime: "60 sec", muscleGroup: "Legs", difficulty: "Intermediate" },
-      { id: "e22", name: "Glute Bridges", sets: 4, reps: 15, restTime: "45 sec", muscleGroup: "Glutes", difficulty: "Beginner" },
-      { id: "e23", name: "Step-ups", sets: 3, reps: "12 each leg", restTime: "60 sec", muscleGroup: "Legs", difficulty: "Intermediate" },
-      { id: "e24", name: "Squats", sets: 4, reps: 15, restTime: "60 sec", muscleGroup: "Legs", difficulty: "Beginner" },
-      { id: "e25", name: "Calf Raises", sets: 4, reps: 20, restTime: "45 sec", muscleGroup: "Calves", difficulty: "Beginner" },
-    ]
-  },
-  {
-    id: "day-6",
-    day: "Saturday",
-    title: "Active Recovery",
-    exercises: [
-      { id: "e26", name: "Yoga Flow", sets: 1, reps: "20 min", restTime: "None", muscleGroup: "Flexibility", difficulty: "Beginner" },
-      { id: "e27", name: "Light Walking", sets: 1, reps: "20 min", restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-      { id: "e28", name: "Foam Rolling", sets: 1, reps: "10 min", restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-      { id: "e29", name: "Hip Mobility", sets: 3, reps: 12, restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-      { id: "e30", name: "Shoulder Mobility", sets: 3, reps: 12, restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-      { id: "e31", name: "Deep Breathing", sets: 1, reps: "5 min", restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-    ]
-  },
-  {
-    id: "day-7",
-    day: "Sunday",
-    title: "Rest Day",
-    exercises: [
-      { id: "e32", name: "Optional Light Walk", sets: 1, reps: "15-20 min", restTime: "None", muscleGroup: "Recovery", difficulty: "Beginner" },
-      { id: "e33", name: "Stretching", sets: 1, reps: "10 min", restTime: "None", muscleGroup: "Flexibility", difficulty: "Beginner" },
-    ]
-  },
-];
-
-import { WORKOUT_PLANS } from "@/lib/workoutPlans";
 import { tokenManager } from "@/lib/auth";
 
+type Exercise = {
+  id: string;
+  name: string;
+  bodyPart: string;
+  sets: number;
+  reps: string;
+  duration?: string;
+  restTime: string;
+  caloriesBurn: number;
+  difficulty: string;
+  equipment: string;
+  instructions: string[];
+  instructionsTe?: string[];
+};
+
+type WorkoutDay = {
+  day: number;
+  title: string;
+  goal?: string;
+  bodyPartFocus?: string;
+  estimatedDuration?: number;
+  estimatedCalories?: number;
+  exercises?: Exercise[];
+};
+
+const getCompletedDays = (value: unknown): number[] => {
+  if (Array.isArray(value)) return value.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+    } catch { return []; }
+  }
+  if (value && typeof value === "object") {
+    const maybeObject = value as { days?: unknown; completedDays?: unknown };
+    const nested = maybeObject.days ?? maybeObject.completedDays;
+    if (Array.isArray(nested)) return nested.map((item) => Number(item)).filter((item) => Number.isFinite(item));
+  }
+  return [];
+};
+
+interface UserPlan {
+  id: string;
+  goal: string;
+  currentDay: number;
+  totalDays: number;
+  completedDays: number[];
+  workoutPlan: WorkoutDay[];
+  currentWorkout: WorkoutDay;
+  isLockedUntilTomorrow: boolean;
+  countdownSeconds: number;
+}
+
 export default function WorkoutPage() {
-  const [plan, setPlan] = useState<WorkoutDay[]>([]);
+  const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [selectedWorkout, setSelectedWorkout] = useState<WorkoutDay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
-  const [activeDayId, setActiveDayId] = useState<string | null>(null);
-  
-  const { 
-    seconds, 
-    isActive, 
-    isPaused, 
-    completedDays,
-    startTimer, 
-    pauseTimer, 
-    resumeTimer, 
-    resetTimer, 
-    completeWorkout, 
-    formatTime 
+  const [lang, setLang] = useState<"en" | "te">("en");
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
+
+  const {
+    seconds,
+    isActive,
+    isPaused,
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    resetTimer,
+    formatTime,
   } = useWorkout();
 
-  useEffect(() => {
-    const user = tokenManager.getUser();
-    const level = (user?.fitnessLevel || "beginner").toLowerCase();
-    
-    const savedPlan = localStorage.getItem(`gymstreak_workout_plan_${user?.id}_${level}`);
-    if (savedPlan) {
-      setPlan(JSON.parse(savedPlan));
-      setLoading(false);
-    } else {
-      // Use predefined plan for level
-      const initialPlan = WORKOUT_PLANS[level] || WORKOUT_PLANS.beginner;
-      setPlan(initialPlan);
-      localStorage.setItem(`gymstreak_workout_plan_${user?.id}_${level}`, JSON.stringify(initialPlan));
+  const fetchUserPlan = useCallback(async () => {
+    try {
+      const res = await dashboardService.getUserPlan();
+      if (res.success && res.data) {
+        const plan = res.data as UserPlan;
+        setUserPlan(plan);
+        // Default to showing current day workout
+        setSelectedDay(plan.currentDay);
+        // Find current day's workout from plan if possible, otherwise use currentWorkout
+        const todayWorkout = plan.workoutPlan.find(d => d.day === plan.currentDay) || plan.currentWorkout;
+        setSelectedWorkout(todayWorkout);
+        
+        if (plan.isLockedUntilTomorrow) {
+          setCountdown(plan.countdownSeconds);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch user plan", err);
+      triggerToast("Error", "Could not load your workout plan", "error");
+    } finally {
       setLoading(false);
     }
   }, []);
 
-  const savePlan = (newPlan: WorkoutDay[]) => {
-    const user = tokenManager.getUser();
-    const level = (user?.fitnessLevel || "beginner").toLowerCase();
-    setPlan(newPlan);
-    localStorage.setItem(`gymstreak_workout_plan_${user?.id}_${level}`, JSON.stringify(newPlan));
+  useEffect(() => {
+    fetchUserPlan();
+  }, [fetchUserPlan]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            fetchUserPlan();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown, fetchUserPlan]);
+
+  const formatCountdown = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
   };
 
-
-  const handleEditExercise = (dayId: string, exercise: Exercise) => {
-    setActiveDayId(dayId);
-    setEditingExercise(exercise);
-    setIsModalOpen(true);
-  };
-
-  const handleAddExercise = (dayId: string) => {
-    setActiveDayId(dayId);
-    setEditingExercise(null);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteExercise = (dayId: string, exerciseId: string) => {
-    if (confirm("Are you sure you want to delete this exercise?")) {
-      const newPlan = plan.map(day => {
-        if (day.id === dayId) {
-          return {
-            ...day,
-            exercises: day.exercises.filter(ex => ex.id !== exerciseId)
-          };
-        }
-        return day;
-      });
-      savePlan(newPlan);
-      triggerToast("Deleted", "Exercise removed from plan", "info");
+  const speakInstructions = (exerciseId: string, instructions: string[]) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const text = instructions.join(". ");
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === "en" ? "en-US" : "te-IN";
+      utterance.rate = 0.9;
+      utterance.onstart = () => setSpeakingId(exerciseId);
+      utterance.onend = () => setSpeakingId(null);
+      utterance.onerror = () => setSpeakingId(null);
+      window.speechSynthesis.speak(utterance);
     }
   };
 
-  const handleSaveExercise = (exerciseData: Partial<Exercise>) => {
-    if (!activeDayId) return;
-
-    const newPlan = plan.map(day => {
-      if (day.id === activeDayId) {
-        if (editingExercise) {
-          // Update
-          return {
-            ...day,
-            exercises: day.exercises.map(ex => 
-              ex.id === editingExercise.id ? { ...ex, ...exerciseData } : ex
-            )
-          };
-        } else {
-          // Add
-          const newEx: Exercise = {
-            id: `e-${Date.now()}`,
-            name: exerciseData.name || "",
-            sets: exerciseData.sets || 3,
-            reps: exerciseData.reps || 12,
-            restTime: exerciseData.restTime || "60 sec",
-            muscleGroup: exerciseData.muscleGroup || "Full Body",
-            difficulty: exerciseData.difficulty || "Intermediate",
-            weight: exerciseData.weight,
-            notes: exerciseData.notes,
-          };
-          return {
-            ...day,
-            exercises: [...day.exercises, newEx]
-          };
-        }
-      }
-      return day;
-    });
-
-    savePlan(newPlan);
-    triggerToast("Success", editingExercise ? "Exercise updated" : "Exercise added", "success");
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setSpeakingId(null);
   };
 
-  if (loading) return (
+  const handleDaySelect = (day: WorkoutDay) => {
+    setSelectedDay(day.day);
+    setSelectedWorkout(day);
+  };
+
+  const handleCompleteWorkout = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/workout/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tokenManager.getAccessToken()}`
+        },
+        body: JSON.stringify({ workoutId: userPlan?.id })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        triggerToast("Great Job!", "Workout completed! History saved.", "success");
+        stopSpeaking();
+        resetTimer();
+        await fetchUserPlan();
+      } else {
+        triggerToast("Error", data.error || "Failed to complete workout", "error");
+      }
+    } catch (err) {
+      triggerToast("Error", "Something went wrong", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !userPlan) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-12 h-12 border-4 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
-      <div className="text-white/40 text-sm font-medium">Loading Workout Plan...</div>
+      <div className="text-dash-text-dim text-sm font-medium">Synchronizing Plan...</div>
     </div>
   );
 
-  const userRole = tokenManager.getUser()?.role;
-  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-  const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+  if (!userPlan) return (
+    <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 bg-dash-card border border-dash-border-subtle rounded-3xl p-12 text-center">
+      <div className="text-4xl">🧘</div>
+      <h2 className="text-xl font-bold text-dash-text">Setup your goal</h2>
+      <button onClick={() => window.location.href = '/dashboard/profile'} className="mt-4 px-6 py-2 bg-neon-blue/10 text-neon-blue rounded-full text-sm font-bold">Update Profile</button>
+    </div>
+  );
 
-  // Filter plan to show only today's workout
-  const todaysWorkout = plan.filter(day => day.day === currentDay);
-  const displayPlan = todaysWorkout.length > 0 ? todaysWorkout : plan.slice(0, 1); // Fallback to first day if not found
+  const completedDays = getCompletedDays(userPlan.completedDays);
 
+  const getDayStatus = (dayNum: number) => {
+    const isCompleted = completedDays.includes(dayNum);
+    const isPast = dayNum < userPlan.currentDay;
+    const isCurrent = dayNum === userPlan.currentDay;
+    const isFuture = dayNum > userPlan.currentDay;
+
+    if (isCompleted || isPast) return "completed";
+    if (isCurrent && !userPlan.isLockedUntilTomorrow) return "active";
+    if (isCurrent && userPlan.isLockedUntilTomorrow) return "completed_today_waiting";
+    if (isFuture) return "locked";
+    return "locked";
+  };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-32">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Training Schedule</h1>
-          <p className="text-white/40 text-sm">Customize your weekly routine and track progress</p>
+          <h1 className="text-3xl font-bold text-dash-text mb-2">Workout Roadmap</h1>
+          <div className="flex items-center gap-3">
+             <span className="px-3 py-1 bg-neon-blue/10 border border-neon-blue/20 rounded-full text-[10px] font-bold text-neon-blue uppercase">
+              Goal: {userPlan.goal.replace('_', ' ')}
+            </span>
+            <div className="flex bg-dash-card border border-dash-border-subtle rounded-lg p-0.5">
+              <button onClick={() => setLang("en")} className={`px-3 py-1 text-[10px] font-bold rounded-md ${lang === "en" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim"}`}>EN</button>
+              <button onClick={() => setLang("te")} className={`px-3 py-1 text-[10px] font-bold rounded-md ${lang === "te" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim"}`}>TE</button>
+            </div>
+          </div>
         </div>
-        
+
         {isActive && (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-6 px-6 py-4 bg-dash-card border border-neon-blue/30 rounded-2xl shadow-[0_0_30px_rgba(0,245,255,0.1)]"
-          >
-            <div className="flex flex-col">
+          <div className="flex items-center gap-6 px-6 py-4 bg-dash-card border border-neon-blue/30 rounded-2xl shadow-xl">
+             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold text-neon-blue tracking-widest">Active Session</span>
-              <span className="text-2xl font-mono font-bold text-white leading-none mt-1">{formatTime(seconds)}</span>
+              <span className="text-2xl font-mono font-bold text-dash-text leading-none mt-1">{formatTime(seconds)}</span>
             </div>
             <div className="flex gap-2">
-              <button 
-                onClick={isPaused ? resumeTimer : pauseTimer}
-                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
-              >
-                {isPaused ? "▶️" : "⏸️"}
-              </button>
-              <button 
-                onClick={resetTimer}
-                className="p-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-400 transition-all"
-              >
-                ⏹️
-              </button>
+              <button onClick={isPaused ? resumeTimer : pauseTimer} className="p-2.5 bg-dash-text/5 rounded-xl">{isPaused ? "▶️" : "⏸️"}</button>
+              <button onClick={resetTimer} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl">⏹️</button>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {displayPlan.map((day, i) => {
-          const isCompleted = completedDays.includes(day.id);
-          const isLocked = i > 0 && !completedDays.includes(plan[i-1].id) && !isCompleted;
+      {/* 30-Day Roadmap */}
+      <div className="relative">
+        <div className="flex gap-4 overflow-x-auto pb-6 pt-2 px-2 custom-scrollbar no-scrollbar">
+          {(userPlan.workoutPlan as WorkoutDay[]).map((day: WorkoutDay) => {
+            const status = getDayStatus(day.day);
+            const isSelected = selectedDay === day.day;
 
-          return (
-            <motion.div
-              key={day.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className={`glass-panel p-8 rounded-3xl border ${
-                isCompleted ? 'border-neon-green/30 bg-neon-green/5' : 
-                isLocked ? 'opacity-50 grayscale' : 'border-dash-border-subtle'
-              } flex flex-col relative overflow-hidden`}
-            >
-              <div className="absolute top-4 right-4 flex items-center gap-2">
-                {isCompleted && (
-                  <div className="bg-neon-green text-black px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-lg shadow-neon-green/20">
-                    <span>✓</span> COMPLETED
-                  </div>
-                )}
-                {day.day === currentDay && (
-                  <div className="bg-neon-blue text-dash-bg px-3 py-1 rounded-full text-[10px] font-bold">
-                    TODAY
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <div className="flex items-center gap-2 text-neon-blue mb-1">
-                  <span className="text-xs font-bold uppercase tracking-widest">{day.day}</span>
+            return (
+              <motion.div
+                key={day.day}
+                whileHover={status !== "locked" ? { y: -5 } : {}}
+                onClick={() => status !== "locked" && handleDaySelect(day)}
+                className={`flex-shrink-0 w-40 p-4 rounded-2xl border cursor-pointer transition-all ${
+                  isSelected ? "border-neon-blue bg-neon-blue/10 ring-1 ring-neon-blue/50 shadow-[0_0_20px_rgba(0,245,255,0.15)]" : 
+                  status === "active" ? "bg-neon-blue/5 border-neon-blue/20" : 
+                  status === "completed" || status === "completed_today_waiting" ? "bg-neon-green/5 border-neon-green/20" : 
+                  "bg-dash-card border-dash-border-subtle opacity-40 grayscale cursor-not-allowed"
+                }`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`text-[10px] font-black uppercase ${status === "active" || isSelected ? "text-neon-blue" : status.startsWith("completed") ? "text-neon-green" : "text-dash-text-dim"}`}>
+                    Day {day.day}
+                  </span>
+                  <span>{status.startsWith("completed") ? "✅" : status === "active" ? "🔓" : "🔒"}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white">{day.title}</h3>
-              </div>
-
-              <div className="flex-1 space-y-4 mb-8">
-                {day.exercises.map((ex) => (
-                  <ExerciseCard 
-                    key={ex.id}
-                    exercise={ex}
-                    onEdit={(ex) => handleEditExercise(day.id, ex)}
-                    onDelete={(id) => handleDeleteExercise(day.id, id)}
-                    isReadOnly={isAdmin || isCompleted || isLocked}
-                  />
-                ))}
-                
-                {!isAdmin && !isCompleted && !isLocked && (
-                  <button 
-                    onClick={() => handleAddExercise(day.id)}
-                    className="w-full py-3 border-2 border-dashed border-dash-border-subtle rounded-xl text-dash-text-dim text-sm font-bold hover:border-neon-blue/30 hover:text-neon-blue transition-all"
-                  >
-                    + Add Exercise
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-auto">
-                {!isAdmin && (
-                  isCompleted ? (
-                    <button 
-                      disabled
-                      className="w-full py-4 rounded-2xl bg-neon-green/10 text-neon-green font-bold text-sm border border-neon-green/20 cursor-not-allowed"
-                    >
-                      Already Completed
-                    </button>
-                  ) : isLocked ? (
-                    <div className="w-full py-4 rounded-2xl bg-dash-text/5 text-dash-text-dim font-bold text-sm text-center border border-dash-border-subtle">
-                      🔒 Complete Day {i} to unlock
-                    </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      {!isActive || (isActive && activeDayId !== day.id) ? (
-                        <button 
-                          onClick={() => {
-                            setActiveDayId(day.id);
-                            startTimer(day.id);
-                          }}
-                          className="flex-1 py-4 rounded-2xl bg-neon-blue text-dash-bg font-bold text-sm shadow-lg shadow-neon-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                          Start Timer
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => completeWorkout(day.id)}
-                          className="flex-1 py-4 rounded-2xl bg-neon-green text-black font-bold text-sm shadow-lg shadow-neon-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                          Complete Workout
-                        </button>
-                      )}
-                    </div>
-                  )
-                )}
-                {isAdmin && (
-                  <div className="w-full py-4 rounded-2xl bg-white/5 text-white/40 font-bold text-sm text-center border border-white/10">
-                    Admin View Mode
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
+                <h4 className="text-xs font-bold text-dash-text truncate mb-1">{day.title}</h4>
+                <p className="text-[9px] text-dash-text-dim uppercase tracking-wider">{day.bodyPartFocus}</p>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Workout View Area */}
+      <div className="grid grid-cols-1 gap-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedDay}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {getDayStatus(selectedDay) === "locked" ? (
+               <div className="glass-panel p-12 rounded-3xl border border-dash-border-subtle text-center space-y-6">
+                  <div className="text-6xl mb-4 grayscale">🔒</div>
+                  <h2 className="text-3xl font-black text-dash-text/40">Day {selectedDay} is Locked</h2>
+                  <p className="text-dash-text-dim max-w-md mx-auto italic">Finish your current daily goal to unlock this session.</p>
+               </div>
+            ) : selectedWorkout && (
+              <div className="glass-panel p-8 rounded-3xl border border-neon-blue/30">
+                {/* Header Section */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-neon-blue text-xs font-bold uppercase tracking-widest">
+                        Day {selectedDay} • {selectedWorkout.bodyPartFocus}
+                      </span>
+                      {getDayStatus(selectedDay).startsWith("completed") && (
+                        <span className="bg-neon-green/10 text-neon-green text-[9px] font-black px-2 py-0.5 rounded border border-neon-green/20 uppercase">Completed</span>
+                      )}
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-black text-dash-text tracking-tight">{selectedWorkout.title}</h2>
+                  </div>
 
-      <ExerciseFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveExercise}
-        initialData={editingExercise}
-      />
+                  {/* Actions / Stats Card */}
+                  <div className="bg-dash-bg/60 border border-dash-border-subtle p-6 rounded-3xl min-w-[320px]">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter">
+                          {getDayStatus(selectedDay) === "active" ? "Session Timer" : "Session Stats"}
+                        </span>
+                        <span className="text-3xl font-mono font-black text-dash-text">
+                          {getDayStatus(selectedDay) === "active" ? formatTime(seconds) : `${selectedWorkout.estimatedDuration}m`}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="text-right">
+                          <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter block">Exercises</span>
+                          <span className="text-sm font-bold text-dash-text">{selectedWorkout.exercises?.length || 0}</span>
+                        </div>
+                        <div className="w-px h-8 bg-dash-border-subtle mx-2 self-center"></div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter block">Burn</span>
+                          <span className="text-sm font-bold text-neon-green">{selectedWorkout.estimatedCalories}k</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {getDayStatus(selectedDay) === "active" ? (
+                        !isActive ? (
+                          <button
+                            onClick={async () => {
+                              try {
+                                await fetch('/api/workout/start', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${tokenManager.getAccessToken()}`
+                                  },
+                                  body: JSON.stringify({ workoutId: userPlan.id })
+                                });
+                              } catch (e) {}
+                              startTimer(`day-${selectedDay}`);
+                            }}
+                            className="flex-1 py-3 px-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl text-black font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-yellow-400/40 transition-all"
+                          >
+                            Start Workout
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={isPaused ? resumeTimer : pauseTimer}
+                              className="p-3 bg-white/10 rounded-xl text-white border border-white/20 hover:bg-white/20 transition-all"
+                            >
+                              {isPaused ? "▶️" : "⏸️"}
+                            </button>
+                            <button
+                              onClick={handleCompleteWorkout}
+                              disabled={loading || seconds < 10}
+                              className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl text-black font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-cyan-400/40 transition-all disabled:opacity-50"
+                            >
+                              {loading ? "Saving..." : "Finish Workout"}
+                            </button>
+                          </>
+                        )
+                      ) : getDayStatus(selectedDay) === "completed_today_waiting" ? (
+                        <div className="flex-1 flex flex-col items-center justify-center py-3 px-4 bg-dash-card border border-dash-border-subtle rounded-xl text-center">
+                           <span className="text-[9px] font-black text-dash-text-dim uppercase mb-1">Session Complete! Next unlocks in</span>
+                           <span className="text-xl font-mono font-black text-neon-blue">{formatCountdown(countdown)}</span>
+                        </div>
+                      ) : (
+                        <div className="flex-1 py-3 px-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex items-center justify-center gap-2">
+                           <span className="text-lg">✅</span>
+                           <span className="text-[10px] font-black text-neon-green uppercase tracking-widest">Completed Session</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Exercises List */}
+                <div className="grid grid-cols-1 gap-6 mb-4">
+                  {selectedWorkout.exercises?.map((ex: any) => {
+                    const instructions = lang === "te" && ex.instructionsTe ? ex.instructionsTe : ex.instructions;
+                    return (
+                      <div key={ex.id} className="bg-dash-bg/30 border border-dash-border-subtle rounded-2xl p-6 group hover:border-neon-blue/30 transition-all">
+                        <div className="flex flex-col lg:flex-row gap-6">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-4">
+                              <div>
+                                <h4 className="text-xl font-bold text-dash-text group-hover:text-neon-blue transition-colors">{ex.name}</h4>
+                                <span className="text-[10px] font-black bg-dash-text/10 px-2 py-1 rounded text-dash-text-dim uppercase">{ex.equipment}</span>
+                              </div>
+                              <button
+                                onClick={() => speakingId === ex.id ? stopSpeaking() : speakInstructions(ex.id, instructions)}
+                                className={`p-3 rounded-full border transition-all flex items-center gap-2 ${speakingId === ex.id ? "bg-red-500/10 border-red-500/20 text-red-400 animate-pulse" : "bg-neon-blue/10 border-neon-blue/20 text-neon-blue"}`}
+                              >
+                                {speakingId === ex.id ? "⏹️" : "🔊"}
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                              <div className="bg-neon-blue/5 p-3 rounded-xl border border-neon-blue/10">
+                                <span className="text-[10px] text-neon-blue font-bold uppercase block mb-1">Sets</span>
+                                <p className="text-lg font-black text-dash-text">{ex.sets}</p>
+                              </div>
+                              <div className="bg-neon-green/5 p-3 rounded-xl border border-neon-green/10">
+                                <span className="text-[10px] text-neon-green font-bold uppercase block mb-1">Reps</span>
+                                <p className="text-lg font-black text-dash-text">{ex.reps}</p>
+                              </div>
+                              <div className="bg-purple-500/5 p-3 rounded-xl border border-purple-500/10">
+                                <span className="text-[10px] text-purple-400 font-bold uppercase block mb-1">Rest</span>
+                                <p className="text-lg font-black text-dash-text">{ex.restTime}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3 bg-dash-card/50 p-6 rounded-2xl border border-dash-border-subtle">
+                              <p className="text-xs font-bold text-dash-text-dim uppercase tracking-widest">Instructions:</p>
+                              <ul className="space-y-2">
+                                {instructions.map((step: string, j: number) => (
+                                  <li key={j} className="text-sm text-dash-text-dim flex gap-3">
+                                    <span className="text-neon-blue font-bold min-w-[20px]">0{j+1}</span>
+                                    <span className={lang === "te" ? "font-medium" : ""}>{step}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Sticky Mobile Completion Bar */}
+      {isActive && getDayStatus(selectedDay) === "active" && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md p-4 bg-dash-bg/80 backdrop-blur-xl border border-neon-green/30 rounded-2xl z-50 shadow-2xl">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter">Current Session</span>
+              <span className="text-xl font-mono font-black text-dash-text">{formatTime(seconds)}</span>
+            </div>
+            <div className="flex gap-2">
+               <button onClick={isPaused ? resumeTimer : pauseTimer} className="p-2 bg-white/5 border border-white/10 rounded-lg">{isPaused ? "▶️" : "⏸️"}</button>
+            </div>
+          </div>
+          <button
+            onClick={handleCompleteWorkout}
+            disabled={loading || seconds < 10}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-black font-black text-lg shadow-lg shadow-cyan-400/20 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {loading ? "SAVING PROGRESS..." : "COMPLETE WORKOUT"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

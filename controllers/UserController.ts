@@ -22,11 +22,25 @@ export class UserController {
     try {
       const body = await req.json();
       
-      // Validation for Fitness Level
+      // 1. Map Fitness Level
       if (body.fitnessLevel) {
+        const inputLevel = body.fitnessLevel.toLowerCase();
         const validLevels = ["beginner", "intermediate", "advanced"];
-        if (!validLevels.includes(body.fitnessLevel.toLowerCase())) {
-          return NextResponse.json({ success: false, error: "Invalid fitness level" }, { status: 400 });
+        if (validLevels.includes(inputLevel)) {
+          body.fitnessLevel = inputLevel.charAt(0).toUpperCase() + inputLevel.slice(1);
+        }
+      }
+
+      // 2. Map Diet Preference
+      // Frontend might send Veg, Non-Veg, Both OR VEG, NON_VEG, BOTH
+      const dietInput = (body.dietPreference || body.dietaryPreference || "").toLowerCase();
+      if (dietInput) {
+        if (dietInput.includes("non")) {
+          body.dietPreference = "NON_VEG";
+        } else if (dietInput.includes("veg") && !dietInput.includes("non")) {
+          body.dietPreference = "VEG";
+        } else if (dietInput.includes("both")) {
+          body.dietPreference = "BOTH";
         }
       }
 

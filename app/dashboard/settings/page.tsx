@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
-import { useState, useEffect } from "react";
-import { GOALS } from "@/lib/constants";
+import { useEffect } from "react";
 import { dashboardService } from "@/lib/services/dashboardService";
 import SelectField from "@/components/ui/SelectField";
 
@@ -12,71 +11,21 @@ import { useTheme } from "@/context/ThemeContext";
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [goal, setGoal] = useState("");
-  const [dietPreference, setDietPreference] = useState("");
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       const res = await dashboardService.getProfile();
-      if (res.success && res.data) {
-        setGoal(res.data.goal || "");
-        setDietPreference(res.data.dietPreference || "BOTH");
-      } else if (res.error?.toLowerCase().includes("unauthorized")) {
+      if (!res.success && res.error?.toLowerCase().includes("unauthorized")) {
         tokenManager.clearTokens();
         router.push("/login");
       }
     };
     fetchProfile();
-  }, []);
-
-  const handleGoalChange = async (newGoal: string) => {
-    setGoal(newGoal);
-    setUpdating(true);
-    setMessage("");
-    try {
-      const res = await dashboardService.updateGoal(newGoal);
-      if (res.success) {
-        setMessage("Goal updated! Your plans will regenerate.");
-      } else {
-        setMessage(res.error || "Update failed");
-      }
-    } catch {
-      setMessage("Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDietPreferenceChange = async (newPref: string) => {
-    setDietPreference(newPref);
-    setUpdating(true);
-    setMessage("");
-    try {
-      const res = await dashboardService.updateDietPreference(newPref);
-      if (res.success) {
-        setMessage("Diet preference updated! Your plans will regenerate.");
-      } else {
-        setMessage(res.error || "Update failed");
-      }
-    } catch {
-      setMessage("Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
+  }, [router]);
 
   const handleLogout = () => {
     tokenManager.clearTokens();
     router.push("/login");
-  };
-
-  const handleClearData = () => {
-    if (confirm("Are you sure you want to clear all local data?")) {
-      localStorage.clear();
-      router.push("/login");
-    }
   };
 
   return (
@@ -129,7 +78,7 @@ export default function SettingsPage() {
             label="Theme"
             variant="dark"
             value={theme}
-            onChange={(e) => setTheme(e.target.value as any)}
+            onChange={(e) => setTheme(e.target.value as "dark" | "light" | "cyberpunk" | "midnight")}
             options={[
               { value: "dark", label: "🌙 Dark Mode" },
               { value: "light", label: "☀️ Sunny Morning" },
@@ -146,14 +95,8 @@ export default function SettingsPage() {
 
       {/* Danger zone */}
       <div className="bg-dash-card rounded-2xl p-6 border border-red-500/10">
-        <h3 className="text-red-400 font-semibold text-sm mb-4">Danger Zone</h3>
+        <h3 className="text-red-400 font-semibold text-sm mb-4">Account</h3>
         <div className="space-y-3">
-          <button
-            onClick={handleClearData}
-            className="w-full p-3 rounded-xl text-sm text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-all text-left cursor-pointer"
-          >
-            Clear Local Data
-          </button>
           <button
             onClick={handleLogout}
             className="w-full p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-all cursor-pointer"
@@ -165,3 +108,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

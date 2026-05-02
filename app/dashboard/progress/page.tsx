@@ -33,7 +33,8 @@ export default function ProgressPage() {
     try {
       const res = await dashboardService.getProgress();
       if (res.success && res.data) {
-        const data = Array.isArray(res.data) ? res.data : res.data.progress || [];
+        const data = Array.isArray(res.data) ? res.data : (res.data as any).progress || [];
+
         setEntries(data);
       }
     } catch {
@@ -80,13 +81,13 @@ export default function ProgressPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">Progress</h1>
-        <p className="text-white/40 text-sm">Track your weight and body changes</p>
+        <h1 className="text-2xl font-bold text-dash-text mb-1">Progress</h1>
+        <p className="text-dash-text-dim text-sm">Track your weight and body changes</p>
       </div>
 
       {/* Add progress form */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">Log Progress</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">Log Progress</h3>
         <div className="flex flex-col sm:flex-row gap-3">
           <InputField
             label="Weight (kg)"
@@ -117,15 +118,15 @@ export default function ProgressPage() {
       <ChartCard title="Weight Over Time" subtitle="Your journey" loading={loading}>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
-            <XAxis dataKey="date" stroke="#ffffff30" fontSize={12} />
-            <YAxis stroke="#ffffff30" fontSize={12} domain={["dataMin - 2", "dataMax + 2"]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-dash-border)" />
+            <XAxis dataKey="date" stroke="var(--color-text-dim)" fontSize={12} />
+            <YAxis stroke="var(--color-text-dim)" fontSize={12} domain={["dataMin - 2", "dataMax + 2"]} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1a1a1a",
-                border: "1px solid #ffffff10",
+                backgroundColor: "var(--color-dash-card)",
+                border: "1px solid var(--color-dash-border)",
                 borderRadius: "12px",
-                color: "#fff",
+                color: "var(--color-text)",
               }}
             />
             <Line
@@ -141,8 +142,8 @@ export default function ProgressPage() {
       </ChartCard>
 
       {/* History list */}
-      <div className="bg-dash-card rounded-2xl p-6 border border-white/5">
-        <h3 className="text-white font-semibold text-sm mb-4">History</h3>
+      <div className="bg-dash-card rounded-2xl p-6 border border-dash-border-subtle">
+        <h3 className="text-dash-text font-semibold text-sm mb-4">History</h3>
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -152,7 +153,7 @@ export default function ProgressPage() {
         ) : entries.length === 0 ? (
           <div className="text-center py-8">
             <span className="text-3xl">📊</span>
-            <p className="text-white/30 text-sm mt-2">No progress logged yet</p>
+            <p className="text-dash-text-dim text-sm mt-2">No progress logged yet</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -162,18 +163,18 @@ export default function ProgressPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 }}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-dash-text/5 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-neon-blue/10 rounded-lg flex items-center justify-center">
                     <span className="text-sm">⚖️</span>
                   </div>
                   <div>
-                    <p className="text-white text-sm font-medium">{entry.weight} kg</p>
-                    {entry.note && <p className="text-white/30 text-xs">{entry.note}</p>}
+                    <p className="text-dash-text text-sm font-medium">{entry.weight} kg</p>
+                    {entry.note && <p className="text-dash-text-dim text-xs">{entry.note}</p>}
                   </div>
                 </div>
-                <span className="text-white/20 text-xs">
+                <span className="text-dash-text-dim text-xs">
                   {new Date(entry.date).toLocaleDateString()}
                 </span>
               </motion.div>

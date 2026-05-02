@@ -43,11 +43,37 @@ export class LeaderboardRepository {
   }
 
   async updateRanks() {
-    const allUsers = await prisma.leaderboard.findMany({
-      orderBy: { score: "desc" }
+    // Fetch all entries with related data for sorting
+    const allEntries = await prisma.leaderboard.findMany({
+      include: {
+        user: {
+          include: {
+            streaks: true,
+            workoutLogs: { where: { completed: true } }
+          }
+        }
+      }
     });
     
-    const updates = allUsers.map((lb, index) => 
+    // Sort logic: Streak > Calories > Workouts > Score
+    const sorted = allEntries.sort((a, b) => {
+      const streakA = a.user?.streaks?.currentStreak || 0;
+      const streakB = b.user?.streaks?.currentStreak || 0;
+      if (streakB !== streakA) return streakB - streakA;
+
+      const calA = a.user?.workoutLogs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0) || 0;
+      const calB = b.user?.workoutLogs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0) || 0;
+      if (calB !== calA) return calB - calA;
+
+      const countA = a.user?.workoutLogs.length || 0;
+      const countB = b.user?.workoutLogs.length || 0;
+      if (countB !== countA) return countB - countA;
+
+      return (b.score || 0) - (a.score || 0);
+    });
+    
+    // Update ranks
+    const updates = sorted.map((lb, index) => 
       prisma.leaderboard.update({
         where: { id: lb.id },
         data: { rank: index + 1 }
@@ -115,14 +141,14 @@ export class LeaderboardRepository {
       where: { date: { gte: today } },
       orderBy: { score: "desc" }
     });
-    
-    const updates = allUsers.map((lb, index) => 
+
+    const updates = allUsers.map((lb, index) =>
       prisma.dailyLeaderboard.update({
         where: { id: lb.id },
         data: { rank: index + 1 }
       })
     );
-    
+
     await prisma.$transaction(updates);
   }
 

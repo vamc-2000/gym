@@ -12,8 +12,15 @@ export const authMiddleware = (req: NextRequest) => {
   return decoded as { userId: string, role?: string } | null;
 };
 
-export const checkRole = (decoded: any, allowedRoles: string[]) => {
-  if (!decoded || !allowedRoles.includes(decoded.role)) {
+interface DecodedToken {
+  userId: string;
+  role?: string;
+}
+
+export const checkRole = (decoded: DecodedToken | null, allowedRoles: string[]) => {
+
+  if (!decoded || !decoded.role || !allowedRoles.includes(decoded.role)) {
+
     return false;
   }
   return true;

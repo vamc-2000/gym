@@ -2,77 +2,71 @@
 import { apiClient } from "@/lib/api";
 
 export const dashboardService = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getWorkoutPlan: () => apiClient<any>("/workout/plan"),
+  getUserPlan: () => apiClient<any>("/user-plan"),
+  generateUserPlan: () => apiClient<any>("/user-plan/generate", { method: "POST" }),
+  getWorkoutPlan: () => apiClient<unknown>("/workout/plan"),
   startWorkout: (workoutId: string) =>
-    apiClient<any>("/workout/start", { method: "POST", body: { workoutId } }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    apiClient<unknown>("/workout/start", { method: "POST", body: { workoutId } }),
   completeWorkout: (workoutId: string) =>
     apiClient<any>("/workout/complete", { method: "POST", body: { workoutId } }),
+  getWorkoutHistory: () => apiClient<any>("/workout/history"),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDietPlan: () => apiClient<any>("/diet/plan"),
-  getDietOptions: () => apiClient<any>("/diet/options"),
+  getDietPlan: () => apiClient<unknown>("/diet/plan"),
+  getDietOptions: () => apiClient<unknown>("/diet/options"),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getSummary: () => apiClient<any>("/dashboard/summary"),
+  getSummary: () => apiClient<unknown>("/dashboard/summary"),
+  getUserSummary: () => apiClient<unknown>("/dashboard/user-summary"),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getProfile: () => apiClient<any>("/users/me"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateProfile: (data: any) =>
-    apiClient<any>("/users/profile", { method: "PUT", body: data }),
+  getProfile: () => apiClient<unknown>("/users/me"),
+  updateProfile: (data: unknown) =>
+    apiClient<unknown>("/users/profile", { method: "PUT", body: data }),
 
   updateGoal: (goal: string) =>
-    apiClient<any>("/user/goal", { method: "PUT", body: { goal } }),
+    apiClient<unknown>("/user/goal", { method: "PUT", body: { goal } }),
   updateDietPreference: (dietPreference: string) =>
-    apiClient<any>("/user/diet-preference", { method: "PUT", body: { dietPreference } }),
+    apiClient<unknown>("/user/diet-preference", { method: "PUT", body: { dietPreference } }),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getProgress: () => apiClient<any>("/progress"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getProgress: () => apiClient<unknown>("/progress"),
   addProgress: (data: { weight: number; note?: string }) =>
-    apiClient<any>("/progress", { method: "POST", body: data }),
+    apiClient<unknown>("/progress", { method: "POST", body: data }),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getStreak: () => apiClient<any>("/streak"),
+  getStreak: () => apiClient<unknown>("/streak"),
+  completeStreakWorkout: () =>
+    apiClient<unknown>("/streak/complete-workout", { method: "POST" }),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getLeaderboard: () => apiClient<any>("/leaderboard"),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getNotifications: () => apiClient<any>("/notification"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getLeaderboard: () => apiClient<unknown>("/leaderboard"),
+
+  getNotifications: () => apiClient<unknown>("/notification"),
   markNotificationsRead: () =>
-    apiClient<any>("/notification/read", { method: "POST" }), // Mark ALL (changed to POST to match route.ts)
+    apiClient<unknown>("/notification/read", { method: "POST" }), // Mark ALL (changed to POST to match route.ts)
   markNotificationRead: (notificationId: string) =>
-    apiClient<any>("/notification/read", { method: "PATCH", body: { notificationId } }), // Mark SINGLE
+    apiClient<unknown>("/notification/read", { method: "PATCH", body: { notificationId } }), // Mark SINGLE
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getDailySchedule: () => apiClient<any>("/schedule"),
-  
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  completeScheduleItem: (itemId: string) => 
-    apiClient<any>("/schedule", { method: "PUT", body: { itemId } }),
+  getDailySchedule: () => apiClient<unknown>("/schedule"),
+
+  completeScheduleItem: (itemId: string) =>
+    apiClient<unknown>("/schedule", { method: "PUT", body: { itemId } }),
 
   // Admin Methods
-  getAdminUsers: () => apiClient<any>("/admin/users"),
-  getAdminWorkouts: () => apiClient<any>("/admin/workout"),
-  getAdminDiets: () => apiClient<any>("/admin/diet"),
-  sendAdminNotification: (data: { title: string; message: string }) => 
-    apiClient<any>("/admin/notifications", { method: "POST", body: data }),
+  getAdminUsers: () => apiClient<unknown>("/admin/users"),
+  getAdminWorkouts: () => apiClient<unknown>("/admin/workout"),
+  getAdminDiets: () => apiClient<unknown>("/admin/diet"),
+  sendAdminNotification: (data: { title: string; message: string }) =>
+    apiClient<unknown>("/admin/notifications", { method: "POST", body: data }),
 
   // Super Admin Methods
-  getSuperAdminStats: () => apiClient<any>("/super-admin/dashboard"),
-  getSuperAdminAdmins: () => apiClient<any>("/admins"),
-  createAdmin: (data: any) => apiClient<any>("/admins", { method: "POST", body: data }),
-  updateAdmin: (id: string, data: any) => apiClient<any>(`/admins/${id}`, { method: "PUT", body: data }),
-  deleteAdmin: (id: string) => apiClient<any>(`/admins/${id}`, { method: "DELETE" }),
-  updateAdminStatus: (id: string, status: string) => apiClient<any>(`/admins/${id}/status`, { method: "PATCH", body: { status } }),
-  getSystemSettings: () => apiClient<any>("/system-settings"),
-  updateSystemSettings: (data: any) => apiClient<any>("/system-settings", { method: "PUT", body: data }),
-  getAdminLogs: () => apiClient<any>("/admin-logs"),
-  exportBackup: () => apiClient<any>("/backup/export", { method: "POST" }),
-  getSuperAdminUsers: () => apiClient<any>("/admin/users"), 
+  getSuperAdminStats: () => apiClient<unknown>("/super-admin/dashboard"),
+  getSuperAdminAdmins: () => apiClient<unknown>("/admins"),
+  createAdmin: (data: unknown) => apiClient<unknown>("/admins", { method: "POST", body: data }),
+  updateAdmin: (id: string, data: unknown) => apiClient<unknown>(`/admins/${id}`, { method: "PUT", body: data }),
+  deleteAdmin: (id: string) => apiClient<unknown>(`/admins/${id}`, { method: "DELETE" }),
+  updateAdminStatus: (id: string, status: string) => apiClient<unknown>(`/admins/${id}/status`, { method: "PATCH", body: { status } }),
+  getSystemSettings: () => apiClient<unknown>("/system-settings"),
+  updateSystemSettings: (data: unknown) => apiClient<unknown>("/system-settings", { method: "PUT", body: data }),
+  getAdminLogs: () => apiClient<unknown>("/admin-logs"),
+  exportBackup: () => apiClient<unknown>("/backup/export", { method: "POST" }),
+  getSuperAdminUsers: () => apiClient<unknown>("/admin/users"),
+
 };
 

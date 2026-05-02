@@ -1,35 +1,36 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "library"
+  provider = "prisma-client-js"
 }
-
 
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String
-  email    String @unique
+  email    String  @unique
   password String
-  role     Role   @default(USER)
+  role     Role    @default(USER)
   gender   String?
 
-  height       Float?
-  weight       Float?
-  bodyFat      Float?
-  goal         String?
-  fitnessLevel String?
-  dietPreference String? @default("BOTH") // VEG, NON_VEG, BOTH
-  otp          String?
-  otpExpiry    DateTime?
-  refreshToken String?
-  lastLogin    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  height           Float?
+  weight           Float?
+  targetWeight     Float?
+  bmi              Float?
+  bmiCategory      String?
+  bodyFat          Float?
+  goal             String?
+  fitnessLevel     String?
+  dietPreference   String?   @default("BOTH") // VEG, NON_VEG, BOTH
+  otp              String?
+  otpExpiry        DateTime?
+  refreshToken     String?
+  lastLogin        DateTime?
+  workoutStartDate DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   notificationSettings NotificationSettings?
   streaks              Streak?
@@ -42,6 +43,51 @@ model User {
   scheduleItems        ScheduleItem[]
   assignedWorkouts     AssignedWorkout[]
   assignedDiets        AssignedDiet[]
+  userPlan             UserPlan?
+  workoutHistory       WorkoutHistory[]
+}
+
+model UserPlan {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  goal            String
+  fitnessLevel    String
+  workoutPlan     Json
+  dietPlan        Json?
+  currentDay      Int      @default(1)
+  totalDays       Int      @default(30)
+  completedDays   Json?
+  lastCompletedAt DateTime?
+  completedDate   String?
+  bmi             Float?
+  bmiCategory     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WorkoutHistory {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String   @db.ObjectId
+  user                 User     @relation(fields: [userId], references: [id])
+  workoutDayNumber     Int
+  planCycleDay         Int
+  goal                 String
+  workoutTitle         String
+  bodyPartFocus        String
+  exercisesCompleted   Json
+  totalExercises       Int
+  durationSeconds      Int
+  durationFormatted    String
+  caloriesBurned       Int
+  startedAt            DateTime
+  completedAt          DateTime
+  completedDate        String
+  streakAfterCompletion Int
+  createdAt            DateTime @default(now())
+
+  @@index([userId])
+  @@index([completedDate])
 }
 
 enum Role {
@@ -184,6 +230,8 @@ model ScheduleItem {
   date        DateTime @default(now()) // The specific calendar date this item belongs to
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date, title, time])
 }
 
 model Diet {
@@ -262,13 +310,13 @@ model LeaderboardSnapshot {
 }
 
 model SystemSettings {
-  id                      String   @id @default(auto()) @map("_id") @db.ObjectId
-  registrationsEnabled    Boolean  @default(true)
-  adminApprovalRequired   Boolean  @default(false)
-  userEditWorkoutPlan     Boolean  @default(true)
-  userEditDietPlan        Boolean  @default(true)
-  notificationsEnabled    Boolean  @default(true)
-  updatedAt               DateTime @updatedAt
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  registrationsEnabled  Boolean  @default(true)
+  adminApprovalRequired Boolean  @default(false)
+  userEditWorkoutPlan   Boolean  @default(true)
+  userEditDietPlan      Boolean  @default(true)
+  notificationsEnabled  Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
 }
 
 model AdminLog {
@@ -279,4 +327,3 @@ model AdminLog {
   details   String?
   createdAt DateTime @default(now())
 }
-

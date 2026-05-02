@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { triggerToast } from "@/components/NotificationManager";
@@ -19,6 +19,21 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  const fetchSchedule = useCallback(async () => {
+    try {
+      const res = await dashboardService.getDailySchedule();
+      if (res.success && res.data) {
+        const data = res.data as ScheduleItem[];
+        setItems(data);
+      }
+
+    } catch {
+      // Fallback
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Clock tick
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
@@ -26,34 +41,11 @@ export default function SchedulePage() {
   }, []);
 
   useEffect(() => {
-    fetchSchedule();
-  }, []);
-
-  const fetchSchedule = async () => {
-    try {
-      const res = await dashboardService.getDailySchedule();
-      if (res.success && res.data) {
-        setItems(res.data);
-        checkAlerts(res.data);
-      }
-    } catch {
-      // Fallback
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkAlerts = (scheduleItems: ScheduleItem[]) => {
-    const nowHours = new Date().getHours().toString().padStart(2, '0');
-    const nowMins = new Date().getMinutes().toString().padStart(2, '0');
-    const currentHM = `${nowHours}:${nowMins}`;
-    
-    scheduleItems.forEach(item => {
-      if (item.time === currentHM && item.status === "upcoming") {
-        triggerToast("Reminder!", `It's time for: ${item.title}`, item.type);
-      }
-    });
-  };
+    const timer = setTimeout(() => {
+      fetchSchedule();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchSchedule]);
 
   const markComplete = async (id: string) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, status: "completed" } : item));
@@ -65,11 +57,11 @@ export default function SchedulePage() {
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">📅 Daily Schedule</h1>
-          <p className="text-white/40 text-sm">Your timeline for today</p>
+          <h1 className="text-2xl font-bold text-dash-text mb-1">📅 Daily Schedule</h1>
+          <p className="text-dash-text-dim text-sm">Your timeline for today</p>
         </div>
-        <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-          <p className="text-white font-mono">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+        <div className="bg-dash-text/5 border border-dash-border-subtle px-4 py-2 rounded-xl">
+          <p className="text-dash-text font-mono">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
         </div>
       </div>
 
@@ -78,7 +70,7 @@ export default function SchedulePage() {
           {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-20 rounded-xl" />)}
         </div>
       ) : (
-        <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
+        <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-dash-border-subtle before:to-transparent">
           {items.map((item, i) => {
             const isCompleted = item.status === "completed";
             const [itemH, itemM] = item.time.split(":");
@@ -110,23 +102,33 @@ export default function SchedulePage() {
 
                 {/* Content */}
                 <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-dash-card p-4 rounded-2xl border ${
-                  isCompleted ? "border-neon-green/20" : isPast ? "border-red-500/20" : "border-white/5"
+                  isCompleted ? "border-neon-green/20" : isPast ? "border-red-500/20" : "border-dash-border-subtle"
                 }`}>
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className={`font-semibold ${isCompleted ? "text-neon-green" : isPast ? "text-red-400" : "text-white"}`}>
+                    <h3 className={`font-semibold ${isCompleted ? "text-neon-green" : isPast ? "text-red-400" : "text-dash-text"}`}>
                       {item.title}
                     </h3>
-                    <time className="text-white/40 text-xs font-mono">{item.time}</time>
+                    <time className="text-dash-text-dim text-xs font-mono">{item.time}</time>
                   </div>
-                  <p className="text-white/60 text-sm mb-3">{item.description}</p>
+                  <p className="text-dash-text-muted text-sm mb-3">{item.description}</p>
                   
                   {!isCompleted && (
-                    <button 
-                      onClick={() => markComplete(item.id)}
-                      className="text-xs bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Mark Complete
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => markComplete(item.id)}
+                        disabled={currentTime < itemTime}
+                        className={`text-xs px-3 py-1.5 rounded-lg transition-all ${
+                          currentTime < itemTime 
+                            ? "bg-white/5 text-white/20 cursor-not-allowed" 
+                            : "bg-neon-blue/20 hover:bg-neon-blue/30 text-neon-blue border border-neon-blue/30"
+                        }`}
+                      >
+                        {currentTime < itemTime ? "Upcoming" : "Mark Complete"}
+                      </button>
+                      {currentTime < itemTime && (
+                        <span className="text-[10px] text-dash-text-dim italic">Available at {item.time}</span>
+                      )}
+                    </div>
                   )}
                 </div>
               </motion.div>

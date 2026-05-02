@@ -13,7 +13,8 @@ export default function AdminDashboard() {
       try {
         const res = await dashboardService.getAdminUsers();
         if (res.success) {
-          const users = res.data;
+          const users = res.data as any[];
+
           setStatsData({
             totalUsers: users.length,
             activeUsers: users.filter((u: any) => u.lastLogin).length,
@@ -38,8 +39,8 @@ export default function AdminDashboard() {
     <div className="space-y-8 pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-        <p className="text-white/40">Manage your assigned fitness community and content</p>
+        <h1 className="text-3xl font-bold text-dash-text mb-2">Admin Dashboard</h1>
+        <p className="text-dash-text-dim">Manage your assigned fitness community and content</p>
       </div>
 
       {/* Stats Grid */}
@@ -50,16 +51,16 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="glass-panel p-6 rounded-2xl border border-white/5 relative overflow-hidden group"
+            className="glass-panel p-6 rounded-2xl border border-dash-border-subtle relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl group-hover:scale-110 transition-transform">
               {stat.icon}
             </div>
-            <p className="text-white/40 text-sm font-medium mb-1">{stat.label}</p>
-            <h3 className="text-2xl font-bold text-white mb-2">{stat.value}</h3>
+            <p className="text-dash-text-dim text-sm font-medium mb-1">{stat.label}</p>
+            <h3 className="text-2xl font-bold text-dash-text mb-2">{stat.value}</h3>
             <div className="flex items-center gap-1.5">
               <span className="text-neon-blue text-xs font-bold">{stat.change}</span>
-              <span className="text-white/20 text-xs">from last week</span>
+              <span className="text-dash-text-dim opacity-30 text-xs">from last week</span>
             </div>
           </motion.div>
         ))}
@@ -67,9 +68,9 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Content Activity */}
-        <div className="glass-panel p-8 rounded-3xl border border-white/5">
+        <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold text-white">Content Performance</h3>
+            <h3 className="text-xl font-bold text-dash-text">Content Performance</h3>
           </div>
           <div className="space-y-6">
             {[
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
               { label: "Keto Advanced Phase 2", users: 32, rating: "4.6/5", type: "Diet" },
               { label: "Beginner Fat Loss V3", users: 28, rating: "4.9/5", type: "Workout" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 group hover:border-white/10 transition-all">
+              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-dash-text/5 border border-dash-border-subtle group hover:border-dash-text/10 transition-all">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${
                     item.type === 'Workout' ? 'bg-neon-blue/10 text-neon-blue' : 'bg-neon-yellow/10 text-neon-yellow'
@@ -85,13 +86,13 @@ export default function AdminDashboard() {
                     {item.type === 'Workout' ? '🏋️' : '🥗'}
                   </div>
                   <div>
-                    <p className="text-white font-medium">{item.label}</p>
-                    <p className="text-white/30 text-xs">{item.type} Plan • {item.users} active users</p>
+                    <p className="text-dash-text font-medium">{item.label}</p>
+                    <p className="text-dash-text-dim text-xs">{item.type} Plan • {item.users} active users</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-white font-bold">{item.rating}</p>
-                  <p className="text-white/20 text-[10px] uppercase font-bold">Rating</p>
+                  <p className="text-dash-text font-bold">{item.rating}</p>
+                  <p className="text-dash-text-dim opacity-30 text-[10px] uppercase font-bold">Rating</p>
                 </div>
               </div>
             ))}
