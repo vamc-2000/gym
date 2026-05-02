@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import InputField from "@/components/ui/InputField";
 import SelectField from "@/components/ui/SelectField";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { GOALS, FITNESS_LEVELS } from "@/lib/constants";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { tokenManager } from "@/lib/auth";
 
@@ -30,16 +29,16 @@ export default function ProfilePage() {
       try {
         const res = await dashboardService.getProfile();
         if (res.success && res.data) {
-          const u = res.data as any;
+          const u = res.data as Record<string, unknown>;
 
           setForm({
-            name: u.name || "",
-            email: u.email || "",
-            phone: u.phone || "",
-            fitnessLevel: u.fitnessLevel || "Beginner",
-            preferredWorkoutTime: u.notificationSettings?.preferredWorkoutTime || "07:00",
-            dndEnabled: u.notificationSettings?.dndEnabled || false,
-            dietaryPreference: u.dietaryPreference || "Non-Vegetarian",
+            name: (u.name as string) || "",
+            email: (u.email as string) || "",
+            phone: (u.phone as string) || "",
+            fitnessLevel: (u.fitnessLevel as string) || "Beginner",
+            preferredWorkoutTime: (u.notificationSettings as Record<string, unknown>)?.preferredWorkoutTime as string || "07:00",
+            dndEnabled: (u.notificationSettings as Record<string, unknown>)?.dndEnabled as boolean || false,
+            dietaryPreference: (u.dietaryPreference as string) || "Non-Vegetarian",
           });
 
 
@@ -89,7 +88,7 @@ export default function ProfilePage() {
           tokenManager.setUser({
             ...currentUser,
             name: form.name,
-            fitnessLevel: form.fitnessLevel as any
+            fitnessLevel: form.fitnessLevel as "Beginner" | "Intermediate" | "Advanced"
           });
         }
         
@@ -164,9 +163,9 @@ export default function ProfilePage() {
           value={form.dietaryPreference}
           onChange={(e) => update("dietaryPreference", e.target.value)}
           options={[
-            { value: "Non-Vegetarian", label: "🍖 Non-Vegetarian" },
-            { value: "Vegetarian", label: "🥦 Vegetarian" },
-            { value: "Vegan", label: "🌱 Vegan" },
+            { value: "Veg", label: "🥦 Veg" },
+            { value: "Non-Veg", label: "🍖 Non-Veg" },
+            { value: "Both", label: "🍱 Both" },
           ]}
         />
       </div>

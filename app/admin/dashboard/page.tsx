@@ -25,8 +25,8 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true);
     const [userRes, statsRes] = await Promise.all([
-      API("/admin/users", "GET"),
-      API("/admin/stats", "GET")
+      API<any>("/admin/users", "GET"),
+      API<any>("/admin/stats", "GET")
     ]);
     
     if (userRes.success) setUsers(userRes.data);
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
       return;
     }
 
-    const res = await API("/admin/users", "PUT", { userId, newRole });
+    const res = await API<any>("/admin/users", "PUT", { userId, newRole });
     if (res.success) {
       alert("Role updated!");
       fetchData();
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
 
     if (!confirm("Are you sure you want to delete this user?")) return;
 
-    const res = await API("/admin/users", "DELETE", { userId });
+    const res = await API<any>("/admin/users", "DELETE", { userId });
     if (res.success) {
       alert("User deleted!");
       fetchData();

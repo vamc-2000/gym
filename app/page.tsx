@@ -3,14 +3,14 @@
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { tokenManager } from "@/lib/auth";
 
 export default function Home() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) return null;

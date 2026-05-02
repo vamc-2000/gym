@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
-import { useState, useEffect } from "react";
-import { GOALS } from "@/lib/constants";
+import { useEffect } from "react";
 import { dashboardService } from "@/lib/services/dashboardService";
 import SelectField from "@/components/ui/SelectField";
 
@@ -12,62 +11,17 @@ import { useTheme } from "@/context/ThemeContext";
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [goal, setGoal] = useState("");
-  const [dietPreference, setDietPreference] = useState("");
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       const res = await dashboardService.getProfile();
-      if (res.success && res.data) {
-        const data = res.data as any;
-        setGoal(data.goal || "");
-        setDietPreference(data.dietPreference || "BOTH");
-      }
- else if (res.error?.toLowerCase().includes("unauthorized")) {
+      if (!res.success && res.error?.toLowerCase().includes("unauthorized")) {
         tokenManager.clearTokens();
         router.push("/login");
       }
     };
     fetchProfile();
-  }, []);
-
-  const handleGoalChange = async (newGoal: string) => {
-    setGoal(newGoal);
-    setUpdating(true);
-    setMessage("");
-    try {
-      const res = await dashboardService.updateGoal(newGoal);
-      if (res.success) {
-        setMessage("Goal updated! Your plans will regenerate.");
-      } else {
-        setMessage(res.error || "Update failed");
-      }
-    } catch {
-      setMessage("Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleDietPreferenceChange = async (newPref: string) => {
-    setDietPreference(newPref);
-    setUpdating(true);
-    setMessage("");
-    try {
-      const res = await dashboardService.updateDietPreference(newPref);
-      if (res.success) {
-        setMessage("Diet preference updated! Your plans will regenerate.");
-      } else {
-        setMessage(res.error || "Update failed");
-      }
-    } catch {
-      setMessage("Update failed");
-    } finally {
-      setUpdating(false);
-    }
-  };
+  }, [router]);
 
   const handleLogout = () => {
     tokenManager.clearTokens();
@@ -124,7 +78,7 @@ export default function SettingsPage() {
             label="Theme"
             variant="dark"
             value={theme}
-            onChange={(e) => setTheme(e.target.value as any)}
+            onChange={(e) => setTheme(e.target.value as "dark" | "light" | "cyberpunk" | "midnight")}
             options={[
               { value: "dark", label: "🌙 Dark Mode" },
               { value: "light", label: "☀️ Sunny Morning" },

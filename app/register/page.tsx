@@ -44,14 +44,24 @@ export default function RegisterPage() {
       newErrors.email = "Email is required";
     } else if (!emailRegex.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
-    } else if (!form.email.toLowerCase().endsWith("@gmail.com")) {
-      newErrors.email = "Only @gmail.com emails are allowed";
+    } else if (!form.email.toLowerCase().endsWith("@gmail.com") && !form.email.toLowerCase().endsWith("@gymstreak.com")) {
+      newErrors.email = "Only @gmail.com or @gymstreak.com emails are allowed";
     }
 
     if (!form.password) {
       newErrors.password = "Password is required";
-    } else if (form.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else {
+      if (form.password.length < 8) {
+        newErrors.password = "Password must be at least 8 characters";
+      } else if (!/[A-Z]/.test(form.password)) {
+        newErrors.password = "Password must include an uppercase letter";
+      } else if (!/[a-z]/.test(form.password)) {
+        newErrors.password = "Password must include a lowercase letter";
+      } else if (!/[0-9]/.test(form.password)) {
+        newErrors.password = "Password must include a number";
+      } else if (!/[@$!%*?&]/.test(form.password)) {
+        newErrors.password = "Password must include a special character (@$!%*?&)";
+      }
     }
 
     if (!form.goal) newErrors.goal = "Select a goal";

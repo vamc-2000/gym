@@ -7,9 +7,21 @@ import { NotificationManager, triggerToast } from "@/components/NotificationMana
 import { tokenManager } from "@/lib/auth";
 import { WorkoutProvider } from "@/context/WorkoutContext";
 
-import { useTheme } from "@/context/ThemeContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 
 export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ThemeProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </ThemeProvider>
+  );
+}
+
+function DashboardContent({
   children,
 }: {
   children: React.ReactNode;
@@ -19,18 +31,21 @@ export default function DashboardLayout({
   const [userName, setUserName] = useState("Athlete");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const user = tokenManager.getUser();
-      if (user?.name) {
-        setUserName(user.name);
-        
-        // Show welcome back toast if not shown in this session
-        if (!sessionStorage.getItem("welcome_toast_shown")) {
-          triggerToast("Welcome back!", "Ready to crush your goals today?", "info");
-          sessionStorage.setItem("welcome_toast_shown", "true");
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        const user = tokenManager.getUser();
+        if (user?.name) {
+          setUserName(user.name);
+          
+          // Show welcome back toast if not shown in this session
+          if (!sessionStorage.getItem("welcome_toast_shown")) {
+            triggerToast("Welcome back!", "Ready to crush your goals today?", "info");
+            sessionStorage.setItem("welcome_toast_shown", "true");
+          }
         }
       }
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Global Schedule Timer
@@ -44,19 +59,19 @@ export default function DashboardLayout({
           const nowMins = new Date().getMinutes().toString().padStart(2, '0');
           const currentHM = `${nowHours}:${nowMins}`;
           
-          (res.data as any[]).forEach((item: any) => {
+          (res.data as Record<string, unknown>[]).forEach((item) => {
 
             if (item.time === currentHM && item.status === "upcoming") {
               // Ensure we don't trigger multiple times for the same minute
               const triggeredKey = `triggered_${item.id}`;
               if (!sessionStorage.getItem(triggeredKey)) {
-                triggerToast("Reminder!", `It's time for: ${item.title}`, item.type);
+                triggerToast("Reminder!", `It's time for: ${item.title}`, (item.type as string) || "info");
                 sessionStorage.setItem(triggeredKey, "true");
               }
             }
           });
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
@@ -78,7 +93,7 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="min-h-screen bg-dash-bg text-dash-text relative overflow-hidden transition-colors duration-500">
+    <div data-theme={theme} className="min-h-screen bg-dash-bg text-dash-text relative overflow-hidden transition-colors duration-500">
       {/* Sunny Background Blob */}
       {theme === "light" && (
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-neon-yellow/20 rounded-full blur-[100px] animate-[solar-pulse_8s_infinite] pointer-events-none z-0" />

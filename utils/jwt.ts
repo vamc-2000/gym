@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { AuthUser } from "@/types/dashboard";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_access_secret";
-const REFRESH_SECRET = process.env.REFRESH_SECRET || "fallback_refresh_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "fallback_jwt_secret";
+const REFRESH_SECRET = process.env.REFRESH_SECRET || process.env.JWT_SECRET || "fallback_refresh_secret";
 
 export const generateAccessToken = (user: AuthUser) => {
   return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });

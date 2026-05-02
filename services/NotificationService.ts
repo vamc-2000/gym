@@ -1,6 +1,7 @@
 import { notificationRepository } from "../repositories/NotificationRepository";
 import { userRepository } from "../repositories/UserRepository";
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export enum NotificationCategory {
   WORKOUT = "WORKOUT",
@@ -47,7 +48,7 @@ export class NotificationService {
     if (!user) throw new Error("User not found");
 
     const settings = (user.notificationSettings as unknown as NotificationSettings) || {};
-    
+
     // Check category preferences
     if (priority !== NotificationPriority.CRITICAL) {
       if (category === NotificationCategory.WORKOUT && settings.workoutReminders === false) return null;

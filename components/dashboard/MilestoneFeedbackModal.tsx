@@ -49,10 +49,10 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
     }
 
     setSubmitting(true);
-    
+
     const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
     const userId = user.id || "guest";
-    
+
     const feedback = {
       id: initialData?.id || `feedback_${Date.now()}`,
       rating,
@@ -66,7 +66,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
 
     const storageKey = `gymstreak_user_feedback_${userId}`;
     const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    
+
     let updated;
     if (initialData) {
       updated = existing.map((f: FeedbackData) => f.id === initialData.id ? feedback : f);
@@ -74,7 +74,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
     } else {
       updated = [feedback, ...existing];
     }
-    
+
     localStorage.setItem(storageKey, JSON.stringify(updated));
 
     setTimeout(() => {
@@ -95,7 +95,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
             onClick={onClose}
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
-            <motion.div
+          <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -129,7 +129,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs text-dash-text-dim font-bold uppercase tracking-widest ml-1">Title (Optional)</label>
-                  <input 
+                  <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -140,7 +140,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
 
                 <div className="space-y-1">
                   <label className="text-xs text-dash-text-dim font-bold uppercase tracking-widest ml-1">Your Message</label>
-                  <textarea 
+                  <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={4}
@@ -160,7 +160,7 @@ export default function MilestoneFeedbackModal({ isOpen, onClose, milestone, ini
                   Skip
                 </button>
                 <SubmitButton
-                  onClick={() => {}}
+                  onClick={() => { }}
                   loading={submitting}
                   variant="neon"
                 >
