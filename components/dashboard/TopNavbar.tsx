@@ -27,14 +27,15 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
   };
 
   const [greeting, setGreeting] = useState("Welcome");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good Morning");
-    else if (hour < 17) setGreeting("Good Afternoon");
-    else setGreeting("Good Evening");
+    const timer = setTimeout(() => {
+      const hour = new Date().getHours();
+      if (hour < 12) setGreeting("Good Morning");
+      else if (hour < 17) setGreeting("Good Afternoon");
+      else setGreeting("Good Evening");
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const [unreadCount, setUnreadCount] = useState(0);

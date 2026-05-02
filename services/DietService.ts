@@ -1,5 +1,6 @@
 import { userRepository } from "../repositories/UserRepository";
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { generateStructuredDietPlan } from "./diet.services";
 
 
@@ -30,7 +31,7 @@ export class DietService {
         meals = template.meals;
       } else {
         // Fallback: Generate a structured plan on the fly
-        meals = generateStructuredDietPlan(goal, dietPreference as any);
+        meals = generateStructuredDietPlan(goal, dietPreference as "VEG" | "NON_VEG" | "BOTH");
 
       }
 
@@ -51,7 +52,7 @@ export class DietService {
             dietType: dietPreference,
             calorieTarget: template?.calorieTarget || "maintenance",
             proteinPerKg: template?.proteinPerKg || 2.0,
-            meals: meals as any
+            meals: meals as Prisma.InputJsonValue
 
           }
         });

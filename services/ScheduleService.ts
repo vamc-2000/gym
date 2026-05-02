@@ -19,7 +19,7 @@ export class ScheduleService {
     });
 
     // Deduplicate items based on title and time to fix "two this for each" issue
-    const uniqueItems = items.reduce((acc: any[], current) => {
+    const uniqueItems = items.reduce((acc: import("@prisma/client").ScheduleItem[], current) => {
       const isDuplicate = acc.find(item => item.title === current.title && item.time === current.time);
       if (!isDuplicate) {
         acc.push(current);

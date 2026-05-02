@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
         <div className="glass-panel rounded-2xl p-8 border border-white/5 shadow-2xl">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-white mb-2">Forgot Password?</h1>
-            <p className="text-sm text-white/40">Enter your email and we'll send you an OTP to reset it.</p>
+            <p className="text-sm text-white/40">Enter your email and we&apos;ll send you an OTP to reset it.</p>
           </div>
 
           {success ? (

@@ -56,7 +56,19 @@ export const TELUGU_TRANSLATIONS: Record<string, string> = {
   "Start in a standing position (Mountain Pose).": "నిలబడి (మౌంటైన్ పోజ్) ప్రారంభించండి.",
   "Slowly transition through basic poses like Downward Dog.": "డౌన్‌వర్డ్ డాగ్ వంటి ప్రాథమిక పోజ్‌లలోకి నెమ్మదిగా మారండి.",
   "Coordinate your movements with your breath.": "మీ కదలికలను శ్వాసతో సమన్వయం చేసుకోండి.",
-  "Focus on balance and gentle elongation.": "సమతుల్యత మరియు శరీరాన్ని సాగదీయడంపై దృష్టి పెట్టండి."
+  "Focus on balance and gentle elongation.": "సమతుల్యత మరియు శరీరాన్ని సాగదీయడంపై దృష్టి పెట్టండి.",
+  "Feet shoulder width.": "పాదాలను భుజాల వెడల్పులో ఉంచండి.",
+  "Back straight.": "వెన్నుముకను నిటారుగా ఉంచండి.",
+  "On knees.": "మోకాళ్లపై ఉండండి.",
+  "Body straight.": "శరీరాన్ని తిన్నగా ఉంచండి.",
+  "On all fours.": "రెండు చేతులు మరియు మోకాళ్లపై ఉండండి.",
+  "Opposite arm/leg.": "వ్యతిరేక దిశలో చేయి మరియు కాలును చాచండి.",
+  "Hold weight at chest.": "బరువును ఛాతీ దగ్గర పట్టుకోండి.",
+  "Deep squat.": "లోతుగా కూర్చోండి.",
+  "Single leg.": "ఒంటి కాలిపై ఉండండి.",
+  "Balance.": "సమతుల్యతను పాటించండి.",
+  "Raise legs.": "కాళ్లను పైకి ఎత్తండి.",
+  "Keep arms straight.": "చేతులను తిన్నగా ఉంచండి."
 };
 
 export const translateInstruction = (text: string, lang: 'en' | 'te'): string => {

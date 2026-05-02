@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { triggerToast } from "@/components/NotificationManager";
@@ -19,21 +19,11 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    // Clock tick
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    fetchSchedule();
-  }, []);
-
-  const fetchSchedule = async () => {
+  const fetchSchedule = useCallback(async () => {
     try {
       const res = await dashboardService.getDailySchedule();
       if (res.success && res.data) {
-        const data = res.data as any[];
+        const data = res.data as ScheduleItem[];
         setItems(data);
       }
 
@@ -42,7 +32,20 @@ export default function SchedulePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Clock tick
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSchedule();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchSchedule]);
 
   const markComplete = async (id: string) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, status: "completed" } : item));

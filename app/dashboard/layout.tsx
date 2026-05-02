@@ -29,22 +29,23 @@ function DashboardContent({
   const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [userName, setUserName] = useState("Athlete");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
-      const user = tokenManager.getUser();
-      if (user?.name) {
-        setUserName(user.name);
-        
-        // Show welcome back toast if not shown in this session
-        if (!sessionStorage.getItem("welcome_toast_shown")) {
-          triggerToast("Welcome back!", "Ready to crush your goals today?", "info");
-          sessionStorage.setItem("welcome_toast_shown", "true");
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        const user = tokenManager.getUser();
+        if (user?.name) {
+          setUserName(user.name);
+          
+          // Show welcome back toast if not shown in this session
+          if (!sessionStorage.getItem("welcome_toast_shown")) {
+            triggerToast("Welcome back!", "Ready to crush your goals today?", "info");
+            sessionStorage.setItem("welcome_toast_shown", "true");
+          }
         }
       }
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Global Schedule Timer
@@ -58,19 +59,19 @@ function DashboardContent({
           const nowMins = new Date().getMinutes().toString().padStart(2, '0');
           const currentHM = `${nowHours}:${nowMins}`;
           
-          (res.data as any[]).forEach((item: any) => {
+          (res.data as Record<string, unknown>[]).forEach((item) => {
 
             if (item.time === currentHM && item.status === "upcoming") {
               // Ensure we don't trigger multiple times for the same minute
               const triggeredKey = `triggered_${item.id}`;
               if (!sessionStorage.getItem(triggeredKey)) {
-                triggerToast("Reminder!", `It's time for: ${item.title}`, item.type);
+                triggerToast("Reminder!", `It's time for: ${item.title}`, (item.type as string) || "info");
                 sessionStorage.setItem(triggeredKey, "true");
               }
             }
           });
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     };

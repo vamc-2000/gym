@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ log: ["error"] });
 
 async function seedAdmins() {
   const password = await bcrypt.hash("Admin@2026", 10);

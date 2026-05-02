@@ -3,6 +3,7 @@
 import React from "react";
 import { Exercise } from "@/types/dashboard";
 import { motion, AnimatePresence } from "framer-motion";
+import { translateInstruction } from "@/lib/speechUtils";
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -40,6 +41,27 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
 
   const icon = getMuscleIcon(exercise.muscleGroup);
 
+  React.useEffect(() => {
+    const loadVoices = () => {
+      if (!window.speechSynthesis) return;
+      const voices = window.speechSynthesis.getVoices();
+      const hasTe = voices.some(v => v.lang.startsWith('te'));
+      if (hasTe) setTeVoiceMissing(false);
+    };
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+      loadVoices();
+    }
+
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
   const speakInstructions = () => {
     if (!window.speechSynthesis) return;
 
@@ -51,11 +73,11 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
 
     window.speechSynthesis.cancel();
     
-    const { translateInstruction } = require("@/lib/speechUtils");
     const fullText = exercise.instructions?.map(step => translateInstruction(step, lang)).join(". ") || "";
     
     const utterance = new SpeechSynthesisUtterance(fullText);
     utterance.lang = lang === 'en' ? 'en-US' : 'te-IN';
+    utterance.rate = 0.9; // Slightly slower for clarity
     
     // Check for Telugu voice
     if (lang === 'te') {
@@ -68,14 +90,16 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         utterance.voice = teVoice;
         setTeVoiceMissing(false);
       }
+    } else {
+      setTeVoiceMissing(false);
     }
 
+    utterance.onstart = () => setSpeechState('playing');
     utterance.onend = () => setSpeechState('stopped');
     utterance.onerror = () => setSpeechState('stopped');
     
     utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-    setSpeechState('playing');
   };
 
   const pauseSpeech = () => {
@@ -91,12 +115,6 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
       setSpeechState('stopped');
     }
   };
-
-  React.useEffect(() => {
-    return () => {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-    };
-  }, []);
 
   return (
     <motion.div
@@ -150,10 +168,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
       {/* Stats row */}
       <div className="flex flex-wrap gap-3 mb-6">
         {[
-          { label: "Sets", value: exercise.sets, icon: "🔢" },
-          { label: "Reps", value: exercise.reps, icon: "🔄" },
-          { label: "Rest", value: exercise.restTime, icon: "⏱️" },
-        ].map(({ label, value, icon }) => (
+          { label: "Sets", value: exercise.sets },
+          { label: "Reps", value: exercise.reps },
+          { label: "Rest", value: exercise.restTime },
+        ].map(({ label, value }) => (
           <div
             key={label}
             className="flex-1 min-w-[80px] bg-dash-card/50 px-4 py-3 rounded-2xl border border-dash-border-subtle/50 text-center"

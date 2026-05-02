@@ -1,70 +1,130 @@
-import { workoutRepository } from "../repositories/WorkoutRepository";
 import { streakRepository } from "../repositories/StreakRepository";
-import { dietRepository } from "../repositories/DietRepository";
 import { prisma } from "../lib/prisma";
-import { Prisma } from "@prisma/client";
-
-
 import { notificationService, NotificationCategory, NotificationPriority } from "./NotificationService";
+import { WorkoutLog } from "@prisma/client";
+
+export interface Exercise {
+  id: string;
+  name: string;
+  bodyPart: string;
+  sets: number;
+  reps: string;
+  duration?: string;
+  restTime: string;
+  caloriesBurn: number;
+  difficulty: string;
+  equipment: string;
+  instructions: string[];
+  instructionsTe?: string[];
+}
+
+export interface WorkoutDay {
+  day: number;
+  title: string;
+  goal?: string;
+  bodyPartFocus?: string;
+  estimatedDuration?: number;
+  estimatedCalories?: number;
+  exercises?: Exercise[];
+}
+
+export interface WorkoutCompletionResult {
+  log: WorkoutLog;
+  newStreak: number;
+  score: number;
+  totalWorkouts: number;
+  totalCalories: number;
+  todayCalories: number;
+  message: string;
+  historyId: string;
+}
 
 export class WorkoutService {
-  async getWorkoutPlan(userId: string, goal: string, level: string) {
-    // Check if user already has an active assigned workout for this goal/level
-    let assignedWorkout = await prisma.assignedWorkout.findFirst({
-      where: { userId, isActive: true },
-      orderBy: { assignedAt: 'desc' }
+  private getTimezoneDate(): Date {
+    // Return actual current Date, we will handle timezone in string conversion
+    return new Date();
+  }
+
+  private getDateString(date: Date): string {
+    // Use Intl to get YYYY-MM-DD in specific timezone
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(date);
+  }
+
+  async getWorkoutPlan(userId: string) {
+    let userPlan = await prisma.userPlan.findUnique({
+      where: { userId }
     });
 
-    let diet = await dietRepository.findByGoalAndLevel(goal, level);
-    if (!diet) {
-      diet = await prisma.dietTemplate.findFirst();
+    if (!userPlan) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user && user.goal) {
+        const { PlanGenerationService } = await import("./PlanGenerationService");
+        userPlan = await PlanGenerationService.generateAndSavePlan(userId, {
+          goal: user.goal,
+          fitnessLevel: user.fitnessLevel || "Beginner",
+          height: user.height || 170,
+          weight: user.weight || 70,
+          targetWeight: user.targetWeight || 65
+        });
+      }
     }
 
-    // Calculate current day based on user's workoutStartDate
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new Error("User not found");
+    if (!userPlan) return null;
 
-    let currentDayNum = 1;
-    if (user.workoutStartDate) {
-      const start = new Date(user.workoutStartDate);
-      start.setHours(0, 0, 0, 0);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const diffTime = Math.abs(today.getTime() - start.getTime());
-      currentDayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    }
+    const now = this.getTimezoneDate();
+    const todayStr = this.getDateString(now);
+    const isCompletedToday = userPlan.completedDate === todayStr;
 
-    // To ensure the completeWorkout works, we need an AssignedWorkout ID.
-    if (!assignedWorkout) {
-      assignedWorkout = await prisma.assignedWorkout.create({
-        data: {
-          userId,
-          title: "Progressive Training Program",
-          goal,
-          level,
-          exercises: {}
-        }
-      });
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const countdownSeconds = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
+
+    // Unlimited cycling logic
+    const workoutPlanTemplates = (userPlan.workoutPlan as any[]) || [];
+    const actualWorkoutDay = userPlan.currentDay;
+    const templateIndex = (actualWorkoutDay - 1) % workoutPlanTemplates.length;
+    const planCycleDay = templateIndex + 1;
+    
+    // Get the specific workout for the calculated template day
+    const currentWorkout = workoutPlanTemplates.find(d => d.day === planCycleDay) || workoutPlanTemplates[templateIndex];
+
+    let completedDays: number[] = [];
+    if (Array.isArray(userPlan.completedDays)) {
+      completedDays = userPlan.completedDays.map(d => Number(d));
+    } else if (userPlan.completedDays && typeof userPlan.completedDays === 'object') {
+      const obj = userPlan.completedDays as any;
+      const maybeArr = obj.days || obj.completedDays;
+      if (Array.isArray(maybeArr)) {
+        completedDays = maybeArr.map(d => Number(d));
+      }
     }
 
     return {
-      workout: assignedWorkout,
-      diet,
-      currentWorkoutDay: currentDayNum
+      ...userPlan,
+      currentWorkout,
+      planCycleDay,
+      completedDays,
+      isLockedUntilTomorrow: isCompletedToday,
+      countdownSeconds,
+      nextUnlockAt: tomorrow.toISOString()
     };
   }
 
   async startWorkout(userId: string, workoutId: string) {
-    // Check if there is already an active incomplete workout for today
+    // Standardize finding active log
     const existingLog = await prisma.workoutLog.findFirst({
       where: { userId, completed: false }
     });
 
-    if (existingLog) {
-      return existingLog; // Resume existing
-    }
+    if (existingLog) return existingLog;
 
-    const log = await prisma.workoutLog.create({
+    return await prisma.workoutLog.create({
       data: {
         userId,
         workoutId,
@@ -73,183 +133,186 @@ export class WorkoutService {
         startTime: new Date()
       }
     });
-
-    return log;
   }
 
-  async completeWorkout(userId: string, workoutId: string, dayNumber?: number): Promise<any> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  async completeWorkout(userId: string, workoutId: string): Promise<WorkoutCompletionResult> {
+    const userPlan = await prisma.userPlan.findUnique({ where: { userId } });
+    if (!userPlan) throw new Error("No workout plan found.");
 
-    // Check if already completed today
-    const alreadyCompleted = await prisma.workoutLog.findFirst({
-      where: { 
-        userId, 
-        completed: true,
-        date: { gte: today }
-      }
-    });
+    const now = this.getTimezoneDate();
+    const todayStr = this.getDateString(now);
 
-    if (alreadyCompleted) {
-      throw new Error("Workout already completed today");
+    if (userPlan.completedDate === todayStr) {
+      throw new Error("Workout already completed today. Next session unlocks at midnight.");
     }
 
-    // Find the active session
+    const currentDay = userPlan.currentDay;
+    const workoutTemplates = (userPlan.workoutPlan as any[]) || [];
+    const templateIndex = (currentDay - 1) % workoutTemplates.length;
+    const planCycleDay = templateIndex + 1;
+    const todayWorkout = workoutTemplates.find(d => d.day === planCycleDay) || workoutTemplates[templateIndex];
+    
+    if (!todayWorkout) throw new Error("Workout data for current day not found.");
+
+    const caloriesBurned = todayWorkout.estimatedCalories || 250;
+
+    // 1. Mark Log as Completed
     const log = await prisma.workoutLog.findFirst({
-      where: { userId, workoutId, completed: false },
+      where: { userId, completed: false },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (!log) {
-      // Create a fresh log if none exists (fallback)
-      const freshLog = await prisma.workoutLog.create({
+    let updatedLog;
+    let durationSeconds = 1800; // Default if no log
+    let startTime = new Date();
+
+    if (log) {
+      startTime = new Date(log.startTime || log.createdAt);
+      const endTime = new Date();
+      durationSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+      updatedLog = await prisma.workoutLog.update({
+        where: { id: log.id },
+        data: { completed: true, endTime, durationSeconds, caloriesBurned }
+      });
+    } else {
+      updatedLog = await prisma.workoutLog.create({
         data: {
           userId,
           workoutId,
+          completed: true,
           date: new Date(),
-          completed: false,
-          startTime: new Date()
+          startTime: new Date(Date.now() - 1800000), // Mock 30 mins ago
+          endTime: new Date(),
+          durationSeconds: 1800,
+          caloriesBurned
         }
       });
-      return this.completeWorkout(userId, workoutId, dayNumber);
     }
 
-    const user = await prisma.user.findUnique({ 
-      where: { id: userId },
-      include: { streaks: true }
-    });
-    if (!user) throw new Error("User not found");
+    // 2. Update Streak (Before saving history to get correct streakAfterCompletion)
+    const streakResult = await this.updateStreakCalendar(userId);
+    const newStreak = streakResult.streak;
 
-    // Get current day number if not provided
-    let currentDay = dayNumber;
-    if (!currentDay && user.workoutStartDate) {
-      const start = new Date(user.workoutStartDate);
-      start.setHours(0, 0, 0, 0);
-      const diffTime = Math.abs(today.getTime() - start.getTime());
-      currentDay = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    }
-    currentDay = currentDay || 1;
-
-    // Calculate calories from the predefined plan
-    const level = user.fitnessLevel || "Beginner";
-    const { WORKOUT_PLANS } = await import("../lib/workoutPlans");
-    const plan = WORKOUT_PLANS[level] || [];
-    const todayWorkout = plan[currentDay - 1];
-    
-    let caloriesBurned = 0;
-    if (todayWorkout) {
-      caloriesBurned = todayWorkout.exercises.reduce((sum, ex) => sum + (ex.caloriesBurn || 0), 0);
-    } else {
-      // Fallback
-      caloriesBurned = 250;
-    }
-
-    const endTime = new Date();
-    const durationSeconds = log.startTime ? Math.floor((endTime.getTime() - new Date(log.startTime).getTime()) / 1000) : 1800;
-
-    const updatedLog = await prisma.workoutLog.update({
-      where: { id: log.id },
+    console.log(`Saving history for user ${userId}, Day ${currentDay}, Calories: ${caloriesBurned}, Date: ${todayStr}`);
+    // 3. Save Workout History
+    const history = await prisma.workoutHistory.create({
       data: {
-        completed: true,
-        endTime,
-        durationSeconds,
-        caloriesBurned
+        userId,
+        workoutDayNumber: currentDay,
+        planCycleDay: planCycleDay,
+        goal: userPlan.goal,
+        workoutTitle: todayWorkout.title,
+        bodyPartFocus: todayWorkout.bodyPartFocus || "Full Body",
+        exercisesCompleted: todayWorkout.exercises || [],
+        totalExercises: todayWorkout.exercises?.length || 0,
+        durationSeconds: durationSeconds,
+        durationFormatted: this.formatDuration(durationSeconds),
+        caloriesBurned: caloriesBurned,
+        startedAt: startTime,
+        completedAt: new Date(),
+        completedDate: todayStr,
+        streakAfterCompletion: newStreak
+      }
+    });
+    console.log(`History saved: ${history.id}`);
+
+    // 4. Update UserPlan
+    await prisma.userPlan.update({
+      where: { id: userPlan.id },
+      data: {
+        completedDate: todayStr,
+        lastCompletedAt: new Date(),
+        currentDay: currentDay + 1,
+        completedDays: { push: currentDay }
       }
     });
 
-    // Update streak (returns { streak, message })
-    const streakResult = await this.updateStreakDetailed(userId);
-    const newStreak = streakResult.streak;
-
-    // Calculate overall stats for the score
+    // 5. Update Stats & Leaderboard
     const totalWorkouts = await prisma.workoutLog.count({ where: { userId, completed: true } });
     const totalCaloriesAgg = await prisma.workoutLog.aggregate({
       where: { userId, completed: true },
       _sum: { caloriesBurned: true }
     });
     const totalCalories = totalCaloriesAgg._sum.caloriesBurned || 0;
-
-    // Score Formula: (currentStreak * 10) + completedWorkoutCount + floor(totalCaloriesBurned / 10)
     const totalScore = (newStreak * 10) + totalWorkouts + Math.floor(totalCalories / 10);
 
     const { leaderboardRepository } = await import("../repositories/LeaderboardRepository");
-    
-    // Set exact score in leaderboard
     await leaderboardRepository.setExactScore(userId, totalScore);
     await leaderboardRepository.updateRanks();
 
-    return { 
-      log: updatedLog, 
-      newStreak, 
+    return {
+      log: updatedLog,
+      newStreak,
       score: totalScore,
       totalWorkouts,
       totalCalories,
       todayCalories: caloriesBurned,
-      message: streakResult.alreadyDone ? "Today streak already updated" : "Workout completed! Streak increased! 🔥" 
+      historyId: history.id,
+      message: "Workout completed! History saved. Next session unlocks at midnight. 🔥"
     };
   }
 
-  private async updateStreakDetailed(userId: string): Promise<{ streak: number; alreadyDone: boolean }> {
+  private formatDuration(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}m ${s}s`;
+  }
+
+  private async updateStreakCalendar(userId: string): Promise<{ streak: number }> {
     const streak = await streakRepository.findByUserId(userId);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = this.getTimezoneDate();
+    const todayStr = this.getDateString(now);
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = this.getDateString(yesterday);
 
     if (!streak) {
       await streakRepository.upsert(userId, {
-        user: userId,
         currentStreak: 1,
         longestStreak: 1,
-        lastWorkoutDate: today,
+        lastWorkoutDate: now,
       });
-      return { streak: 1, alreadyDone: false };
+      return { streak: 1 };
     }
 
     if (!streak.lastWorkoutDate) {
       await streakRepository.upsert(userId, {
         currentStreak: 1,
         longestStreak: Math.max(1, streak.longestStreak),
-        lastWorkoutDate: today,
+        lastWorkoutDate: now,
       });
-      return { streak: 1, alreadyDone: false };
+      return { streak: 1 };
     }
 
-    const lastDate = new Date(streak.lastWorkoutDate);
-    lastDate.setHours(0, 0, 0, 0);
+    const lastDateStr = this.getDateString(new Date(streak.lastWorkoutDate));
 
-    const diffTime = Math.abs(today.getTime() - lastDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (lastDateStr === todayStr) {
+      return { streak: streak.currentStreak };
+    }
 
-    if (diffDays === 0) return { streak: streak.currentStreak, alreadyDone: true };
-
-    if (diffDays === 1) {
+    if (lastDateStr === yesterdayStr) {
       const newStreak = streak.currentStreak + 1;
       await streakRepository.upsert(userId, {
         currentStreak: newStreak,
         longestStreak: Math.max(newStreak, streak.longestStreak),
-        lastWorkoutDate: today,
+        lastWorkoutDate: now,
       });
-
-      // Trigger Streak Notification
-      if ([3, 5, 7, 10, 14, 21, 30, 50, 100].includes(newStreak)) {
-        await notificationService.sendNotification({
-          userId,
-          title: `🔥 ${newStreak}-Day Streak!`,
-          message: `Unstoppable! You've worked out for ${newStreak} days in a row. Keep this momentum going!`,
-          type: "user.streak.extended",
-          category: NotificationCategory.WORKOUT,
-          priority: NotificationPriority.LOW,
-          metadata: { streak: newStreak }
-        });
-      }
-      return { streak: newStreak, alreadyDone: false };
+      return { streak: newStreak };
     } else {
-      // Streak broken
       await streakRepository.upsert(userId, {
         currentStreak: 1,
-        lastWorkoutDate: today,
+        lastWorkoutDate: now,
       });
-      return { streak: 1, alreadyDone: false };
+      return { streak: 1 };
     }
+  }
+
+  async getWorkoutHistory(userId: string) {
+    return await prisma.workoutHistory.findMany({
+      where: { userId },
+      orderBy: { completedAt: 'desc' }
+    });
   }
 }
 

@@ -1,5 +1,5 @@
 import { WORKOUT_PLANS } from "./workoutPlans";
-import { DashboardState, WorkoutDay, AuthUser } from "@/types/dashboard";
+import { DashboardState, AuthUser } from "@/types/dashboard";
 
 
 export const getDashboardState = (user: AuthUser | null): DashboardState => {
@@ -9,7 +9,6 @@ export const getDashboardState = (user: AuthUser | null): DashboardState => {
 
   // 1. Load User Goal & Fitness Level
   const goal = localStorage.getItem(`gymstreak_goal_${userId}`) || user?.goal || "Weight Loss";
-  const fitnessLevel = (localStorage.getItem(`gymstreak_fitness_level_${userId}`) || user?.fitnessLevel || "beginner").toLowerCase();
 
   // 1.5 Calculate Current Day
   const startDateStr = localStorage.getItem("workoutStartDate") || user?.workoutStartDate;
@@ -73,11 +72,13 @@ export const getDashboardState = (user: AuthUser | null): DashboardState => {
       highestStreak: 0,
       score: 0,
       currentBMI,
+      bmiCategory: "Normal",
       leaderboardRank,
       todayWorkoutStatus: "Pending",
       todayDietPlan: "Standard Plan",
       progressPercentage: 0,
-      unreadNotifications: 0
+      unreadNotifications: 0,
+      completedDayIds: []
     },
     weeklyActivity,
     hydration: hydrationData,

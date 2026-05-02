@@ -14,7 +14,6 @@ export type Exercise = {
   caloriesBurn: number;
 };
 
-
 export type WorkoutDay = {
   id: string;
   day: string;
@@ -31,12 +30,11 @@ export type AuthUser = {
   fitnessLevel?: string;
   goal?: string;
   workoutStartDate?: string;
+  createdAt?: string;
 };
 
 export type DashboardState = {
   user: AuthUser | null;
-
-
   goal: string;
   stats: {
     workoutsCompleted: number;
@@ -46,11 +44,13 @@ export type DashboardState = {
     highestStreak: number;
     score: number;
     currentBMI: string;
+    bmiCategory: string;
     leaderboardRank: string;
     todayWorkoutStatus: string;
     todayDietPlan: string;
     progressPercentage: number;
     unreadNotifications: number;
+    completedDayIds: string[];
   };
   weeklyActivity: { day: string; calories: number }[];
   hydration: {
@@ -76,5 +76,11 @@ export type DashboardState = {
     description: string;
     time: string;
     type: string;
+    workoutTitle?: string;
+    workoutDayNumber?: number;
+    durationFormatted?: string;
+    caloriesBurned?: number;
+    completedDate?: string;
+    bodyPartFocus?: string;
   }[];
 };

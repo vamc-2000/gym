@@ -35,7 +35,7 @@ export default function DietPage() {
 
   const extractMealsFromPlan = (plan: any, type: string): Meal[] => {
     if (!plan) return [];
-    
+
     // Check if the plan has the new structure (veg/non_veg keys)
     let targetPlan = plan;
     if (plan.veg || plan.non_veg) {
@@ -68,7 +68,7 @@ export default function DietPage() {
           const planData = (planRes.data as any).meals;
 
           setRawPlan(planData);
-          
+
           const dietData = planRes.data as any;
           let initialType = dietData.dietType === "BOTH" ? "VEG" : (dietData.dietType || "VEG");
 
@@ -99,7 +99,7 @@ export default function DietPage() {
 
   const handleTypeChange = (type: string) => {
     setSelectedType(type);
-    
+
     // First check if our current assigned plan has this type
     if (rawPlan && (rawPlan[type.toLowerCase()] || (type === "VEG" && rawPlan.breakfast))) {
       setMeals(extractMealsFromPlan(rawPlan, type));
@@ -125,7 +125,7 @@ export default function DietPage() {
     const newCompleted = completedMeals.includes(mealName)
       ? completedMeals.filter(m => m !== mealName)
       : [...completedMeals, mealName];
-    
+
     setCompletedMeals(newCompleted);
     localStorage.setItem(`gymstreak_completed_meals_${today}`, JSON.stringify(newCompleted));
     if (!completedMeals.includes(mealName)) {
@@ -166,11 +166,10 @@ export default function DietPage() {
             <button
               key={type}
               onClick={() => handleTypeChange(type)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedType === type
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedType === type
                   ? "bg-neon-green text-black"
                   : "text-dash-text-dim hover:text-dash-text"
-              }`}
+                }`}
             >
               {type === "VEG" ? "🥦 Vegetarian" : "🍗 Non-Vegetarian"}
             </button>
@@ -197,7 +196,7 @@ export default function DietPage() {
               <div className="text-4xl">🥗</div>
               <h3 className="text-dash-text font-bold">No plan found for your current level</h3>
               <p className="text-dash-text-dim text-sm max-w-xs">We couldn't find a matching diet plan. Please ensure your goal and level are set correctly in your profile.</p>
-              <button 
+              <button
                 onClick={() => window.location.href = '/dashboard/profile'}
                 className="px-6 py-2 bg-neon-green/10 hover:bg-neon-green/20 border border-neon-green/30 rounded-full text-neon-green text-sm font-bold transition-all"
               >
@@ -213,11 +212,10 @@ export default function DietPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`bg-dash-card rounded-2xl p-6 border transition-all duration-300 ${
-                  isMealCompleted 
-                    ? "border-neon-green/40 bg-neon-green/5 glow-green" 
+                className={`bg-dash-card rounded-2xl p-6 border transition-all duration-300 ${isMealCompleted
+                    ? "border-neon-green/40 bg-neon-green/5 glow-green"
                     : "border-dash-border-subtle hover:border-neon-green/20"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-dash-border-subtle">
                   <div className="flex items-center gap-3">
@@ -235,64 +233,63 @@ export default function DietPage() {
                     </div>
                     <button
                       onClick={() => toggleMealComplete(meal.name)}
-                      className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        isMealCompleted
+                      className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${isMealCompleted
                           ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
                           : "bg-neon-green text-black hover:scale-105 active:scale-95"
-                      }`}
+                        }`}
                     >
                       {isMealCompleted ? "Undo" : "Complete Meal"}
                     </button>
                   </div>
                 </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {meal.items.map((item, j) => (
-                  <div key={j} className="bg-dash-text/5 p-4 rounded-xl border border-dash-border-subtle hover:bg-dash-text/10 transition-all group">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="text-dash-text font-medium group-hover:text-neon-green transition-colors">{item.name}</h4>
-                        <p className="text-xs text-dash-text-dim">{item.quantity}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {meal.items.map((item, j) => (
+                    <div key={j} className="bg-dash-text/5 p-4 rounded-xl border border-dash-border-subtle hover:bg-dash-text/10 transition-all group">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="text-dash-text font-medium group-hover:text-neon-green transition-colors">{item.name}</h4>
+                          <p className="text-xs text-dash-text-dim">{item.quantity}</p>
+                        </div>
+                        <span className="text-xs font-semibold text-dash-text-muted bg-dash-text/10 px-2 py-1 rounded">
+                          {item.calories} cal
+                        </span>
                       </div>
-                      <span className="text-xs font-semibold text-dash-text-muted bg-dash-text/10 px-2 py-1 rounded">
-                        {item.calories} cal
-                      </span>
+                      <div className="flex gap-3 mt-3">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-dash-text-dim uppercase">Protein</span>
+                          <span className="text-xs font-medium text-neon-blue">{item.protein}g</span>
+                        </div>
+                        <div className="flex flex-col border-l border-dash-border-subtle pl-3">
+                          <span className="text-[9px] text-dash-text-dim uppercase">Carbs</span>
+                          <span className="text-xs font-medium text-neon-green">{item.carbs}g</span>
+                        </div>
+                        <div className="flex flex-col border-l border-dash-border-subtle pl-3">
+                          <span className="text-[9px] text-dash-text-dim uppercase">Fats</span>
+                          <span className="text-xs font-medium text-orange-400">{item.fats}g</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex gap-3 mt-3">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-dash-text-dim uppercase">Protein</span>
-                        <span className="text-xs font-medium text-neon-blue">{item.protein}g</span>
-                      </div>
-                      <div className="flex flex-col border-l border-dash-border-subtle pl-3">
-                        <span className="text-[9px] text-dash-text-dim uppercase">Carbs</span>
-                        <span className="text-xs font-medium text-neon-green">{item.carbs}g</span>
-                      </div>
-                      <div className="flex flex-col border-l border-dash-border-subtle pl-3">
-                        <span className="text-[9px] text-dash-text-dim uppercase">Fats</span>
-                        <span className="text-xs font-medium text-orange-400">{item.fats}g</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div className="mt-6 pt-4 border-t border-dash-border-subtle flex gap-6 overflow-x-auto no-scrollbar">
-                <div className="flex gap-2 items-baseline whitespace-nowrap">
-                  <span className="text-xs text-dash-text-dim">Protein:</span>
-                  <span className="text-sm font-bold text-neon-blue">{meal.totalMacros.protein}g</span>
+                <div className="mt-6 pt-4 border-t border-dash-border-subtle flex gap-6 overflow-x-auto no-scrollbar">
+                  <div className="flex gap-2 items-baseline whitespace-nowrap">
+                    <span className="text-xs text-dash-text-dim">Protein:</span>
+                    <span className="text-sm font-bold text-neon-blue">{meal.totalMacros.protein}g</span>
+                  </div>
+                  <div className="flex gap-2 items-baseline whitespace-nowrap">
+                    <span className="text-xs text-dash-text-dim">Carbs:</span>
+                    <span className="text-sm font-bold text-neon-green">{meal.totalMacros.carbs}g</span>
+                  </div>
+                  <div className="flex gap-2 items-baseline whitespace-nowrap">
+                    <span className="text-xs text-dash-text-dim">Fats:</span>
+                    <span className="text-sm font-bold text-orange-400">{meal.totalMacros.fats}g</span>
+                  </div>
                 </div>
-                <div className="flex gap-2 items-baseline whitespace-nowrap">
-                  <span className="text-xs text-dash-text-dim">Carbs:</span>
-                  <span className="text-sm font-bold text-neon-green">{meal.totalMacros.carbs}g</span>
-                </div>
-                <div className="flex gap-2 items-baseline whitespace-nowrap">
-                  <span className="text-xs text-dash-text-dim">Fats:</span>
-                  <span className="text-sm font-bold text-orange-400">{meal.totalMacros.fats}g</span>
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })}
 
 
         </div>

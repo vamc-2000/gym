@@ -35,16 +35,22 @@ export default function LeaderboardPage() {
 
         let rawData: RawDataEntry[] = [];
 
-        const data = res.data as any;
+        const data = res.data as { leaderboard?: Record<string, unknown>[] };
         if (res.success && data && data.leaderboard) {
-          rawData = data.leaderboard.map((e: any) => ({
-            id: e.user?.id || "guest",
-            name: e.user?.name || "Unknown",
-            workoutsCompleted: e.user?.workoutLogs?.length || Math.floor(e.score / 320),
-            streak: e.user?.streaks?.currentStreak || 0,
-            caloriesBurned: e.calories || Math.floor(e.score / 1.5),
-            score: e.score || 0
-          }));
+          rawData = data.leaderboard.map((e) => {
+            const user = e.user as Record<string, unknown> | undefined;
+            const workoutLogs = user?.workoutLogs as unknown[] | undefined;
+            const streaks = user?.streaks as Record<string, unknown> | undefined;
+            
+            return {
+              id: (user?.id as string) || "guest",
+              name: (user?.name as string) || "Unknown",
+              workoutsCompleted: workoutLogs?.length || Math.floor((e.score as number || 0) / 320),
+              streak: (streaks?.currentStreak as number) || 0,
+              caloriesBurned: (e.calories as number) || Math.floor((e.score as number || 0) / 1.5),
+              score: (e.score as number) || 0
+            };
+          });
         } else {
           rawData = [
             { id: "1", name: "Alex Thunder", workoutsCompleted: 45, streak: 45, caloriesBurned: 12000, score: 1500 },
@@ -59,7 +65,7 @@ export default function LeaderboardPage() {
         }
 
         const currentUserRes = await dashboardService.getProfile();
-        const me = currentUserRes.success ? (currentUserRes.data as any) : null;
+        const me = currentUserRes.success ? (currentUserRes.data as { id: string; name: string }) : null;
 
         // Sorting Logic: Streak > Calories > Workouts > Score
         const sorted = rawData

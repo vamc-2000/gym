@@ -15,7 +15,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await API("/auth/login", "POST", { email, password });
+      const res = await API<any>("/auth/login", "POST", { email, password });
 
       if (res.accessToken) {
         if (res.user.role === "USER") {

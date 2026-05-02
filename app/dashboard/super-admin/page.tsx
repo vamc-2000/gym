@@ -7,8 +7,8 @@ import { triggerToast } from "@/components/NotificationManager";
 import { useRouter } from "next/navigation";
 
 export default function SuperAdminDashboard() {
-  const [statsData, setStatsData] = useState<any>(null);
-  const [admins, setAdmins] = useState<any[]>([]);
+  const [statsData, setStatsData] = useState<Record<string, unknown> | null>(null);
+  const [admins, setAdmins] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -19,8 +19,8 @@ export default function SuperAdminDashboard() {
           dashboardService.getSuperAdminStats(),
           dashboardService.getSuperAdminAdmins()
         ]);
-        if (statsRes.success) setStatsData(statsRes.data);
-        if (adminsRes.success) setAdmins((adminsRes.data as any[]).slice(0, 5));
+        if (statsRes.success) setStatsData(statsRes.data as Record<string, unknown>);
+        if (adminsRes.success) setAdmins((adminsRes.data as Record<string, unknown>[]).slice(0, 5));
 
       } catch (err) {
         console.error("Failed to fetch super admin data", err);
@@ -49,9 +49,9 @@ export default function SuperAdminDashboard() {
   };
 
   const stats = [
-    { label: "Total Users", value: statsData?.totalUsers || "0", icon: "👥", color: "neon-blue" },
-    { label: "Total Admins", value: statsData?.totalAdmins || "0", icon: "👮", color: "purple-500" },
-    { label: "Active Today", value: statsData?.activeToday || "0", icon: "🏋️", color: "neon-yellow" },
+    { label: "Total Users", value: (statsData?.totalUsers as string) || "0", icon: "👥", color: "neon-blue" },
+    { label: "Total Admins", value: (statsData?.totalAdmins as string) || "0", icon: "purple-500", color: "purple-500" },
+    { label: "Active Today", value: (statsData?.activeToday as string) || "0", icon: "🏋️", color: "neon-yellow" },
     { label: "System Health", value: "100%", icon: "🛡️", color: "green-400" },
   ];
 
@@ -111,11 +111,11 @@ export default function SuperAdminDashboard() {
                 <div key={i} className="flex items-center justify-between p-4 bg-dash-text/5 rounded-xl border border-dash-border-subtle">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-blue to-purple-500 flex items-center justify-center text-xs font-bold text-white">
-                      {admin.name.charAt(0)}
+                      {(admin.name as string).charAt(0)}
                     </div>
                     <div>
-                      <p className="text-dash-text font-bold text-sm">{admin.name}</p>
-                      <p className="text-dash-text-dim text-xs">Logged in at {new Date(admin.lastLogin || admin.createdAt).toLocaleTimeString()}</p>
+                      <p className="text-dash-text font-bold text-sm">{admin.name as string}</p>
+                      <p className="text-dash-text-dim text-xs">Logged in at {new Date((admin.lastLogin as string) || (admin.createdAt as string)).toLocaleTimeString()}</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-neon-blue uppercase tracking-widest">Active</span>

@@ -2,11 +2,14 @@
 import { apiClient } from "@/lib/api";
 
 export const dashboardService = {
+  getUserPlan: () => apiClient<any>("/user-plan"),
+  generateUserPlan: () => apiClient<any>("/user-plan/generate", { method: "POST" }),
   getWorkoutPlan: () => apiClient<unknown>("/workout/plan"),
   startWorkout: (workoutId: string) =>
     apiClient<unknown>("/workout/start", { method: "POST", body: { workoutId } }),
-  completeWorkout: (workoutId: string, dayNumber?: number) =>
-    apiClient<unknown>("/workouts/complete", { method: "POST", body: { workoutId, dayNumber } }),
+  completeWorkout: (workoutId: string) =>
+    apiClient<any>("/workout/complete", { method: "POST", body: { workoutId } }),
+  getWorkoutHistory: () => apiClient<any>("/workout/history"),
 
   getDietPlan: () => apiClient<unknown>("/diet/plan"),
   getDietOptions: () => apiClient<unknown>("/diet/options"),
@@ -41,15 +44,15 @@ export const dashboardService = {
     apiClient<unknown>("/notification/read", { method: "PATCH", body: { notificationId } }), // Mark SINGLE
 
   getDailySchedule: () => apiClient<unknown>("/schedule"),
-  
-  completeScheduleItem: (itemId: string) => 
+
+  completeScheduleItem: (itemId: string) =>
     apiClient<unknown>("/schedule", { method: "PUT", body: { itemId } }),
 
   // Admin Methods
   getAdminUsers: () => apiClient<unknown>("/admin/users"),
   getAdminWorkouts: () => apiClient<unknown>("/admin/workout"),
   getAdminDiets: () => apiClient<unknown>("/admin/diet"),
-  sendAdminNotification: (data: { title: string; message: string }) => 
+  sendAdminNotification: (data: { title: string; message: string }) =>
     apiClient<unknown>("/admin/notifications", { method: "POST", body: data }),
 
   // Super Admin Methods
@@ -63,7 +66,7 @@ export const dashboardService = {
   updateSystemSettings: (data: unknown) => apiClient<unknown>("/system-settings", { method: "PUT", body: data }),
   getAdminLogs: () => apiClient<unknown>("/admin-logs"),
   exportBackup: () => apiClient<unknown>("/backup/export", { method: "POST" }),
-  getSuperAdminUsers: () => apiClient<unknown>("/admin/users"), 
+  getSuperAdminUsers: () => apiClient<unknown>("/admin/users"),
 
 };
 

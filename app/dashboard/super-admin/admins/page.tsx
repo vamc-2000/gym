@@ -8,11 +8,11 @@ import InputField from "@/components/ui/InputField";
 import SubmitButton from "@/components/ui/SubmitButton";
 
 export default function SuperAdminAdminsPage() {
-  const [admins, setAdmins] = useState<any[]>([]);
+  const [admins, setAdmins] = useState<Record<string, any>[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAdmin, setEditingAdmin] = useState<any>(null);
+  const [editingAdmin, setEditingAdmin] = useState<Record<string, any> | null>(null);
   
   const [form, setForm] = useState({
     name: "",
@@ -25,10 +25,10 @@ export default function SuperAdminAdminsPage() {
     try {
       const res = await dashboardService.getSuperAdminAdmins();
       if (res.success) {
-        setAdmins(res.data as any[]);
+        setAdmins(res.data as Record<string, any>[]);
 
       }
-    } catch (err) {
+    } catch (_err) {
       triggerToast("Error", "Failed to fetch admins", "error");
     } finally {
       setLoading(false);
@@ -36,7 +36,10 @@ export default function SuperAdminAdminsPage() {
   };
 
   useEffect(() => {
-    fetchAdmins();
+    const timer = setTimeout(() => {
+      fetchAdmins();
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleCreateOrUpdate = async () => {

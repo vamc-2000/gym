@@ -5,18 +5,16 @@ const BASE_URL = "/api";
 
 interface ApiOptions {
   method?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   requiresAuth?: boolean;
 }
 
-interface ApiResponse<T = unknown> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  message?: string;
 }
 
 export async function apiClient<T = unknown>(
@@ -69,7 +67,7 @@ export async function apiClient<T = unknown>(
       };
     }
 
-    return data;
+    return data as ApiResponse<T>;
   } catch (error: unknown) {
     return {
       success: false,
@@ -79,9 +77,8 @@ export async function apiClient<T = unknown>(
 }
 
 // Legacy compat — kept for existing dashboard usage
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const API = async (url: string, method = "GET", body?: any) => {
-  const token = tokenManager.getAccessToken() || localStorage.getItem("token");
+export const API = async <T = unknown>(url: string, method = "GET", body?: unknown): Promise<T> => {
+  const token = tokenManager.getAccessToken() || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
   const res = await fetch(`${BASE_URL}${url}`, {
     method,

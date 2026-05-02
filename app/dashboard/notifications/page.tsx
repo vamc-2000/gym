@@ -13,6 +13,14 @@ interface Notification {
   createdAt: string;
 }
 
+interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  readBy?: string[];
+}
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,23 +33,22 @@ export default function NotificationsPage() {
         // 1. Fetch system notifications from API
         const res = await dashboardService.getNotifications();
         if (res.success && res.data) {
-          combined = Array.isArray(res.data) ? (res.data as any[]) : [];
-
+          combined = Array.isArray(res.data) ? (res.data as Notification[]) : [];
         }
 
         // 2. Fetch admin broadcast notifications from localStorage
         const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
         if (adminNotifsStr) {
-          const adminNotifs = JSON.parse(adminNotifsStr);
+          const adminNotifs = JSON.parse(adminNotifsStr) as AdminNotification[];
           const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
-          const userId = user.id || "guest";
+          const userId = (user.id as string) || "guest";
 
-          const formattedAdminNotifs = adminNotifs.map((an: any) => ({
+          const formattedAdminNotifs: Notification[] = adminNotifs.map((an) => ({
             _id: an.id,
             title: an.title,
             message: an.message,
             type: "admin_broadcast",
-            read: an.readBy?.includes(userId),
+            read: (an.readBy || []).includes(userId),
             createdAt: an.createdAt
           }));
           combined = [...formattedAdminNotifs, ...combined];
@@ -76,7 +83,7 @@ export default function NotificationsPage() {
     
     // Optimistic UI update
     setNotifications((prev) => 
-      prev.map((n) => (n._id === id || (n as any).id === id) ? { ...n, read: true } : n)
+      prev.map((n) => (n._id === id) ? { ...n, read: true } : n)
     );
 
     try {
@@ -84,11 +91,11 @@ export default function NotificationsPage() {
       if (id.startsWith("admin_notif_")) {
         const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
         if (adminNotifsStr) {
-          const adminNotifs = JSON.parse(adminNotifsStr);
+          const adminNotifs = JSON.parse(adminNotifsStr) as AdminNotification[];
           const user = JSON.parse(localStorage.getItem("gymstreak_user") || "{}");
-          const userId = user.id || "guest";
+          const userId = (user.id as string) || "guest";
           
-          const updated = adminNotifs.map((an: any) => {
+          const updated = adminNotifs.map((an) => {
             if (an.id === id) {
               const readBy = an.readBy || [];
               if (!readBy.includes(userId)) {
@@ -159,7 +166,7 @@ export default function NotificationsPage() {
       ) : (
         <div className="space-y-3">
           {notifications.map((notif, i) => {
-            const id = notif._id || (notif as any).id;
+            const id = notif._id;
             return (
               <motion.div
                 key={id || i}
