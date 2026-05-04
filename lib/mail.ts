@@ -1,18 +1,16 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.ethereal.email",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true",
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: "pengwintest@gmail.com",
+    pass: "vcgt cony hvja jtrr",
   },
 });
 
 export async function sendOTPEmail(email: string, otp: string) {
   const mailOptions = {
-    from: `"GymStreak Support" <${process.env.SMTP_FROM || "support@gymstreak.com"}>`,
+    from: `"GymStreak Support" <pengwintest@gmail.com>`,
     to: email,
     subject: "Your GymStreak Verification Code",
     html: `
