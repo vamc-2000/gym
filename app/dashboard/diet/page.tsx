@@ -162,7 +162,7 @@ export default function DietPage() {
 
       {!loading && (
         <div className="flex flex-wrap gap-2 p-1 bg-dash-text/5 rounded-xl border border-dash-border-subtle w-fit">
-          {["VEG", "NON_VEG"].map((type) => (
+          {["VEG", "NON_VEG", "BOTH"].map((type) => (
             <button
               key={type}
               onClick={() => handleTypeChange(type)}
@@ -171,7 +171,7 @@ export default function DietPage() {
                   : "text-dash-text-dim hover:text-dash-text"
                 }`}
             >
-              {type === "VEG" ? "🥦 Vegetarian" : "🍗 Non-Vegetarian"}
+              {type === "VEG" ? "🥦 Vegetarian" : type === "NON_VEG" ? "🍗 Non-Vegetarian" : "🍱 Both"}
             </button>
           ))}
         </div>

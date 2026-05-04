@@ -80,19 +80,6 @@ export default function Home() {
           >
             Log In
           </button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push("/register")}
-            className="px-3 sm:px-5 py-1.5 sm:py-2
-                       bg-gradient-to-r from-neon-yellow to-amber-500
-                       text-dash-bg rounded-lg sm:rounded-xl
-                       font-bold text-xs sm:text-sm
-                       hover:shadow-lg hover:shadow-neon-yellow/20
-                       transition-all cursor-pointer"
-          >
-            Join Now
-          </motion.button>
         </div>
       </motion.nav>
 
