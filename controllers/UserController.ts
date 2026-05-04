@@ -32,14 +32,13 @@ export class UserController {
       }
 
       // 2. Map Diet Preference
-      // Frontend might send Veg, Non-Veg, Both OR VEG, NON_VEG, BOTH
-      const dietInput = (body.dietPreference || body.dietaryPreference || "").toLowerCase();
+      const dietInput = (body.dietPreference || body.dietaryPreference || "").toUpperCase();
       if (dietInput) {
-        if (dietInput.includes("non")) {
-          body.dietPreference = "NON_VEG";
-        } else if (dietInput.includes("veg") && !dietInput.includes("non")) {
+        if (dietInput === "VEG" || dietInput === "VEGETARIAN") {
           body.dietPreference = "VEG";
-        } else if (dietInput.includes("both")) {
+        } else if (dietInput === "NON_VEG" || dietInput === "NON-VEG" || dietInput === "NON-VEGETARIAN") {
+          body.dietPreference = "NON_VEG";
+        } else if (dietInput === "BOTH") {
           body.dietPreference = "BOTH";
         }
       }

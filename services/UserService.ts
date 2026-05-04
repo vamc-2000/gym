@@ -58,6 +58,8 @@ export class UserService {
       (updateData.dietPreference && updateData.dietPreference !== user.dietPreference)
     ) {
       const { prisma } = await import("../lib/prisma");
+      
+      // Deactivate Assigned Models
       await prisma.assignedWorkout.updateMany({
         where: { userId, isActive: true },
         data: { isActive: false }
@@ -65,6 +67,11 @@ export class UserService {
       await prisma.assignedDiet.updateMany({
         where: { userId, isActive: true },
         data: { isActive: false }
+      });
+
+      // Also clear UserPlan cached data to force regeneration in dashboard
+      await prisma.userPlan.deleteMany({
+        where: { userId }
       });
     }
 

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
 import { useWorkout } from "@/context/WorkoutContext";
 import { dashboardService } from "@/lib/services/dashboardService";
+import ConfirmationModal from "../ui/ConfirmationModal";
 
 
 interface TopNavbarProps {
@@ -20,6 +21,8 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
   const { theme } = useTheme();
   const { seconds, isActive, isPaused, formatTime } = useWorkout();
 
+
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
     tokenManager.clearTokens();
@@ -142,7 +145,7 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
 
         {/* Logout */}
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutConfirm(true)}
           className="p-2 text-dash-text-dim hover:text-red-400 transition-colors cursor-pointer"
           title="Logout"
         >
@@ -150,6 +153,15 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
         </button>
+        <ConfirmationModal
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+          title="Confirm Logout"
+          message="Are you sure you want to log out?"
+          confirmText="Logout"
+          variant="danger"
+        />
       </div>
     </header>
   );

@@ -19,7 +19,7 @@ export default function ProfilePage() {
     fitnessLevel: "Beginner",
     preferredWorkoutTime: "07:00",
     dndEnabled: false,
-    dietaryPreference: "Non-Vegetarian",
+    dietPreference: "BOTH",
   });
 
 
@@ -38,7 +38,7 @@ export default function ProfilePage() {
             fitnessLevel: (u.fitnessLevel as string) || "Beginner",
             preferredWorkoutTime: (u.notificationSettings as Record<string, unknown>)?.preferredWorkoutTime as string || "07:00",
             dndEnabled: (u.notificationSettings as Record<string, unknown>)?.dndEnabled as boolean || false,
-            dietaryPreference: (u.dietaryPreference as string) || "Non-Vegetarian",
+            dietPreference: (u.dietPreference as string) || "BOTH",
           });
 
 
@@ -73,7 +73,7 @@ export default function ProfilePage() {
         name: form.name,
         phone: form.phone,
         fitnessLevel: form.fitnessLevel,
-        dietaryPreference: form.dietaryPreference,
+        dietPreference: form.dietPreference,
         notificationSettings: {
           preferredWorkoutTime: form.preferredWorkoutTime,
           dndEnabled: form.dndEnabled,
@@ -160,12 +160,12 @@ export default function ProfilePage() {
         <SelectField
           label="Dietary Preference"
           variant="dark"
-          value={form.dietaryPreference}
-          onChange={(e) => update("dietaryPreference", e.target.value)}
+          value={form.dietPreference}
+          onChange={(e) => update("dietPreference", e.target.value)}
           options={[
-            { value: "Veg", label: "🥦 Veg" },
-            { value: "Non-Veg", label: "🍖 Non-Veg" },
-            { value: "Both", label: "🍱 Both" },
+            { value: "VEG", label: "🥦 Veg" },
+            { value: "NON_VEG", label: "🍖 Non-Veg" },
+            { value: "BOTH", label: "🍱 Both" },
           ]}
         />
       </div>

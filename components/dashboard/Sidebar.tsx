@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { tokenManager } from "@/lib/auth";
+import { useState } from "react";
+import ConfirmationModal from "../ui/ConfirmationModal";
 
 interface NavItem {
   href: string;
@@ -57,8 +59,24 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
   const role = userRole || tokenManager.getUser()?.role || "USER";
   const navItems = [...(roleBasedItems[role] || roleBasedItems.USER), ...commonItems];
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    tokenManager.clearTokens();
+    window.location.href = "/";
+  };
+
   return (
     <>
+      <ConfirmationModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of GymStreak?"
+        confirmText="Logout"
+        variant="danger"
+      />
       {/* Mobile overlay */}
       {!collapsed && (
         <div
@@ -135,10 +153,7 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
         {/* Logout at bottom */}
         <div className="p-3 border-t border-dash-border-subtle">
           <button
-            onClick={() => {
-              tokenManager.clearTokens();
-              window.location.href = "/";
-            }}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dash-text-dim hover:text-red-400 hover:bg-red-400/5 transition-all duration-200 group cursor-pointer"
           >
             <span className="text-lg">🚪</span>
