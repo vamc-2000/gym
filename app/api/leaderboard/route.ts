@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
-import { socialController } from "@/controllers/SocialController";
+import { leaderboardController } from "@/controllers/LeaderboardController";
 import { connectDB } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   await connectDB();
-  return socialController.getLeaderboard(req);
+  return leaderboardController.getLeaderboard(req);
 }

@@ -1,13 +1,32 @@
 import { prisma } from "./prisma";
 
+
+let connectionPromise: Promise<void> | null = null;
+
 export const connectDB = async () => {
-  try {
-    // Prisma connects lazily, but we can force a real check by performing a small query
-    await prisma.$connect();
-    await prisma.user.count(); // This confirms we have read permissions
-    console.log("✅ Prisma Connected & Verified: Database is accessible");
-  } catch (error) {
-    console.error("❌ DB Connection/Permission Error:", error);
-    // We don't exit the process here to allow Next.js to handle it
-  }
+  if (connectionPromise) return connectionPromise;
+
+  connectionPromise = (async () => {
+    try {
+      // 0. Check Env Vars
+      if (!process.env.DATABASE_URL) {
+        throw new Error("DATABASE_URL is not defined in .env");
+      }
+
+
+      // 1. Connect Prisma
+      await prisma.$connect();
+      await prisma.user.count(); 
+      
+
+
+      console.log("✅ Database Connection (Prisma) Verified");
+    } catch (error) {
+      console.error("❌ Database Connection Error:", error);
+      connectionPromise = null; // Reset promise to allow retry on next request
+      throw error;
+    }
+  })();
+
+  return connectionPromise;
 };

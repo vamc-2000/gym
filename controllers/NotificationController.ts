@@ -11,8 +11,8 @@ export class NotificationController {
       const { settings } = await req.json();
       const updated = await notificationService.updateSettings(decoded.userId, settings);
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 
@@ -23,8 +23,45 @@ export class NotificationController {
     try {
       const notifications = await notificationService.getNotifications(decoded.userId);
       return NextResponse.json({ success: true, data: notifications });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
+    }
+  }
+
+  async getUnreadCount(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const count = await notificationService.getUnreadCount(decoded.userId);
+      return NextResponse.json({ success: true, data: { count } });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
+    }
+  }
+
+  async markAsRead(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const { notificationId } = await req.json();
+      const updated = await notificationService.markAsRead(notificationId);
+      return NextResponse.json({ success: true, data: updated });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
+    }
+  }
+
+  async markAllAsRead(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const updated = await notificationService.markAllAsRead(decoded.userId);
+      return NextResponse.json({ success: true, data: updated });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
 }

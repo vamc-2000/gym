@@ -8,12 +8,14 @@ export class SocialService {
     
     let filtered = streaks;
     if (category !== "Overall") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filtered = streaks.filter((s: any) => s.user && s.user.goal === category);
     }
 
     const rankings = filtered
       .sort((a: { currentStreak: number; }, b: { currentStreak: number; }) => b.currentStreak - a.currentStreak)
       .slice(0, 10)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((s: any) => ({
         user: s.userId,
         name: s.user?.name || "Unknown",

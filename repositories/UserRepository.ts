@@ -1,4 +1,6 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
+
 
 export class UserRepository {
   async findByEmail(email: string) {
@@ -13,18 +15,19 @@ export class UserRepository {
     });
   }
 
-  async create(userData: any) {
+  async create(userData: Prisma.UserCreateInput) {
     return await prisma.user.create({
       data: userData,
     });
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: Prisma.UserUpdateInput) {
     return await prisma.user.update({
       where: { id },
       data,
     });
   }
+
 
   async findAll() {
     return await prisma.user.findMany({

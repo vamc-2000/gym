@@ -1,121 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { API } from "@/lib/api";
-import Navbar from "@/components/Navbar";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { tokenManager } from "@/lib/auth";
 
-export default function Dashboard() {
-  const [workout, setWorkout] = useState<any>(null);
-  const [diet, setDiet] = useState<any>(null);
-  const [progress, setProgress] = useState<any[]>([]);
-  const [weight, setWeight] = useState("");
-  const [note, setNote] = useState("");
+export default function DashboardPage() {
+  const router = useRouter();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const user = tokenManager.getUser();
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-  const fetchData = async () => {
-    const w = await API("/workout");
-    const d = await API("/diet");
-    const p = await API("/progress");
-
-    setWorkout(w.workout);
-    setDiet(d.diet);
-    setProgress(p.progress || []);
-  };
-  const addProgress = async () => {
-  await API("/progress", "POST", {
-    weight: Number(weight),
-    note,
-  });
-
-  setWeight("");
-  setNote("");
-
-  fetchData(); // refresh list
-};
+    // Redirect based on role
+    if (user.role === "SUPER_ADMIN") {
+      router.push("/dashboard/super-admin");
+    } else if (user.role === "ADMIN") {
+      router.push("/dashboard/admin");
+    } else {
+      router.push("/dashboard/user");
+    }
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6">🏋️ Fitness Dashboard</h1>
-
-      <div className="grid md:grid-cols-2 gap-6">
-
-        {/* Workout Card */}
-        <div className="bg-white rounded-2xl shadow p-5">
-          <h2 className="text-xl font-semibold mb-4">Workout Plan</h2>
-
-          {workout?.plan?.map((day: any, i: number) => (
-            <div key={i} className="mb-3">
-              <p className="font-medium">{day.day}</p>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
-                {day.exercises.map((e: string, idx: number) => (
-                  <li key={idx}>{e}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Diet Card */}
-        <div className="bg-white rounded-2xl shadow p-5">
-          <h2 className="text-xl font-semibold mb-4">Diet Plan</h2>
-
-          {diet?.meals?.map((meal: any, i: number) => (
-            <div key={i} className="mb-3">
-              <p className="font-medium">{meal.name}</p>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
-                {meal.items.map((item: string, idx: number) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="mb-4 flex gap-2">
-  <input
-    placeholder="Weight"
-    value={weight}
-    onChange={(e) => setWeight(e.target.value)}
-    className="border p-2 rounded"
-  />
-
-  <input
-    placeholder="Note"
-    value={note}
-    onChange={(e) => setNote(e.target.value)}
-    className="border p-2 rounded"
-  />
-
-  <button
-    onClick={addProgress}
-    className="bg-blue-500 text-white px-4 rounded"
-  >
-    Add
-  </button>
-</div>
-
-        {/* Progress Card */}
-        <div className="bg-white rounded-2xl shadow p-5 md:col-span-2">
-          <h2 className="text-xl font-semibold mb-4">Progress</h2>
-
-          {progress.length === 0 && (
-            <p className="text-gray-500">No progress yet</p>
-          )}
-
-          {progress.map((p, i) => (
-            <div
-              key={i}
-              className="flex justify-between border-b py-2 text-sm"
-            >
-              <span>{new Date(p.date).toLocaleDateString()}</span>
-              <span>{p.weight} kg</span>
-              <span className="text-gray-500">{p.note}</span>
-            </div>
-          ))}
-        </div>
-
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div className="w-12 h-12 border-4 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
+      <div className="text-white/40 text-sm font-medium animate-pulse">
+        Initializing your dashboard...
       </div>
     </div>
   );

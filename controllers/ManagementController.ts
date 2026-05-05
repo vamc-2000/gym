@@ -13,8 +13,26 @@ export class ManagementController {
     try {
       const users = await userRepository.findAll();
       return NextResponse.json({ success: true, data: users });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
+    }
+  }
+
+  // List all admins (SuperAdmin only)
+  async listAdmins(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!checkRole(decoded, ["SUPER_ADMIN"])) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
+      const users = await userRepository.findAll();
+      const admins = users.filter(u => u.role === "ADMIN");
+      return NextResponse.json({ success: true, data: admins });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -39,8 +57,9 @@ export class ManagementController {
         }).length
       };
       return NextResponse.json({ success: true, data: stats });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -59,8 +78,9 @@ export class ManagementController {
 
       const updated = await userRepository.update(userId, { role: newRole });
       return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 
@@ -75,8 +95,9 @@ export class ManagementController {
       const { userId } = await req.json();
       await userRepository.delete(userId); // We'll add this to the repository
       return NextResponse.json({ success: true, message: "User deleted successfully" });
-    } catch (error: any) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "An unknown error occurred";
+      return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
   }
 }
