@@ -45,6 +45,19 @@ model User {
   assignedDiets        AssignedDiet[]
   userPlan             UserPlan?
   workoutHistory       WorkoutHistory[]
+
+  // Community & Social
+  posts            CommunityPost[]
+  likes            PostLike[]
+  comments         PostComment[]
+  sentRequests     Friendship[]      @relation("SentRequests")
+  receivedRequests Friendship[]      @relation("ReceivedRequests")
+  sentMessages     ChatMessage[]     @relation("SentMessages")
+  receivedMessages ChatMessage[]     @relation("ReceivedMessages")
+
+  // Email & Security
+  resetTokens  PasswordResetToken[]
+  sentEmails   EmailLog[]
 }
 
 model UserPlan {
@@ -326,4 +339,119 @@ model AdminLog {
   target    String?
   details   String?
   createdAt DateTime @default(now())
+}
+
+// --- Community Module ---
+
+model CommunityPost {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String      @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  content       String
+  mediaUrl      String?
+  mediaType     MediaType   @default(TEXT)
+  privacy       PostPrivacy @default(PUBLIC)
+  likesCount    Int         @default(0)
+  commentsCount Int         @default(0)
+  likes         PostLike[]
+  comments      PostComment[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([privacy])
+}
+
+model PostLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+model Friendship {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  friendId  String           @db.ObjectId
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user      User             @relation("SentRequests", fields: [userId], references: [id])
+  friend    User             @relation("ReceivedRequests", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+model ChatMessage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  message    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+enum PostPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  otp       String
+  token     String?
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([email])
+}
+
+model EmailLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId    String   @db.ObjectId
+  sender      User     @relation(fields: [senderId], references: [id])
+  audience    String   // "ALL", "ADMINS", "SELECTED"
+  subject     String
+  message     String
+  status      String   // "SENT", "FAILED"
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  createdAt   DateTime @default(now())
 }

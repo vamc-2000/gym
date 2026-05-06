@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-
 import { motion } from "framer-motion";
-
 import { tokenManager } from "@/lib/auth";
-import { useState } from "react";
+import { useState, memo } from "react";
 import ConfirmationModal from "../ui/ConfirmationModal";
 
 interface NavItem {
@@ -31,12 +28,16 @@ const roleBasedItems: Record<string, NavItem[]> = {
     { href: "/dashboard/progress", label: "Progress", icon: "📈" },
     { href: "/dashboard/streak", label: "Streak", icon: "🔥" },
     { href: "/dashboard/leaderboard", label: "Leaderboard", icon: "🏆" },
+    { href: "/dashboard/community", label: "Community", icon: "🤝" },
+    { href: "/dashboard/friends", label: "Friends", icon: "👥" },
+    { href: "/dashboard/chat", label: "Chat", icon: "💬" },
   ],
   ADMIN: [
     { href: "/dashboard/admin", label: "Dashboard", icon: "📊" },
     { href: "/dashboard/admin/users", label: "Assigned Users", icon: "👥" },
     { href: "/dashboard/admin/workouts", label: "Workout Templates", icon: "🏋️" },
     { href: "/dashboard/admin/diets", label: "Diet Templates", icon: "🥗" },
+    { href: "/dashboard/admin/email", label: "Email System", icon: "📧" },
     { href: "/dashboard/admin/notifications", label: "Push Notifications", icon: "📢" },
   ],
   SUPER_ADMIN: [
@@ -45,7 +46,6 @@ const roleBasedItems: Record<string, NavItem[]> = {
     { href: "/dashboard/super-admin/users", label: "Manage All Users", icon: "👥" },
     { href: "/dashboard/super-admin/settings", label: "System Settings", icon: "🛠️" },
   ],
-
 };
 
 interface SidebarProps {
@@ -54,7 +54,7 @@ interface SidebarProps {
   userRole?: string;
 }
 
-export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
+function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
   const pathname = usePathname();
   const role = userRole || tokenManager.getUser()?.role || "USER";
   const navItems = [...(roleBasedItems[role] || roleBasedItems.USER), ...commonItems];
@@ -77,7 +77,6 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
         confirmText="Logout"
         variant="danger"
       />
-      {/* Mobile overlay */}
       {!collapsed && (
         <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
@@ -90,7 +89,6 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
           collapsed ? "-translate-x-full lg:translate-x-0 lg:w-20" : "translate-x-0 w-64"
         } bg-dash-card border-r border-dash-border-subtle`}
       >
-        {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-dash-border-subtle">
           {!collapsed && (
             <motion.div
@@ -123,7 +121,6 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
           </button>
         </div>
 
-        {/* Nav links */}
         <nav className="flex-1 mt-4 px-3 space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -150,7 +147,6 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
           })}
         </nav>
 
-        {/* Logout at bottom */}
         <div className="p-3 border-t border-dash-border-subtle">
           <button
             onClick={() => setShowLogoutConfirm(true)}
@@ -164,3 +160,5 @@ export default function Sidebar({ collapsed, onToggle, userRole }: SidebarProps)
     </>
   );
 }
+
+export default memo(Sidebar);

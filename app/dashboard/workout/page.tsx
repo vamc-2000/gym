@@ -258,7 +258,7 @@ export default function WorkoutPage() {
                 className={`flex-shrink-0 w-40 p-4 rounded-2xl border cursor-pointer transition-all ${
                   isSelected ? "border-neon-blue bg-neon-blue/10 ring-1 ring-neon-blue/50 shadow-[0_0_20px_rgba(0,245,255,0.15)]" : 
                   status === "active" ? "bg-neon-blue/5 border-neon-blue/20" : 
-                  status === "completed" || status === "completed_today_waiting" ? "bg-neon-green/5 border-neon-green/20" : 
+                  status === "completed" || status === "completed_today" ? "bg-neon-green/5 border-neon-green/20" : 
                   "bg-dash-card border-dash-border-subtle opacity-40 grayscale cursor-not-allowed"
                 }`}
               >
