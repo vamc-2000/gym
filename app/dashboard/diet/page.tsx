@@ -36,23 +36,57 @@ export default function DietPage() {
   const extractMealsFromPlan = (plan: any, type: string): Meal[] => {
     if (!plan) return [];
 
-    // Check if the plan has the new structure (veg/non_veg keys)
+    const mealKeys = ["breakfast", "lunch", "dinner", "snacks"];
+
+    // Handle "BOTH" preference by merging Veg and Non-Veg options
+    if (type === "BOTH" && (plan.veg || plan.non_veg)) {
+      return mealKeys.map(key => {
+        const vegMeal = plan.veg?.[key];
+        const nonVegMeal = plan.non_veg?.[key];
+
+        const combinedItems = [
+          ...(vegMeal?.items?.map((item: any) => ({ ...item, name: `🥦 ${item.name}` })) || []),
+          ...(nonVegMeal?.items?.map((item: any) => ({ ...item, name: `🍗 ${item.name}` })) || [])
+        ];
+
+        return {
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          items: combinedItems,
+          totalMacros: {
+            calories: Math.max(vegMeal?.totalMacros?.calories || 0, nonVegMeal?.totalMacros?.calories || 0),
+            protein: Math.max(vegMeal?.totalMacros?.protein || 0, nonVegMeal?.totalMacros?.protein || 0),
+            carbs: Math.max(vegMeal?.totalMacros?.carbs || 0, nonVegMeal?.totalMacros?.carbs || 0),
+            fats: Math.max(vegMeal?.totalMacros?.fats || 0, nonVegMeal?.totalMacros?.fats || 0),
+          }
+        };
+      });
+    }
+
+    // Standard single-type extraction
     let targetPlan = plan;
-    if (plan.veg || plan.non_veg) {
+    // Handle both direct plan and schedule-nested plan (from templates)
+    if (plan.schedule) {
+      targetPlan = plan.schedule;
+    } else if (plan.veg || plan.non_veg) {
       targetPlan = type === "NON_VEG" ? plan.non_veg : plan.veg;
     }
 
     if (!targetPlan) return [];
 
-    // The structure can be { breakfast: {...}, lunch: {...}, ... }
-    const mealKeys = ["breakfast", "lunch", "dinner", "snacks"];
     return mealKeys
       .filter(key => targetPlan[key])
-      .map(key => ({
-        name: targetPlan[key].title || key.charAt(0).toUpperCase() + key.slice(1),
-        items: targetPlan[key].items || [],
-        totalMacros: targetPlan[key].totalMacros || { calories: 0, protein: 0, carbs: 0, fats: 0 }
-      }));
+      .map(key => {
+        const mealData = targetPlan[key];
+        return {
+          name: mealData.title || key.charAt(0).toUpperCase() + key.slice(1),
+          items: Array.isArray(mealData.items) 
+            ? mealData.items.map((it: any) => 
+                typeof it === 'string' ? { name: it, quantity: "", calories: 0, protein: 0, carbs: 0, fats: 0 } : it
+              ) 
+            : [],
+          totalMacros: mealData.totalMacros || mealData.macros || { calories: 0, protein: 0, carbs: 0, fats: 0 }
+        };
+      });
   };
 
   useEffect(() => {
@@ -70,14 +104,12 @@ export default function DietPage() {
           setRawPlan(planData);
 
           const dietData = planRes.data as any;
-          let initialType = dietData.dietType === "BOTH" ? "VEG" : (dietData.dietType || "VEG");
+          let initialType = dietData.dietType || "VEG";
 
           // Override with profile preference if available
           if (profileRes.success && profileRes.data) {
             const pref = (profileRes.data as any).dietPreference || (profileRes.data as any).dietaryPreference;
-            if (pref === "VEG") initialType = "VEG";
-            else if (pref === "NON_VEG") initialType = "NON_VEG";
-            else if (pref === "BOTH") initialType = "VEG";
+            if (pref) initialType = pref;
           }
 
           setSelectedType(initialType);

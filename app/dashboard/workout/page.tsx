@@ -202,13 +202,12 @@ export default function WorkoutPage() {
 
   const getDayStatus = (dayNum: number) => {
     const isCompleted = completedDays.includes(dayNum);
-    const isPast = dayNum < userPlan.currentDay;
-    const isCurrent = dayNum === userPlan.currentDay;
-    const isFuture = dayNum > userPlan.currentDay;
+    const isCurrent = dayNum === userPlan?.currentDay;
+    const isFuture = dayNum > (userPlan?.currentDay || 0);
 
-    if (isCompleted || isPast) return "completed";
-    if (isCurrent && !userPlan.isLockedUntilTomorrow) return "active";
-    if (isCurrent && userPlan.isLockedUntilTomorrow) return "completed_today_waiting";
+    if (isCurrent && userPlan?.isLockedUntilTomorrow) return "completed_today";
+    if (isCompleted) return "completed";
+    if (isCurrent) return "active";
     if (isFuture) return "locked";
     return "locked";
   };
@@ -259,7 +258,7 @@ export default function WorkoutPage() {
                 className={`flex-shrink-0 w-40 p-4 rounded-2xl border cursor-pointer transition-all ${
                   isSelected ? "border-neon-blue bg-neon-blue/10 ring-1 ring-neon-blue/50 shadow-[0_0_20px_rgba(0,245,255,0.15)]" : 
                   status === "active" ? "bg-neon-blue/5 border-neon-blue/20" : 
-                  status === "completed" || status === "completed_today_waiting" ? "bg-neon-green/5 border-neon-green/20" : 
+                  status === "completed" || status === "completed_today" ? "bg-neon-green/5 border-neon-green/20" : 
                   "bg-dash-card border-dash-border-subtle opacity-40 grayscale cursor-not-allowed"
                 }`}
               >
@@ -371,10 +370,30 @@ export default function WorkoutPage() {
                             </button>
                           </>
                         )
-                      ) : getDayStatus(selectedDay) === "completed_today_waiting" ? (
-                        <div className="flex-1 flex flex-col items-center justify-center py-3 px-4 bg-dash-card border border-dash-border-subtle rounded-xl text-center">
-                           <span className="text-[9px] font-black text-dash-text-dim uppercase mb-1">Session Complete! Next unlocks in</span>
-                           <span className="text-xl font-mono font-black text-neon-blue">{formatCountdown(countdown)}</span>
+                      ) : getDayStatus(selectedDay) === "completed_today" ? (
+                        <div className="flex flex-col gap-3 flex-1">
+                          <div className="flex-1 py-3 px-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex items-center justify-center gap-2">
+                             <span className="text-lg">🔥</span>
+                             <span className="text-[10px] font-black text-neon-green uppercase tracking-widest">Day Complete! Next session unlocks in {formatCountdown(countdown)}</span>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await fetch('/api/workout/start', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${tokenManager.getAccessToken()}`
+                                  },
+                                  body: JSON.stringify({ workoutId: userPlan.id })
+                                });
+                              } catch (e) {}
+                              startTimer(`day-${selectedDay}`);
+                            }}
+                            className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold text-xs uppercase hover:bg-white/10 transition-all"
+                          >
+                            Repeat Workout
+                          </button>
                         </div>
                       ) : (
                         <div className="flex-1 py-3 px-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex items-center justify-center gap-2">

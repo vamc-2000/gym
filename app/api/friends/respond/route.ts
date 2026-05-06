@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
-import { passwordResetController } from "@/controllers/passwordResetController";
+import { friendController } from "@/controllers/FriendController";
 import { connectDB } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   await connectDB();
-  return passwordResetController.reset(req);
+  return friendController.respondToRequest(req);
 }

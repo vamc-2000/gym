@@ -1,48 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import { tokenManager } from "@/lib/auth";
 import { useWorkout } from "@/context/WorkoutContext";
 import { dashboardService } from "@/lib/services/dashboardService";
 import ConfirmationModal from "../ui/ConfirmationModal";
-
+import { useTheme } from "@/context/ThemeContext";
 
 interface TopNavbarProps {
   onMenuToggle: () => void;
   userName?: string;
 }
 
-import { useTheme } from "@/context/ThemeContext";
-
-export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
+function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
   const router = useRouter();
   const { theme } = useTheme();
   const { seconds, isActive, isPaused, formatTime } = useWorkout();
 
-
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [greeting, setGreeting] = useState("Welcome");
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = () => {
     tokenManager.clearTokens();
     router.push("/");
   };
 
-  const [greeting, setGreeting] = useState("Welcome");
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const hour = new Date().getHours();
-      if (hour < 12) setGreeting("Good Morning");
-      else if (hour < 17) setGreeting("Good Afternoon");
-      else setGreeting("Good Evening");
-    }, 0);
-    return () => clearTimeout(timer);
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
   }, []);
-
-  const [unreadCount, setUnreadCount] = useState(0);
-
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -74,10 +64,8 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-
   return (
     <header className="h-16 bg-dash-card/80 backdrop-blur-xl border-b border-dash-border-subtle flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-      {/* Left */}
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuToggle}
@@ -109,10 +97,7 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
         )}
       </div>
 
-
-      {/* Right */}
       <div className="flex items-center gap-3">
-        {/* Quick action */}
         <button
           onClick={() => router.push("/dashboard/workout")}
           className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-neon-yellow to-amber-500 text-dash-bg rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-neon-yellow/20 transition-all cursor-pointer"
@@ -120,7 +105,6 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
           ⚡ Start Workout
         </button>
 
-        {/* Notifications bell */}
         <button
           onClick={() => router.push("/dashboard/notifications")}
           className="relative p-2 text-dash-text-dim hover:text-dash-text transition-colors cursor-pointer"
@@ -135,7 +119,6 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
           )}
         </button>
 
-        {/* Avatar */}
         <button
           onClick={() => router.push("/dashboard/profile")}
           className="w-8 h-8 bg-gradient-to-br from-neon-blue to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white cursor-pointer"
@@ -143,7 +126,6 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
           {userName ? userName.charAt(0).toUpperCase() : "U"}
         </button>
 
-        {/* Logout */}
         <button
           onClick={() => setShowLogoutConfirm(true)}
           className="p-2 text-dash-text-dim hover:text-red-400 transition-colors cursor-pointer"
@@ -166,3 +148,5 @@ export default function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
     </header>
   );
 }
+
+export default memo(TopNavbar);

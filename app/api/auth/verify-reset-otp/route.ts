@@ -4,5 +4,5 @@ import { connectDB } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   await connectDB();
-  return passwordResetController.reset(req);
+  return passwordResetController.verify(req);
 }
