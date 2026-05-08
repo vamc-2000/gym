@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authMiddleware } from "../middlewares/auth";
 import { communityRepository } from "../repositories/CommunityRepository";
 import { friendshipRepository } from "../repositories/FriendshipRepository";
+import { notificationService } from "../services/NotificationService";
 
 export class CommunityController {
   async getFeed(req: NextRequest) {
@@ -54,7 +55,17 @@ export class CommunityController {
       if (unlike) {
         await communityRepository.unlikePost(params.id, decoded.userId);
       } else {
-        await communityRepository.likePost(params.id, decoded.userId);
+        const like = await communityRepository.likePost(params.id, decoded.userId);
+        const post = await communityRepository.getPostById(params.id);
+        
+        if (post && post.userId !== decoded.userId) {
+          await notificationService.triggerSocialNotification({
+            receiverId: post.userId,
+            senderName: decoded.name || "A user",
+            type: "POST_LIKE",
+            relatedId: post.id
+          });
+        }
       }
       return NextResponse.json({ success: true });
     } catch (error: any) {
@@ -69,6 +80,18 @@ export class CommunityController {
     try {
       const { content } = await req.json();
       const comment = await communityRepository.addComment(params.id, decoded.userId, content);
+      const post = await communityRepository.getPostById(params.id);
+
+      if (post && post.userId !== decoded.userId) {
+        await notificationService.triggerSocialNotification({
+          receiverId: post.userId,
+          senderName: decoded.name || "A user",
+          type: "POST_COMMENT",
+          relatedId: post.id,
+          extraText: content
+        });
+      }
+
       return NextResponse.json({ success: true, data: comment });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });

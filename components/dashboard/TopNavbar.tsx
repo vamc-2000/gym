@@ -2,6 +2,8 @@
 
 import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { tokenManager } from "@/lib/auth";
 import { useWorkout } from "@/context/WorkoutContext";
 import { dashboardService } from "@/lib/services/dashboardService";
@@ -47,7 +49,9 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
         // silent
       }
     };
+    
     fetchUnread();
+    const interval = setInterval(fetchUnread, 10000); // Poll every 10 seconds
     
     const handleStorage = () => {
       const adminNotifsStr = localStorage.getItem("gymstreak_admin_notifications");
@@ -59,76 +63,85 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
         setUnreadCount(prev => prev + adminUnread);
       }
     };
+    
     handleStorage();
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   return (
-    <header className="h-16 bg-dash-card/80 backdrop-blur-xl border-b border-dash-border-subtle flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-      <div className="flex items-center gap-4">
+    <header className="h-20 bg-dash-bg/60 backdrop-blur-2xl border-b border-dash-border-subtle/50 flex items-center justify-between px-6 lg:px-10 sticky top-0 z-30">
+      <div className="flex items-center gap-6">
         <button
           onClick={onMenuToggle}
-          className="lg:hidden text-dash-text-dim hover:text-dash-text transition-colors cursor-pointer"
+          className="lg:hidden p-2 rounded-xl bg-dash-card border border-dash-border-subtle text-dash-text-dim hover:text-neon-blue hover:border-neon-blue/30 transition-all cursor-pointer"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
         <div className="hidden sm:block">
-          <p className="text-dash-text-dim text-xs">{greeting}</p>
-          <p className={`font-bold text-sm ${theme === "light" ? "bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent" : "text-dash-text"}`}>
-            {userName || "Athlete"} <span>💪</span>
+          <p className="text-neon-blue text-[10px] font-black uppercase tracking-[0.2em] mb-0.5">{greeting}</p>
+          <p className={`font-black text-lg tracking-tight uppercase ${theme === "light" ? "bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent" : "text-white"}`}>
+            {userName || "Athlete"} <span className="inline-block animate-bounce ml-1">💪</span>
           </p>
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-4 flex justify-center">
+      <div className="flex-1 max-w-md mx-6 flex justify-center">
         {isActive && (
-          <div 
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             onClick={() => router.push("/dashboard/workout")}
-            className="flex items-center gap-3 px-4 py-1.5 bg-neon-blue/10 border border-neon-blue/30 rounded-full cursor-pointer hover:bg-neon-blue/20 transition-all animate-glow-blue"
+            className="flex items-center gap-4 px-6 py-2 bg-neon-blue/5 border border-neon-blue/30 rounded-full cursor-pointer hover:bg-neon-blue/10 transition-all group shadow-[0_0_30px_rgba(0,245,255,0.05)]"
           >
-            <span className={`w-2 h-2 rounded-full bg-neon-blue ${!isPaused ? 'animate-pulse' : ''}`} />
-            <span className="text-neon-blue font-mono font-bold text-sm">
+            <div className="relative">
+              <span className={`w-3 h-3 rounded-full bg-neon-blue block ${!isPaused ? 'animate-ping opacity-75' : ''}`} />
+              <span className="w-3 h-3 rounded-full bg-neon-blue absolute inset-0" />
+            </div>
+            <span className="text-neon-blue font-mono font-black text-base tracking-widest">
               {isPaused ? "PAUSED" : formatTime(seconds)}
             </span>
-          </div>
+          </motion.div>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           onClick={() => router.push("/dashboard/workout")}
-          className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-neon-yellow to-amber-500 text-dash-bg rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-neon-yellow/20 transition-all cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-neon-yellow text-dash-bg rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
         >
-          ⚡ Start Workout
+          ⚡ System Start
         </button>
 
         <button
           onClick={() => router.push("/dashboard/notifications")}
-          className="relative p-2 text-dash-text-dim hover:text-dash-text transition-colors cursor-pointer"
+          className="relative p-3 bg-dash-card border border-dash-border-subtle rounded-xl text-dash-text-dim hover:text-white hover:border-white/20 transition-all cursor-pointer group"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-neon-blue text-dash-bg text-[10px] font-black rounded-full flex items-center justify-center border-2 border-dash-card shadow-lg shadow-neon-blue/20">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-neon-blue text-dash-bg text-[10px] font-black rounded-full flex items-center justify-center border-2 border-dash-bg shadow-lg">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </button>
 
-        <button
-          onClick={() => router.push("/dashboard/profile")}
-          className="w-8 h-8 bg-gradient-to-br from-neon-blue to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white cursor-pointer"
+        <Link
+          href="/dashboard/profile"
+          className="w-11 h-11 bg-gradient-to-br from-neon-blue to-purple-600 rounded-xl flex items-center justify-center text-sm font-black text-white cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-lg hover:shadow-neon-blue/20"
         >
           {userName ? userName.charAt(0).toUpperCase() : "U"}
-        </button>
+        </Link>
 
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="p-2 text-dash-text-dim hover:text-red-400 transition-colors cursor-pointer"
+          className="p-3 bg-dash-card border border-dash-border-subtle rounded-xl text-dash-text-dim hover:text-red-400 hover:border-red-400/20 transition-all cursor-pointer"
           title="Logout"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

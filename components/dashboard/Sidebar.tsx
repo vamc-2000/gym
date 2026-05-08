@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { tokenManager } from "@/lib/auth";
-import { useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 import ConfirmationModal from "../ui/ConfirmationModal";
 
 interface NavItem {
@@ -32,13 +32,21 @@ const roleBasedItems: Record<string, NavItem[]> = {
     { href: "/dashboard/friends", label: "Friends", icon: "👥" },
     { href: "/dashboard/chat", label: "Chat", icon: "💬" },
   ],
+  TRAINER: [
+    { href: "/dashboard/trainer", label: "Overview", icon: "📊" },
+    { href: "/dashboard/trainer/users", label: "My Athletes", icon: "👥" },
+    { href: "/dashboard/trainer/monitoring", label: "Live Hub", icon: "👁️" },
+    { href: "/dashboard/trainer/challenges", label: "Challenges", icon: "🏆" },
+    { href: "/dashboard/community", label: "Community", icon: "💬" },
+  ],
   ADMIN: [
     { href: "/dashboard/admin", label: "Dashboard", icon: "📊" },
-    { href: "/dashboard/admin/users", label: "Assigned Users", icon: "👥" },
+    { href: "/dashboard/admin/analytics", label: "Coaching Stats", icon: "📈" },
+    { href: "/dashboard/admin/trainers", label: "Manage Trainers", icon: "👮" },
+    { href: "/dashboard/admin/users", label: "User Assignments", icon: "👥" },
     { href: "/dashboard/admin/workouts", label: "Workout Templates", icon: "🏋️" },
     { href: "/dashboard/admin/diets", label: "Diet Templates", icon: "🥗" },
     { href: "/dashboard/admin/email", label: "Email System", icon: "📧" },
-    { href: "/dashboard/admin/notifications", label: "Push Notifications", icon: "📢" },
   ],
   SUPER_ADMIN: [
     { href: "/dashboard/super-admin", label: "Platform Overview", icon: "📊" },
@@ -56,10 +64,15 @@ interface SidebarProps {
 
 function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
   const pathname = usePathname();
-  const role = userRole || tokenManager.getUser()?.role || "USER";
-  const navItems = [...(roleBasedItems[role] || roleBasedItems.USER), ...commonItems];
-
+  const [mounted, setMounted] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const role = mounted ? (userRole || tokenManager.getUser()?.role || "USER") : "USER";
+  const navItems = mounted ? [...(roleBasedItems[role] || roleBasedItems.USER), ...commonItems] : [];
 
   const handleLogout = () => {
     tokenManager.clearTokens();
@@ -121,7 +134,7 @@ function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="flex-1 mt-4 px-3 space-y-1">
+        <nav className="flex-1 mt-6 px-4 space-y-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -131,16 +144,22 @@ function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
                 onClick={() => {
                   if (window.innerWidth < 1024) onToggle();
                 }}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                className={`flex items-center gap-4 px-4 py-3 rounded-2xl text-[13px] font-bold uppercase tracking-widest transition-all duration-300 group relative overflow-hidden ${
                   isActive
-                    ? "bg-neon-blue/10 text-neon-blue glow-blue"
-                    : "text-dash-text-dim hover:text-dash-text hover:bg-dash-text/5"
+                    ? "bg-neon-blue text-dash-bg shadow-[0_0_20px_rgba(0,245,255,0.2)]"
+                    : "text-dash-text-dim hover:text-white hover:bg-white/5"
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                {!collapsed && <span>{item.label}</span>}
+                <span className={`text-xl transition-transform duration-300 group-hover:scale-120 ${isActive ? "scale-110" : ""}`}>{item.icon}</span>
+                {!collapsed && <span className="flex-1">{item.label}</span>}
                 {isActive && !collapsed && (
-                  <div className="ml-auto w-1.5 h-1.5 bg-neon-blue rounded-full animate-pulse-glow" />
+                  <motion.div 
+                    layoutId="active-pill"
+                    className="w-1.5 h-6 bg-white rounded-full ml-auto" 
+                  />
+                )}
+                {isActive && collapsed && (
+                   <div className="absolute right-0 top-0 bottom-0 w-1 bg-neon-blue shadow-[0_0_10px_rgba(0,245,255,1)]" />
                 )}
               </Link>
             );

@@ -1,28 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authEmailFrontendService } from "@/services/authEmail.service";
 import { triggerToast } from "@/components/NotificationManager";
+import SubmitButton from "@/components/ui/SubmitButton";
 import { motion } from "framer-motion";
 
-export default function ResetPassword() {
+function ResetPasswordContent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
   useEffect(() => {
-    const token = sessionStorage.getItem("reset_token");
-    const email = sessionStorage.getItem("reset_email");
-    if (!token || !email) {
-      triggerToast("Error", "Session expired. Please start over.", "error");
+    if (!token) {
+      triggerToast("Error", "Invalid or missing reset token. Please request a new link.", "error");
       router.push("/forgot-password");
     }
-  }, [router]);
+  }, [token, router]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!token) {
+      triggerToast("Error", "Missing reset token", "error");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       triggerToast("Error", "Passwords do not match", "error");
       return;
@@ -30,18 +37,16 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const email = sessionStorage.getItem("reset_email") || "";
-      const token = sessionStorage.getItem("reset_token") || "";
-      
-      const res = await authEmailFrontendService.resetPassword(email, token, newPassword);
+      const res = await authEmailFrontendService.resetPassword(token, newPassword);
       if (res.success) {
         triggerToast("Success", "Password updated! Please login.", "success");
-        sessionStorage.removeItem("reset_token");
-        sessionStorage.removeItem("reset_email");
         router.push("/login");
       } else {
         triggerToast("Error", res.error || "Failed to reset password", "error");
       }
+    } catch (err: any) {
+      console.error("Reset password error:", err);
+      triggerToast("Error", err.message || "An unexpected error occurred", "error");
     } finally {
       setLoading(false);
     }
@@ -70,7 +75,7 @@ export default function ResetPassword() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-dash-bg/50 border border-dash-border-subtle rounded-xl p-4 text-dash-text focus:border-neon-blue outline-none transition-all font-medium"
+              className="w-full bg-dash-card border border-dash-border-subtle rounded-xl p-4 text-dash-text placeholder:text-dash-text-dim focus:border-neon-blue outline-none transition-all font-medium"
             />
           </div>
           
@@ -82,18 +87,31 @@ export default function ResetPassword() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-dash-bg/50 border border-dash-border-subtle rounded-xl p-4 text-dash-text focus:border-neon-blue outline-none transition-all font-medium"
+              className="w-full bg-dash-card border border-dash-border-subtle rounded-xl p-4 text-dash-text placeholder:text-dash-text-dim focus:border-neon-blue outline-none transition-all font-medium"
             />
           </div>
 
-          <button
-            disabled={loading}
-            className="w-full py-4 bg-neon-blue text-dash-bg font-black rounded-xl uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(0,245,255,0.3)]"
+          <SubmitButton
+            loading={loading}
+            variant="neon"
+            className="h-14 !text-lg"
           >
-            {loading ? "Updating Vault..." : "Reset Password"}
-          </button>
+            Reset Password
+          </SubmitButton>
         </form>
       </motion.div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-dash-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-neon-blue"></div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

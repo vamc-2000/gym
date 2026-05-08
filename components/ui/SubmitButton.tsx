@@ -20,11 +20,13 @@ export default function SubmitButton({
 }: SubmitButtonProps) {
   const variants = {
     primary:
-      "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20",
+      "bg-primary text-dash-bg hover:bg-primary-hover shadow-lg shadow-primary/20 font-black uppercase tracking-widest",
     "gradient-purple":
-      "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 shadow-lg shadow-purple-500/20",
+      "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 shadow-lg shadow-purple-500/20 font-bold",
     neon:
-      "bg-neon-blue text-dash-bg hover:shadow-lg hover:shadow-neon-blue/30 font-bold",
+      "bg-neon-blue text-dash-bg hover:shadow-[0_0_20px_rgba(0,245,255,0.4)] font-black uppercase tracking-widest",
+    "neon-yellow":
+      "bg-neon-yellow text-dash-bg hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] font-black uppercase tracking-widest",
   };
 
   return (

@@ -96,9 +96,53 @@ export class NotificationService {
 
   async updateSettings(userId: string, settings: NotificationSettings) {
     return await userRepository.update(userId, { notificationSettings: settings as any });
-
   }
 
+  async triggerSocialNotification(params: {
+    receiverId: string;
+    senderName: string;
+    type: "FRIEND_REQUEST" | "FRIEND_ACCEPT" | "POST_LIKE" | "POST_COMMENT" | "NEW_MESSAGE";
+    relatedId?: string;
+    extraText?: string;
+  }) {
+    const { receiverId, senderName, type, relatedId, extraText } = params;
+    
+    let title = "";
+    let message = "";
+    let category = NotificationCategory.SOCIAL;
+
+    switch (type) {
+      case "FRIEND_REQUEST":
+        title = "New Friend Request";
+        message = `${senderName} wants to follow your progress!`;
+        break;
+      case "FRIEND_ACCEPT":
+        title = "Request Accepted";
+        message = `${senderName} accepted your friend request.`;
+        break;
+      case "POST_LIKE":
+        title = "New Like";
+        message = `${senderName} liked your post.`;
+        break;
+      case "POST_COMMENT":
+        title = "New Comment";
+        message = `${senderName} commented: "${extraText?.slice(0, 50)}${extraText && extraText.length > 50 ? "..." : ""}"`;
+        break;
+      case "NEW_MESSAGE":
+        title = "New Message";
+        message = `${senderName} sent you a message: "${extraText?.slice(0, 50)}${extraText && extraText.length > 50 ? "..." : ""}"`;
+        break;
+    }
+
+    return this.sendNotification({
+      userId: receiverId,
+      title,
+      message,
+      type,
+      category,
+      metadata: { relatedId, senderName }
+    });
+  }
 }
 
 export const notificationService = new NotificationService();

@@ -1,21 +1,21 @@
 import { prisma } from "../lib/prisma";
-import { MediaType, PostPrivacy, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export class CommunityRepository {
   async createPost(data: {
     userId: string;
     content: string;
     mediaUrl?: string;
-    mediaType?: MediaType;
-    privacy?: PostPrivacy;
+    mediaType?: string;
+    privacy?: string;
   }) {
     return await prisma.communityPost.create({
       data: {
         userId: data.userId,
         content: data.content,
         mediaUrl: data.mediaUrl,
-        mediaType: data.mediaType || "TEXT",
-        privacy: data.privacy || "PUBLIC",
+        mediaType: data.mediaType || "none",
+        privacy: data.privacy || "public",
       },
       include: {
         user: {
@@ -32,10 +32,10 @@ export class CommunityRepository {
     return await prisma.communityPost.findMany({
       where: {
         OR: [
-          { privacy: "PUBLIC" },
+          { privacy: "public" },
           { 
             AND: [
-              { privacy: "PRIVATE" },
+              { privacy: "private" },
               { userId: { in: [userId, ...friendIds] } }
             ]
           }
@@ -116,7 +116,15 @@ export class CommunityRepository {
   async addComment(postId: string, userId: string, content: string) {
     return await prisma.$transaction(async (tx) => {
       const comment = await tx.postComment.create({
-        data: { postId, userId, content }
+        data: { postId, userId, content },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       });
       await tx.communityPost.update({
         where: { id: postId },

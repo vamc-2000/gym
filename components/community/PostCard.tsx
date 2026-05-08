@@ -62,17 +62,19 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
     } catch (e) {}
   };
 
+  const [mediaError, setMediaError] = useState(false);
+
   return (
     <div className="bg-dash-card border border-dash-border-subtle rounded-2xl overflow-hidden mb-6 shadow-lg">
       <div className="p-4 flex items-center justify-between border-b border-dash-border-subtle/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-neon-blue/10 flex items-center justify-center border border-neon-blue/20 text-neon-blue font-bold">
-            {post.user.name[0]}
+            {post.user?.name?.[0] || "U"}
           </div>
           <div>
-            <h4 className="text-sm font-bold text-dash-text">{post.user.name}</h4>
+            <h4 className="text-sm font-bold text-dash-text">{post.user?.name || "User"}</h4>
             <span className="text-[10px] text-dash-text-dim">
-              {formatDistanceToNow(new Date(post.createdAt))} ago • {post.privacy === "PUBLIC" ? "🌎 Public" : "🔒 Friends"}
+              {formatDistanceToNow(new Date(post.createdAt))} ago • {post.privacy === "public" ? "🌎 Public" : "🔒 Friends"}
             </span>
           </div>
         </div>
@@ -84,15 +86,30 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
       <div className="p-4 space-y-4">
         <p className="text-sm text-dash-text leading-relaxed whitespace-pre-wrap">{post.content}</p>
         
-        {post.mediaUrl && post.mediaType === "IMAGE" && (
-          <div className="rounded-xl overflow-hidden border border-dash-border-subtle">
-            <img src={post.mediaUrl} alt="Post media" className="w-full h-auto object-cover max-h-[500px]" />
+        {post.mediaUrl && !mediaError && (
+          <div className="relative group">
+            {post.mediaType === "image" ? (
+              <img
+                src={post.mediaUrl}
+                alt="Post media"
+                className="w-full max-h-[420px] object-cover rounded-xl border border-neon-blue/10 hover:border-neon-blue/30 transition-all shadow-[0_0_20px_rgba(0,245,255,0.05)]"
+                onError={() => setMediaError(true)}
+              />
+            ) : post.mediaType === "video" ? (
+              <video
+                src={post.mediaUrl}
+                controls
+                className="w-full max-h-[420px] rounded-xl border border-neon-blue/10"
+                onError={() => setMediaError(true)}
+              />
+            ) : null}
           </div>
         )}
 
-        {post.mediaUrl && post.mediaType === "VIDEO" && (
-          <div className="rounded-xl overflow-hidden border border-dash-border-subtle bg-black">
-            <video src={post.mediaUrl} controls className="w-full max-h-[500px]" />
+        {mediaError && (
+          <div className="w-full h-32 bg-dash-bg/50 rounded-xl border border-dashed border-dash-border-subtle flex flex-col items-center justify-center gap-2">
+            <span className="text-2xl opacity-40">🖼️</span>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dash-text-dim">Media failed to load</p>
           </div>
         )}
       </div>
@@ -135,11 +152,11 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border-subtle flex-shrink-0 flex items-center justify-center text-xs font-bold text-neon-blue">
-                    {comment.user.name[0]}
+                    {comment.user?.name?.[0] || "U"}
                   </div>
                   <div className="bg-dash-card p-3 rounded-xl border border-dash-border-subtle flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-neon-blue">{comment.user.name}</span>
+                      <span className="text-[10px] font-bold text-neon-blue">{comment.user?.name || "User"}</span>
                       <span className="text-[8px] text-dash-text-dim">{formatDistanceToNow(new Date(comment.createdAt))} ago</span>
                     </div>
                     <p className="text-xs text-dash-text">{comment.content}</p>

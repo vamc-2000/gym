@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "fallback_jwt_secret";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || process.env.JWT_SECRET || "fallback_refresh_secret";
 
 export const generateAccessToken = (user: AuthUser) => {
-  return jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ userId: user.id, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: "1h" });
 };
 
 export const generateRefreshToken = (user: AuthUser) => {
@@ -14,7 +14,7 @@ export const generateRefreshToken = (user: AuthUser) => {
 
 export const verifyAccessToken = (token: string) => {
   try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string, role?: string };
+    return jwt.verify(token, JWT_SECRET) as { userId: string, role?: string, name?: string };
   } catch {
     return null;
   }

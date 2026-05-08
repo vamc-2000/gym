@@ -123,6 +123,12 @@ export default function NotificationsPage() {
     info: "ℹ️",
     report: "📊",
     workout: "🏋️",
+    FRIEND_REQUEST: "👋",
+    FRIEND_ACCEPT: "🤝",
+    POST_LIKE: "❤️",
+    POST_COMMENT: "💬",
+    NEW_MESSAGE: "📨",
+    admin_broadcast: "📢",
   };
 
   const typeColors: Record<string, string> = {
@@ -131,6 +137,12 @@ export default function NotificationsPage() {
     info: "bg-neon-blue/10",
     report: "bg-neon-green/10",
     workout: "bg-neon-blue/10",
+    FRIEND_REQUEST: "bg-neon-blue/10",
+    FRIEND_ACCEPT: "bg-neon-green/10",
+    POST_LIKE: "bg-red-500/10",
+    POST_COMMENT: "bg-neon-blue/10",
+    NEW_MESSAGE: "bg-neon-blue/10",
+    admin_broadcast: "bg-neon-purple/10",
   };
 
   return (

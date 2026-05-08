@@ -69,6 +69,13 @@ export const getResetOTPTemplate = (otp: string) => getBrandedTemplate(`
     <p>This code will expire in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
 `, "Reset Your Password");
 
+export const getResetLinkTemplate = (resetUrl: string) => getBrandedTemplate(`
+    <p>We received a request to reset your GymStreak password. Click the button below to set a new password:</p>
+    <a href="${resetUrl}" class="button">Reset Password</a>
+    <p style="margin-top: 20px; font-size: 12px; color: #666;">Or copy this link: <br> ${resetUrl}</p>
+    <p>This link will expire in 15 minutes. If you didn't request this, you can safely ignore this email.</p>
+`, "Reset Your Password");
+
 export const getPasswordChangedTemplate = () => getBrandedTemplate(`
     <p>Your password has been successfully updated. You can now log in to your account with your new credentials.</p>
     <a href="${process.env.NEXT_PUBLIC_APP_URL}/login" class="button">Login Now</a>

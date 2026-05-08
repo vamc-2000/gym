@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authMiddleware } from "../middlewares/auth";
 import { chatRepository } from "../repositories/ChatRepository";
 import { friendshipRepository } from "../repositories/FriendshipRepository";
+import { notificationService } from "../services/NotificationService";
 
 export class ChatController {
   async getChatFriends(req: NextRequest) {
@@ -10,7 +11,14 @@ export class ChatController {
 
     try {
       const friendships = await friendshipRepository.getFriendships(decoded.userId);
-      const friends = friendships.map(f => f.userId === decoded.userId ? f.friend : f.user);
+      const unreadCounts = await chatRepository.getUnreadCountsPerFriend(decoded.userId);
+      
+      const friends = friendships.map(f => {
+        const friend = f.userId === decoded.userId ? f.friend : f.user;
+        const unread = unreadCounts.find(uc => uc.senderId === friend.id)?._count || 0;
+        return { ...friend, unreadCount: unread };
+      });
+      
       return NextResponse.json({ success: true, data: friends });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -33,6 +41,10 @@ export class ChatController {
       }
 
       const messages = await chatRepository.getMessages(decoded.userId, friendId);
+      
+      // Mark as read
+      await chatRepository.markAsRead(decoded.userId, friendId);
+      
       return NextResponse.json({ success: true, data: messages });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -44,17 +56,21 @@ export class ChatController {
     if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     try {
-      const { receiverId, message: messageText } = await req.json();
+      const { receiverId, message: messageText, mediaUrl, mediaType } = await req.json();
       
-      if (!receiverId || !messageText) throw new Error("Receiver ID and message are required");
+      if (!receiverId && !messageText && !mediaUrl) throw new Error("Receiver ID and message or media are required");
 
-      // Verify they are friends
-      const friendIds = await friendshipRepository.getFriendIds(decoded.userId);
-      if (!friendIds.includes(receiverId)) {
-        return NextResponse.json({ success: false, error: "You can only chat with accepted friends" }, { status: 403 });
-      }
+      const message = await chatRepository.sendMessage(decoded.userId, receiverId, messageText || "", mediaUrl, mediaType);
+      
+      // Trigger Notification
+      await notificationService.triggerSocialNotification({
+        receiverId,
+        senderName: decoded.name || "A friend",
+        type: "NEW_MESSAGE",
+        relatedId: decoded.userId, // Link to sender
+        extraText: messageText
+      });
 
-      const message = await chatRepository.sendMessage(decoded.userId, receiverId, messageText);
       return NextResponse.json({ success: true, data: message });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });

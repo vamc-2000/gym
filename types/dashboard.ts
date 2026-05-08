@@ -83,4 +83,8 @@ export type DashboardState = {
     completedDate?: string;
     bodyPartFocus?: string;
   }[];
+  latestNudge?: {
+    id: string;
+    message: string;
+  } | null;
 };

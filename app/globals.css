@@ -11,17 +11,17 @@
   /* Default Dark Theme */
   --color-neon-blue: #00f5ff;
   --color-neon-yellow: #facc15;
-  --color-dash-bg: #0a0a0f;
-  --color-dash-card: #111118;
-  --color-dash-border: rgba(255, 255, 255, 0.06);
+  --color-dash-bg: #050508;
+  --color-dash-card: #0d0d14;
+  --color-dash-border: rgba(255, 255, 255, 0.08);
   --color-primary: #00f5ff;
   --color-primary-hover: #00d4dd;
   --color-text: #ffffff;
-  --color-text-muted: rgba(255, 255, 255, 0.6);
-  --color-text-dim: rgba(255, 255, 255, 0.4);
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-glass-bg: rgba(255, 255, 255, 0.03);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-text-muted: rgba(255, 255, 255, 0.75);
+  --color-text-dim: rgba(255, 255, 255, 0.55);
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+  --color-glass-bg: rgba(255, 255, 255, 0.04);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme='light'] {
@@ -103,6 +103,17 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::placeholder {
+  color: var(--color-text-dim) !important;
+  opacity: 1 !important;
+}
+
+input::placeholder, 
+textarea::placeholder {
+  color: var(--color-text-dim) !important;
+  opacity: 1 !important;
 }
 
 /* =========================================================

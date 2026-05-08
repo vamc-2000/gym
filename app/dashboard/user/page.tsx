@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { tokenManager } from "@/lib/auth";
 import { getDashboardState } from "@/lib/dashboardHelper";
 import { DashboardState } from "@/types/dashboard";
 import { triggerToast } from "@/components/NotificationManager";
 import { dashboardService } from "@/lib/services/dashboardService";
+import { apiClient } from "@/lib/api";
 
 import MilestoneFeedbackModal from "@/components/dashboard/MilestoneFeedbackModal";
 import StatsGrid from "@/components/dashboard/StatsGrid";
@@ -107,6 +108,38 @@ export default function UserDashboard() {
 
   return (
     <div className="space-y-8 pb-12">
+      <AnimatePresence>
+        {state.latestNudge && (
+          <motion.div
+            initial={{ height: 0, opacity: 0, y: -20 }}
+            animate={{ height: 'auto', opacity: 1, y: 0 }}
+            exit={{ height: 0, opacity: 0, y: -20 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-neon-blue/10 border border-neon-blue/20 rounded-[1.5rem] p-6 mb-4 flex items-center justify-between gap-6 shadow-[0_0_30px_rgba(0,245,255,0.1)]">
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-neon-blue/20 rounded-2xl flex items-center justify-center text-2xl animate-bounce">⚡</div>
+                  <div>
+                     <p className="text-[10px] font-black text-neon-blue uppercase tracking-widest mb-1">Coach's Instant Nudge</p>
+                     <p className="text-sm font-bold text-white italic">"{state.latestNudge.message}"</p>
+                  </div>
+               </div>
+               <button 
+                onClick={async () => {
+                  if (state.latestNudge?.id) {
+                    await apiClient(`/notification/${state.latestNudge.id}/read`, { method: 'POST' });
+                    syncState();
+                  }
+                }}
+                 className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-dash-text-dim hover:text-white hover:bg-white/10 transition-all"
+               >
+                 Dismiss
+               </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-white tracking-tight mb-2">
@@ -141,17 +174,29 @@ export default function UserDashboard() {
            </div>
         </div>
 
-        <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle relative overflow-hidden">
-          <h3 className="text-xl font-bold text-dash-text mb-4">Next Session</h3>
-          <div className="space-y-4">
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-              <p className="text-neon-blue font-bold text-sm uppercase tracking-widest">{state.nextWorkout?.title || 'No Workout'}</p>
-              <p className="text-dash-text-dim text-[10px] mt-1">{state.nextWorkout?.day}</p>
+        <div className="glass-panel p-8 rounded-[2.5rem] border border-dash-border-subtle relative overflow-hidden flex flex-col justify-between min-h-[300px]">
+          <div className="relative z-10">
+            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Next Session</h3>
+            <p className="text-[11px] font-bold text-dash-text-dim uppercase tracking-widest opacity-60">Prepare for data logging</p>
+          </div>
+          
+          <div className="space-y-6 relative z-10">
+            <div className="p-5 bg-dash-bg/60 backdrop-blur-xl rounded-[1.5rem] border border-white/5 shadow-inner">
+              <p className="text-neon-blue font-black text-sm uppercase tracking-[0.1em]">{state.nextWorkout?.title || 'No Workout'}</p>
+              <div className="flex items-center gap-2 mt-2">
+                 <span className="w-1.5 h-1.5 bg-neon-blue rounded-full animate-pulse" />
+                 <p className="text-dash-text-dim text-[10px] font-bold uppercase tracking-widest">{state.nextWorkout?.day}</p>
+              </div>
             </div>
-            <button onClick={() => window.location.href = '/dashboard/workout'} className="w-full py-4 rounded-2xl bg-neon-blue text-dash-bg font-black text-sm shadow-xl">
-              START TRAINING
+            <button 
+              onClick={() => window.location.href = '/dashboard/workout'} 
+              className="w-full py-4 rounded-[1.25rem] bg-neon-blue text-dash-bg font-black text-xs uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(0,245,255,0.3)] hover:shadow-[0_0_40px_rgba(0,245,255,0.5)] hover:scale-105 active:scale-95 transition-all"
+            >
+              Initialize System
             </button>
           </div>
+
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-neon-blue/5 rounded-full blur-3xl" />
         </div>
       </div>
 

@@ -47,27 +47,27 @@ export default function StatsCard({
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      className={`bg-dash-card rounded-2xl p-5 border border-white/5 transition-all duration-300 cursor-default ${glowClasses[glowColor]}`}
+      whileHover={{ scale: 1.04, y: -4 }}
+      className={`bg-dash-card/80 backdrop-blur-xl rounded-3xl p-6 border border-white/[0.03] transition-all duration-300 cursor-default shadow-xl ${glowClasses[glowColor]}`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-          <span className="text-xl">{icon}</span>
+      <div className="flex items-start justify-between mb-5">
+        <div className="w-12 h-12 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-center shadow-inner">
+          <span className="text-2xl">{icon}</span>
         </div>
         {trend && (
           <span
-            className={`text-xs font-medium px-2 py-1 rounded-full ${
+            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${
               trendUp
-                ? "bg-green-500/10 text-green-400"
-                : "bg-red-500/10 text-red-400"
+                ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                : "bg-red-500/10 text-red-400 border border-red-500/20"
             }`}
           >
             {trendUp ? "↑" : "↓"} {trend}
           </span>
         )}
       </div>
-      <p className="text-white/40 text-xs font-medium mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${accentColors[glowColor]}`}>{value}</p>
+      <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-[0.2em] mb-2">{label}</p>
+      <p className={`text-3xl font-black tracking-tight ${accentColors[glowColor]}`}>{value}</p>
     </motion.div>
   );
 }

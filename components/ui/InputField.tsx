@@ -18,17 +18,17 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
 
     const baseStyles = {
       light:
-        "bg-white border-gray-200 text-gray-900 focus:border-primary focus:ring-primary/20",
+        "bg-white border-gray-200 text-gray-900 focus:border-primary focus:ring-primary/20 placeholder:text-gray-400",
       dark:
-        "bg-dash-card border-dash-border-subtle text-dash-text focus:border-neon-blue focus:ring-neon-blue/20",
+        "bg-dash-bg/50 border-dash-border-subtle text-dash-text focus:border-neon-blue focus:ring-neon-blue/10 placeholder:text-dash-text-dim/50",
       glass:
-        "bg-white/5 border-white/10 text-white focus:border-auth-accent focus:ring-auth-accent/20 placeholder-white/20",
+        "bg-white/5 border-white/10 text-white focus:border-neon-blue focus:ring-neon-blue/10 placeholder:text-white/20",
     };
 
     const labelBg = {
       light: "bg-white",
       dark: "bg-dash-card",
-      glass: "bg-[#1a1033]", // Solid background for glass to prevent merging
+      glass: "bg-dash-bg",
     };
 
     const [showPassword, setShowPassword] = useState(false);

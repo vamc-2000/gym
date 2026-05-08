@@ -5,8 +5,8 @@ export interface Post {
   userId: string;
   content: string;
   mediaUrl?: string;
-  mediaType: "IMAGE" | "VIDEO" | "TEXT";
-  privacy: "PUBLIC" | "PRIVATE";
+  mediaType: "image" | "video" | "none";
+  privacy: "public" | "private";
   likesCount: number;
   commentsCount: number;
   createdAt: string;
@@ -55,6 +55,50 @@ export class CommunityService {
 
   async getComments(id: string): Promise<ApiResponse<any[]>> {
     return await apiClient<any[]>(`/community/posts/${id}/comments`);
+  }
+
+  async getPresignedUrl(fileName: string, contentType: string): Promise<ApiResponse<{ signedUrl: string; publicUrl: string }>> {
+    return await apiClient<{ signedUrl: string; publicUrl: string }>("/upload/signed-url", {
+      method: "POST",
+      body: { fileName, contentType },
+      requiresAuth: true,
+    });
+  }
+
+  async uploadMedia(file: File): Promise<ApiResponse<{ url: string }>> {
+    try {
+      // 1. Get the Presigned URL from our backend
+      const res = await this.getPresignedUrl(file.name, file.type);
+      if (!res.success || !res.data) throw new Error(res.error || "Failed to get upload permission");
+
+      const { signedUrl, publicUrl } = res.data;
+
+      // 2. Upload directly to Cloudflare R2 via binary PUT
+      const uploadRes = await fetch(signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        throw new Error(`Cloudflare Error (${uploadRes.status}): ${errorText}`);
+      }
+
+      // 3. Return the final public URL
+      return { 
+        success: true, 
+        data: { url: publicUrl } 
+      };
+    } catch (error: any) {
+      if (error.message === "Failed to fetch") {
+        console.error("❌ CORS Error: Please configure CORS in your Cloudflare R2 Bucket settings to allow uploads from your current domain.");
+      }
+      console.error("Upload Media Error:", error);
+      return { success: false, error: error.message };
+    }
   }
 }
 
