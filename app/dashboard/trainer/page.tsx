@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { trainerService } from "@/services/trainerService";
 import StatsCard from "@/components/dashboard/StatsCard";
 import Link from "next/link";

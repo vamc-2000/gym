@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface ProgressBarProps {
   currentStep: number;
@@ -11,23 +11,25 @@ export default function ProgressBar({ currentStep, totalSteps }: ProgressBarProp
   const percentage = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="w-full mb-8">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-xs font-bold text-white/30 uppercase tracking-widest">
-          Step {currentStep} of {totalSteps}
+    <div className="w-full mb-10">
+      <div className="flex justify-between items-end mb-3">
+        <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
+          Progress Phase 0{currentStep}
         </span>
-        <span className="text-xs font-black text-auth-accent">
+        <span className="text-sm font-black text-neon-blue tracking-tighter">
           {Math.round(percentage)}%
         </span>
       </div>
-      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+      <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-auth-accent to-pink-500 rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="h-full bg-neon-blue rounded-full shadow-[0_0_10px_rgba(0,245,255,0.5)]"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: percentage / 100 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ transformOrigin: "left" }}
         />
       </div>
     </div>
   );
 }
+

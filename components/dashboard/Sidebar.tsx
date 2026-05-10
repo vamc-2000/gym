@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { tokenManager } from "@/lib/auth";
 import { useEffect, useState, memo } from "react";
-import ConfirmationModal from "../ui/ConfirmationModal";
+import dynamic from "next/dynamic";
+const ConfirmationModal = dynamic(() => import("../ui/ConfirmationModal"), { ssr: false });
 
 interface NavItem {
   href: string;
@@ -14,9 +15,9 @@ interface NavItem {
 }
 
 const commonItems: NavItem[] = [
-  { href: "/dashboard/notifications", label: "Notifications", icon: "🔔" },
-  { href: "/dashboard/profile", label: "Profile", icon: "👤" },
-  { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+  { href: "/dashboard/notifications", label: "Notifications", icon: "" },
+  { href: "/dashboard/profile", label: "Profile", icon: "" },
+  { href: "/dashboard/settings", label: "Settings", icon: "" },
 ];
 
 const roleBasedItems: Record<string, NavItem[]> = {
@@ -100,41 +101,35 @@ function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
       <aside
         className={`fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out ${
           collapsed ? "-translate-x-full lg:translate-x-0 lg:w-20" : "translate-x-0 w-64"
-        } bg-dash-card border-r border-dash-border-subtle`}
+        } bg-[#050508] border-r border-white/5`}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-dash-border-subtle">
+        <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
           {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2"
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-neon-yellow to-neon-blue rounded-lg flex items-center justify-center">
-                <span className="text-sm font-bold text-dash-bg">G</span>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-[#facc15] rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/10">
+                <span className="text-lg font-black text-[#050508]">G</span>
               </div>
-              <span className="text-dash-text font-bold text-lg">GymStreak</span>
-            </motion.div>
+              <span className="text-white font-black text-xl tracking-tight uppercase">GymStreak</span>
+            </div>
           )}
           {collapsed && (
-            <div className="w-8 h-8 bg-gradient-to-br from-neon-yellow to-neon-blue rounded-lg flex items-center justify-center mx-auto">
-              <span className="text-sm font-bold text-dash-bg">G</span>
+            <div className="w-10 h-10 bg-[#facc15] rounded-xl flex items-center justify-center mx-auto">
+              <span className="text-lg font-black text-[#050508]">G</span>
             </div>
           )}
           <button
             onClick={onToggle}
-            className="text-dash-text-dim hover:text-dash-text transition-colors hidden lg:block cursor-pointer"
+            className="text-white/20 hover:text-white transition-colors hidden lg:block cursor-pointer ml-4"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              {collapsed ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              )}
-            </svg>
+            {collapsed ? (
+              <span className="text-xl font-bold tracking-tighter">»</span>
+            ) : (
+              <span className="text-xl font-bold tracking-tighter opacity-40">«</span>
+            )}
           </button>
         </div>
 
-        <nav className="flex-1 mt-6 px-4 space-y-2">
+        <nav className="flex-1 mt-8 px-5 space-y-3 overflow-y-auto no-scrollbar">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -144,38 +139,35 @@ function Sidebar({ collapsed, onToggle, userRole }: SidebarProps) {
                 onClick={() => {
                   if (window.innerWidth < 1024) onToggle();
                 }}
-                className={`flex items-center gap-4 px-4 py-3 rounded-2xl text-[13px] font-bold uppercase tracking-widest transition-all duration-300 group relative overflow-hidden ${
+                className={`flex items-center justify-between px-5 py-4 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 group relative ${
                   isActive
-                    ? "bg-neon-blue text-dash-bg shadow-[0_0_20px_rgba(0,245,255,0.2)]"
-                    : "text-dash-text-dim hover:text-white hover:bg-white/5"
+                    ? "bg-[#facc15] text-[#050508] shadow-[0_0_30px_rgba(250,204,21,0.2)]"
+                    : "text-white/40 hover:text-white hover:bg-white/5 border border-white/5"
                 }`}
               >
-                <span className={`text-xl transition-transform duration-300 group-hover:scale-120 ${isActive ? "scale-110" : ""}`}>{item.icon}</span>
-                {!collapsed && <span className="flex-1">{item.label}</span>}
+                <span className="truncate">{item.label}</span>
                 {isActive && !collapsed && (
-                  <motion.div 
-                    layoutId="active-pill"
-                    className="w-1.5 h-6 bg-white rounded-full ml-auto" 
-                  />
+                  <div className="w-1 h-6 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
                 )}
                 {isActive && collapsed && (
-                   <div className="absolute right-0 top-0 bottom-0 w-1 bg-neon-blue shadow-[0_0_10px_rgba(0,245,255,1)]" />
+                   <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#facc15] shadow-[0_0_15px_rgba(250,204,21,1)]" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-3 border-t border-dash-border-subtle">
+
+        <div className="p-5 border-t border-white/5">
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-dash-text-dim hover:text-red-400 hover:bg-red-400/5 transition-all duration-200 group cursor-pointer"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-red-500 hover:bg-red-500/5 transition-all duration-300 border border-transparent hover:border-red-500/10 cursor-pointer"
           >
-            <span className="text-lg">🚪</span>
-            {!collapsed && <span>Logout</span>}
+            <span>Logout Protocol</span>
           </button>
         </div>
       </aside>
+
     </>
   );
 }

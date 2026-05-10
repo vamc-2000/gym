@@ -1,66 +1,135 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useState, useEffect, useCallback, memo } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import { dashboardService } from "@/lib/services/dashboardService";
-import { useWorkout } from "@/context/WorkoutContext";
 import { triggerToast } from "@/components/NotificationManager";
+import { useWorkout } from "@/hooks/useWorkout";
 import { tokenManager } from "@/lib/auth";
+import { UserPlan, WorkoutDay } from "@/types/dashboard";
 
-type Exercise = {
-  id: string;
-  name: string;
-  bodyPart: string;
-  sets: number;
-  reps: string;
-  duration?: string;
-  restTime: string;
-  caloriesBurn: number;
-  difficulty: string;
-  equipment: string;
-  instructions: string[];
-  instructionsTe?: string[];
+const getCompletedDays = (completedWorkouts: any[]) => {
+  return completedWorkouts?.map((w: any) => w.day) || [];
 };
 
-type WorkoutDay = {
-  day: number;
-  title: string;
-  goal?: string;
-  bodyPartFocus?: string;
-  estimatedDuration?: number;
-  estimatedCalories?: number;
-  exercises?: Exercise[];
-};
+const ExerciseCard = memo(({ ex, lang, speakingId, onSpeak, onStop }: { 
+  ex: any; 
+  lang: string; 
+  speakingId: string | null; 
+  onSpeak: (id: string, inst: string[]) => void;
+  onStop: () => void;
+}) => {
+  const instructions = lang === "te" && ex.instructionsTe ? ex.instructionsTe : ex.instructions;
+  return (
+    <div className="bg-white/2 p-10 rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-all">
+      <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex-1">
+          <div className="flex items-start justify-between mb-10">
+            <div>
+              <h4 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 group-hover:text-neon-blue transition-colors">{ex.name}</h4>
+              <span className="text-[9px] font-black bg-white/5 px-3 py-1.5 rounded-lg text-dash-text-dim uppercase tracking-[0.2em]">{ex.equipment}</span>
+            </div>
+            <button
+              onClick={() => speakingId === ex.id ? onStop() : onSpeak(ex.id, instructions)}
+              className={`w-12 h-12 rounded-full border transition-all flex items-center justify-center ${speakingId === ex.id ? "bg-red-500/10 border-red-500/20 text-red-400 animate-pulse" : "bg-neon-blue/5 border-neon-blue/10 text-neon-blue"}`}
+            >
+              {speakingId === ex.id ? "■" : "▶"}
+            </button>
+          </div>
 
-const getCompletedDays = (value: unknown): number[] => {
-  if (Array.isArray(value)) return value.map((item) => Number(item)).filter((item) => Number.isFinite(item));
-  if (typeof value === "string") {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) return parsed.map((item) => Number(item)).filter((item) => Number.isFinite(item));
-    } catch { return []; }
-  }
-  if (value && typeof value === "object") {
-    const maybeObject = value as { days?: unknown; completedDays?: unknown };
-    const nested = maybeObject.days ?? maybeObject.completedDays;
-    if (Array.isArray(nested)) return nested.map((item) => Number(item)).filter((item) => Number.isFinite(item));
-  }
-  return [];
-};
+          <div className="grid grid-cols-3 gap-6 mb-10">
+            <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+              <span className="text-[9px] text-dash-text-dim font-black uppercase tracking-[0.2em] block mb-1 opacity-50">Volume</span>
+              <p className="text-xl font-black text-white uppercase">{ex.sets} Sets</p>
+            </div>
+            <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+              <span className="text-[9px] text-dash-text-dim font-black uppercase tracking-[0.2em] block mb-1 opacity-50">Target</span>
+              <p className="text-xl font-black text-white uppercase">{ex.reps}</p>
+            </div>
+            <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+              <span className="text-[9px] text-dash-text-dim font-black uppercase tracking-[0.2em] block mb-1 opacity-50">Rest</span>
+              <p className="text-xl font-black text-white uppercase">{ex.restTime}</p>
+            </div>
+          </div>
 
-interface UserPlan {
-  id: string;
-  goal: string;
-  currentDay: number;
-  totalDays: number;
-  completedDays: number[];
-  workoutPlan: WorkoutDay[];
-  currentWorkout: WorkoutDay;
-  isLockedUntilTomorrow: boolean;
-  countdownSeconds: number;
-}
+          <div className="space-y-4 bg-black/20 p-8 rounded-[2rem] border border-white/5">
+            <p className="text-[10px] font-black text-dash-text-dim uppercase tracking-[0.3em] opacity-50">Execution Steps:</p>
+            <ul className="space-y-4">
+              {instructions.map((step: string, j: number) => (
+                <li key={j} className="text-sm text-dash-text-dim flex gap-5">
+                  <span className="text-neon-blue font-black text-xs opacity-50">0{j+1}</span>
+                  <span className={`leading-relaxed ${lang === "te" ? "font-medium" : ""}`}>{step}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {ex.image && (
+          <div className="lg:w-[400px] h-full flex flex-col justify-center">
+            <div className="relative aspect-square rounded-[3rem] overflow-hidden border border-white/10 bg-dash-bg shadow-2xl">
+              <Image 
+                src={ex.image}
+                alt={ex.name}
+                fill
+                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                sizes="400px"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  const fallback = `/workouts/${ex.name.toLowerCase().replace(/\s+/g, '_')}.png`;
+                  if (target.src !== fallback) {
+                    target.src = fallback;
+                  }
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dash-bg via-transparent to-transparent opacity-60" />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+ExerciseCard.displayName = "ExerciseCard";
+
+const Roadmap = memo(({ plan, selectedDay, onDaySelect, getDayStatus }: any) => (
+  <div className="relative">
+    <div className="flex gap-3 overflow-x-auto pb-6 px-2 custom-scrollbar no-scrollbar">
+      {plan.map((day: any) => {
+        const status = getDayStatus(day.day);
+        const isSelected = selectedDay === day.day;
+        return (
+          <div
+            key={day.day}
+            onClick={() => status !== "locked" && onDaySelect(day)}
+            className={`flex-shrink-0 w-36 p-4 rounded-xl border cursor-pointer transition-all duration-300 ${
+              isSelected ? "border-neon-blue bg-neon-blue/10 shadow-lg shadow-neon-blue/10" : 
+              status === "active" ? "bg-white/5 border-neon-blue/30" : 
+              status === "completed" || status === "completed_today" ? "bg-neon-green/5 border-neon-green/20" : 
+              "bg-dash-card/30 border-white/5 opacity-40 grayscale cursor-not-allowed"
+            } ${status !== "locked" ? "hover:scale-105 active:scale-95" : ""}`}
+          >
+            <div className="flex justify-between items-center mb-3">
+              <span className={`text-[9px] font-black uppercase tracking-widest ${status === "active" || isSelected ? "text-neon-blue" : status.startsWith("completed") ? "text-neon-green" : "text-dash-text-dim"}`}>
+                Day {day.day}
+              </span>
+              {status.startsWith("completed") && <span className="text-[10px]">●</span>}
+            </div>
+            <h4 className="text-[11px] font-black text-white truncate uppercase tracking-tight">{day.title}</h4>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+));
+
+Roadmap.displayName = "Roadmap";
 
 export default function WorkoutPage() {
+  const router = useRouter();
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutDay | null>(null);
@@ -86,9 +155,7 @@ export default function WorkoutPage() {
       if (res.success && res.data) {
         const plan = res.data as UserPlan;
         setUserPlan(plan);
-        // Default to showing current day workout
         setSelectedDay(plan.currentDay);
-        // Find current day's workout from plan if possible, otherwise use currentWorkout
         const todayWorkout = plan.workoutPlan.find(d => d.day === plan.currentDay) || plan.currentWorkout;
         setSelectedWorkout(todayWorkout);
         
@@ -131,7 +198,7 @@ export default function WorkoutPage() {
     return [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
   };
 
-  const speakInstructions = (exerciseId: string, instructions: string[]) => {
+  const speakInstructions = useCallback((exerciseId: string, instructions: string[]) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const text = instructions.join(". ");
@@ -143,17 +210,17 @@ export default function WorkoutPage() {
       utterance.onerror = () => setSpeakingId(null);
       window.speechSynthesis.speak(utterance);
     }
-  };
+  }, [lang]);
 
-  const stopSpeaking = () => {
+  const stopSpeaking = useCallback(() => {
     window.speechSynthesis.cancel();
     setSpeakingId(null);
-  };
+  }, []);
 
-  const handleDaySelect = (day: WorkoutDay) => {
+  const handleDaySelect = useCallback((day: WorkoutDay) => {
     setSelectedDay(day.day);
     setSelectedWorkout(day);
-  };
+  }, []);
 
   const handleCompleteWorkout = async () => {
     try {
@@ -194,7 +261,7 @@ export default function WorkoutPage() {
     <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 bg-dash-card border border-dash-border-subtle rounded-3xl p-12 text-center">
       <div className="text-4xl">🧘</div>
       <h2 className="text-xl font-bold text-dash-text">Setup your goal</h2>
-      <button onClick={() => window.location.href = '/dashboard/profile'} className="mt-4 px-6 py-2 bg-neon-blue/10 text-neon-blue rounded-full text-sm font-bold">Update Profile</button>
+      <button onClick={() => router.push('/dashboard/profile')} className="mt-4 px-6 py-2 bg-neon-blue/10 text-neon-blue rounded-full text-sm font-bold cursor-pointer">Update Profile</button>
     </div>
   );
 
@@ -213,70 +280,39 @@ export default function WorkoutPage() {
   };
 
   return (
-    <div className="space-y-8 pb-32">
+    <div className="space-y-10 pb-32">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-8">
         <div>
-          <h1 className="text-3xl font-bold text-dash-text mb-2">Workout Roadmap</h1>
-          <div className="flex items-center gap-3">
-             <span className="px-3 py-1 bg-neon-blue/10 border border-neon-blue/20 rounded-full text-[10px] font-bold text-neon-blue uppercase">
+          <p className="text-neon-blue text-[10px] font-black uppercase tracking-[0.4em] mb-3 opacity-60">Session Management</p>
+          <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">Workout <span className="text-neon-blue">Roadmap</span></h1>
+          <div className="flex items-center gap-4 mt-6">
+             <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black text-dash-text-dim uppercase tracking-widest">
               Goal: {userPlan.goal.replace('_', ' ')}
             </span>
-            <div className="flex bg-dash-card border border-dash-border-subtle rounded-lg p-0.5">
-              <button onClick={() => setLang("en")} className={`px-3 py-1 text-[10px] font-bold rounded-md ${lang === "en" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim"}`}>EN</button>
-              <button onClick={() => setLang("te")} className={`px-3 py-1 text-[10px] font-bold rounded-md ${lang === "te" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim"}`}>TE</button>
+            <div className="flex bg-white/5 border border-white/5 rounded-lg p-0.5">
+              <button onClick={() => setLang("en")} className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${lang === "en" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim opacity-50 hover:opacity-100"}`}>EN</button>
+              <button onClick={() => setLang("te")} className={`px-3 py-1 text-[9px] font-black rounded-md transition-all ${lang === "te" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim opacity-50 hover:opacity-100"}`}>TE</button>
             </div>
           </div>
         </div>
 
         {isActive && (
-          <div className="flex items-center gap-6 px-6 py-4 bg-dash-card border border-neon-blue/30 rounded-2xl shadow-xl">
-             <div className="flex flex-col">
-              <span className="text-[10px] uppercase font-bold text-neon-blue tracking-widest">Active Session</span>
-              <span className="text-2xl font-mono font-bold text-dash-text leading-none mt-1">{formatTime(seconds)}</span>
+          <div className="flex items-center gap-6 px-6 py-4 bg-white/5 border border-neon-blue/20 rounded-2xl backdrop-blur-md">
+             <div className="text-right">
+              <span className="text-[9px] uppercase font-black text-neon-blue tracking-[0.2em] opacity-60">Active Session</span>
+              <p className="text-3xl font-mono font-black text-white leading-none mt-1 tracking-tighter">{formatTime(seconds)}</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={isPaused ? resumeTimer : pauseTimer} className="p-2.5 bg-dash-text/5 rounded-xl">{isPaused ? "▶️" : "⏸️"}</button>
-              <button onClick={resetTimer} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl">⏹️</button>
+              <button onClick={isPaused ? resumeTimer : pauseTimer} className="w-10 h-10 bg-white/5 rounded-xl border border-white/5 flex items-center justify-center hover:bg-white/10 transition-all cursor-pointer">{isPaused ? "▶" : "||"}</button>
+              <button onClick={resetTimer} className="w-10 h-10 bg-red-500/10 text-red-400 rounded-xl border border-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition-all cursor-pointer">■</button>
             </div>
           </div>
         )}
       </div>
 
-      {/* 30-Day Roadmap */}
-      <div className="relative">
-        <div className="flex gap-4 overflow-x-auto pb-6 pt-2 px-2 custom-scrollbar no-scrollbar">
-          {(userPlan.workoutPlan as WorkoutDay[]).map((day: WorkoutDay) => {
-            const status = getDayStatus(day.day);
-            const isSelected = selectedDay === day.day;
+      <Roadmap plan={userPlan.workoutPlan} selectedDay={selectedDay} onDaySelect={handleDaySelect} getDayStatus={getDayStatus} />
 
-            return (
-              <motion.div
-                key={day.day}
-                whileHover={status !== "locked" ? { y: -5 } : {}}
-                onClick={() => status !== "locked" && handleDaySelect(day)}
-                className={`flex-shrink-0 w-40 p-4 rounded-2xl border cursor-pointer transition-all ${
-                  isSelected ? "border-neon-blue bg-neon-blue/10 ring-1 ring-neon-blue/50 shadow-[0_0_20px_rgba(0,245,255,0.15)]" : 
-                  status === "active" ? "bg-neon-blue/5 border-neon-blue/20" : 
-                  status === "completed" || status === "completed_today" ? "bg-neon-green/5 border-neon-green/20" : 
-                  "bg-dash-card border-dash-border-subtle opacity-40 grayscale cursor-not-allowed"
-                }`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-[10px] font-black uppercase ${status === "active" || isSelected ? "text-neon-blue" : status.startsWith("completed") ? "text-neon-green" : "text-dash-text-dim"}`}>
-                    Day {day.day}
-                  </span>
-                  <span>{status.startsWith("completed") ? "✅" : status === "active" ? "🔓" : "🔒"}</span>
-                </div>
-                <h4 className="text-xs font-bold text-dash-text truncate mb-1">{day.title}</h4>
-                <p className="text-[9px] text-dash-text-dim uppercase tracking-wider">{day.bodyPartFocus}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Workout View Area */}
       <div className="grid grid-cols-1 gap-8">
         <AnimatePresence mode="wait">
           <motion.div
@@ -287,52 +323,43 @@ export default function WorkoutPage() {
             transition={{ duration: 0.2 }}
           >
             {getDayStatus(selectedDay) === "locked" ? (
-               <div className="glass-panel p-12 rounded-3xl border border-dash-border-subtle text-center space-y-6">
-                  <div className="text-6xl mb-4 grayscale">🔒</div>
-                  <h2 className="text-3xl font-black text-dash-text/40">Day {selectedDay} is Locked</h2>
-                  <p className="text-dash-text-dim max-w-md mx-auto italic">Finish your current daily goal to unlock this session.</p>
+               <div className="glass-panel p-20 rounded-[3rem] border border-white/5 text-center flex flex-col items-center">
+                  <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-white/10 text-3xl mb-8">LOCKED</div>
+                  <h2 className="text-2xl font-black text-white/20 uppercase tracking-tighter">Session Unavailable</h2>
+                  <p className="text-[10px] font-black text-dash-text-dim uppercase tracking-[0.2em] mt-4 opacity-30">Finish current tasks to proceed</p>
                </div>
             ) : selectedWorkout && (
-              <div className="glass-panel p-8 rounded-3xl border border-neon-blue/30">
-                {/* Header Section */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+              <div className="glass-panel p-10 rounded-[3rem] border border-white/5">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-neon-blue text-xs font-bold uppercase tracking-widest">
-                        Day {selectedDay} • {selectedWorkout.bodyPartFocus}
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-neon-blue text-[10px] font-black uppercase tracking-[0.3em] opacity-60">
+                        Operational Day {selectedDay} • {selectedWorkout.bodyPartFocus}
                       </span>
                       {getDayStatus(selectedDay).startsWith("completed") && (
-                        <span className="bg-neon-green/10 text-neon-green text-[9px] font-black px-2 py-0.5 rounded border border-neon-green/20 uppercase">Completed</span>
+                        <span className="bg-neon-green/10 text-neon-green text-[8px] font-black px-2 py-0.5 rounded border border-neon-green/20 uppercase tracking-widest">Finalized</span>
                       )}
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-dash-text tracking-tight">{selectedWorkout.title}</h2>
+                    <h2 className="text-5xl md:text-6xl font-black text-white tracking-tighter uppercase leading-none">{selectedWorkout.title}</h2>
                   </div>
 
-                  {/* Actions / Stats Card */}
-                  <div className="bg-dash-bg/60 border border-dash-border-subtle p-6 rounded-3xl min-w-[320px]">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter">
-                          {getDayStatus(selectedDay) === "active" ? "Session Timer" : "Session Stats"}
+                  <div className="bg-white/5 border border-white/5 p-6 rounded-3xl min-w-[340px] backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] block mb-1 opacity-50">
+                          {getDayStatus(selectedDay) === "active" ? "Active Timer" : "Est. Duration"}
                         </span>
-                        <span className="text-3xl font-mono font-black text-dash-text">
+                        <span className="text-4xl font-mono font-black text-white tracking-tighter">
                           {getDayStatus(selectedDay) === "active" ? formatTime(seconds) : `${selectedWorkout.estimatedDuration}m`}
                         </span>
                       </div>
-                      <div className="flex gap-2">
-                        <div className="text-right">
-                          <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter block">Exercises</span>
-                          <span className="text-sm font-bold text-dash-text">{selectedWorkout.exercises?.length || 0}</span>
-                        </div>
-                        <div className="w-px h-8 bg-dash-border-subtle mx-2 self-center"></div>
-                        <div className="text-right">
-                          <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter block">Burn</span>
-                          <span className="text-sm font-bold text-neon-green">{selectedWorkout.estimatedCalories}k</span>
-                        </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] block mb-1 opacity-50">Energy Exp.</span>
+                        <span className="text-2xl font-black text-neon-green uppercase">{selectedWorkout.estimatedCalories}k</span>
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       {getDayStatus(selectedDay) === "active" ? (
                         !isActive ? (
                           <button
@@ -349,32 +376,31 @@ export default function WorkoutPage() {
                               } catch (e) {}
                               startTimer(`day-${selectedDay}`);
                             }}
-                            className="flex-1 py-3 px-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl text-black font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-yellow-400/40 transition-all"
+                            className="flex-1 py-4 bg-neon-blue text-dash-bg rounded-xl font-black text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-neon-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                           >
-                            Start Workout
+                            Initialize Session
                           </button>
                         ) : (
                           <>
                             <button
                               onClick={isPaused ? resumeTimer : pauseTimer}
-                              className="p-3 bg-white/10 rounded-xl text-white border border-white/20 hover:bg-white/20 transition-all"
+                              className="w-14 h-14 bg-white/5 rounded-xl text-white border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center text-xl cursor-pointer"
                             >
-                              {isPaused ? "▶️" : "⏸️"}
+                              {isPaused ? "▶" : "||"}
                             </button>
                             <button
                               onClick={handleCompleteWorkout}
                               disabled={loading || seconds < 10}
-                              className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl text-black font-black text-xs uppercase tracking-widest hover:shadow-lg hover:shadow-cyan-400/40 transition-all disabled:opacity-50"
+                              className="flex-1 py-4 bg-neon-green text-dash-bg rounded-xl font-black text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-neon-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 cursor-pointer"
                             >
-                              {loading ? "Saving..." : "Finish Workout"}
+                              {loading ? "PROCESSING..." : "Finalize Protocol"}
                             </button>
                           </>
                         )
                       ) : getDayStatus(selectedDay) === "completed_today" ? (
-                        <div className="flex flex-col gap-3 flex-1">
-                          <div className="flex-1 py-3 px-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex items-center justify-center gap-2">
-                             <span className="text-lg">🔥</span>
-                             <span className="text-[10px] font-black text-neon-green uppercase tracking-widest">Day Complete! Next session unlocks in {formatCountdown(countdown)}</span>
+                        <div className="flex flex-col gap-4 flex-1">
+                          <div className="py-3 px-4 bg-neon-green/5 border border-neon-green/10 rounded-xl text-center">
+                             <p className="text-[9px] font-black text-neon-green uppercase tracking-[0.2em]">Protocol Finalized. Next Deployment in {formatCountdown(countdown)}</p>
                           </div>
                           <button
                             onClick={async () => {
@@ -390,73 +416,24 @@ export default function WorkoutPage() {
                               } catch (e) {}
                               startTimer(`day-${selectedDay}`);
                             }}
-                            className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white font-bold text-xs uppercase hover:bg-white/10 transition-all"
+                            className="w-full py-4 bg-white/5 border border-white/10 rounded-xl text-white/50 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all cursor-pointer"
                           >
-                            Repeat Workout
+                            Rerunning Session
                           </button>
                         </div>
                       ) : (
-                        <div className="flex-1 py-3 px-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex items-center justify-center gap-2">
-                           <span className="text-lg">✅</span>
-                           <span className="text-[10px] font-black text-neon-green uppercase tracking-widest">Completed Session</span>
+                        <div className="flex-1 py-4 bg-neon-green/5 border border-neon-green/10 rounded-xl text-center flex items-center justify-center">
+                           <span className="text-[10px] font-black text-neon-green uppercase tracking-[0.3em]">Completed Protocol</span>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Exercises List */}
-                <div className="grid grid-cols-1 gap-6 mb-4">
-                  {selectedWorkout.exercises?.map((ex: any) => {
-                    const instructions = lang === "te" && ex.instructionsTe ? ex.instructionsTe : ex.instructions;
-                    return (
-                      <div key={ex.id} className="bg-dash-bg/30 border border-dash-border-subtle rounded-2xl p-6 group hover:border-neon-blue/30 transition-all">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-4">
-                              <div>
-                                <h4 className="text-xl font-bold text-dash-text group-hover:text-neon-blue transition-colors">{ex.name}</h4>
-                                <span className="text-[10px] font-black bg-dash-text/10 px-2 py-1 rounded text-dash-text-dim uppercase">{ex.equipment}</span>
-                              </div>
-                              <button
-                                onClick={() => speakingId === ex.id ? stopSpeaking() : speakInstructions(ex.id, instructions)}
-                                className={`p-3 rounded-full border transition-all flex items-center gap-2 ${speakingId === ex.id ? "bg-red-500/10 border-red-500/20 text-red-400 animate-pulse" : "bg-neon-blue/10 border-neon-blue/20 text-neon-blue"}`}
-                              >
-                                {speakingId === ex.id ? "⏹️" : "🔊"}
-                              </button>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                              <div className="bg-neon-blue/5 p-3 rounded-xl border border-neon-blue/10">
-                                <span className="text-[10px] text-neon-blue font-bold uppercase block mb-1">Sets</span>
-                                <p className="text-lg font-black text-dash-text">{ex.sets}</p>
-                              </div>
-                              <div className="bg-neon-green/5 p-3 rounded-xl border border-neon-green/10">
-                                <span className="text-[10px] text-neon-green font-bold uppercase block mb-1">Reps</span>
-                                <p className="text-lg font-black text-dash-text">{ex.reps}</p>
-                              </div>
-                              <div className="bg-purple-500/5 p-3 rounded-xl border border-purple-500/10">
-                                <span className="text-[10px] text-purple-400 font-bold uppercase block mb-1">Rest</span>
-                                <p className="text-lg font-black text-dash-text">{ex.restTime}</p>
-                              </div>
-                            </div>
-
-                            <div className="space-y-3 bg-dash-card/50 p-6 rounded-2xl border border-dash-border-subtle">
-                              <p className="text-xs font-bold text-dash-text-dim uppercase tracking-widest">Instructions:</p>
-                              <ul className="space-y-2">
-                                {instructions.map((step: string, j: number) => (
-                                  <li key={j} className="text-sm text-dash-text-dim flex gap-3">
-                                    <span className="text-neon-blue font-bold min-w-[20px]">0{j+1}</span>
-                                    <span className={lang === "te" ? "font-medium" : ""}>{step}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="grid grid-cols-1 gap-8">
+                  {selectedWorkout.exercises?.map((ex: any) => (
+                    <ExerciseCard key={ex.id} ex={ex} lang={lang} speakingId={speakingId} onSpeak={speakInstructions} onStop={stopSpeaking} />
+                  ))}
                 </div>
               </div>
             )}
@@ -464,27 +441,25 @@ export default function WorkoutPage() {
         </AnimatePresence>
       </div>
 
-      {/* Sticky Mobile Completion Bar */}
       {isActive && getDayStatus(selectedDay) === "active" && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md p-4 bg-dash-bg/80 backdrop-blur-xl border border-neon-green/30 rounded-2xl z-50 shadow-2xl">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-dash-text-dim uppercase tracking-tighter">Current Session</span>
-              <span className="text-xl font-mono font-black text-dash-text">{formatTime(seconds)}</span>
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-sm p-6 bg-dash-bg/95 backdrop-blur-2xl border border-neon-green/20 rounded-[2.5rem] z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="text-left">
+              <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] opacity-50">Operational Time</span>
+              <p className="text-2xl font-mono font-black text-white tracking-tighter">{formatTime(seconds)}</p>
             </div>
-            <div className="flex gap-2">
-               <button onClick={isPaused ? resumeTimer : pauseTimer} className="p-2 bg-white/5 border border-white/10 rounded-lg">{isPaused ? "▶️" : "⏸️"}</button>
-            </div>
+            <button onClick={isPaused ? resumeTimer : pauseTimer} className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-lg cursor-pointer">{isPaused ? "▶" : "||"}</button>
           </div>
           <button
             onClick={handleCompleteWorkout}
             disabled={loading || seconds < 10}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-black font-black text-lg shadow-lg shadow-cyan-400/20 active:scale-95 transition-all disabled:opacity-50"
+            className="w-full py-4 rounded-2xl bg-neon-green text-dash-bg font-black text-xs uppercase tracking-[0.3em] shadow-lg shadow-neon-green/20 active:scale-95 transition-all disabled:opacity-30 cursor-pointer"
           >
-            {loading ? "SAVING PROGRESS..." : "COMPLETE WORKOUT"}
+            {loading ? "PROCESSING..." : "Finalize Protocol"}
           </button>
         </div>
       )}
     </div>
   );
 }
+

@@ -3,11 +3,12 @@
 import { useState, useEffect, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { tokenManager } from "@/lib/auth";
 import { useWorkout } from "@/context/WorkoutContext";
 import { dashboardService } from "@/lib/services/dashboardService";
-import ConfirmationModal from "../ui/ConfirmationModal";
+import dynamic from "next/dynamic";
+const ConfirmationModal = dynamic(() => import("../ui/ConfirmationModal"), { ssr: false });
 import { useTheme } from "@/context/ThemeContext";
 
 interface TopNavbarProps {
@@ -15,10 +16,32 @@ interface TopNavbarProps {
   userName?: string;
 }
 
+const TimerDisplay = memo(() => {
+  const { seconds, isActive, isPaused, formatTime } = useWorkout();
+  const router = useRouter();
+
+  if (!isActive) return null;
+
+  return (
+    <motion.div 
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      onClick={() => router.push("/dashboard/workout")}
+      className="flex items-center gap-3 px-5 py-2 bg-neon-blue/5 border border-neon-blue/20 rounded-full cursor-pointer hover:bg-neon-blue/10 transition-all group"
+    >
+      <span className={`w-2 h-2 rounded-full bg-neon-blue ${!isPaused ? 'animate-pulse' : ''}`} />
+      <span className="text-neon-blue font-mono font-black text-[13px] tracking-widest">
+        {isPaused ? "SESSION PAUSED" : formatTime(seconds)}
+      </span>
+    </motion.div>
+  );
+});
+
+TimerDisplay.displayName = "TimerDisplay";
+
 function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
   const router = useRouter();
   const { theme } = useTheme();
-  const { seconds, isActive, isPaused, formatTime } = useWorkout();
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [greeting, setGreeting] = useState("Welcome");
@@ -84,49 +107,34 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
           </svg>
         </button>
         <div className="hidden sm:block">
-          <p className="text-neon-blue text-[10px] font-black uppercase tracking-[0.2em] mb-0.5">{greeting}</p>
-          <p className={`font-black text-lg tracking-tight uppercase ${theme === "light" ? "bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent" : "text-white"}`}>
-            {userName || "Athlete"} <span className="inline-block animate-bounce ml-1">💪</span>
+          <p className="text-neon-blue text-[9px] font-black uppercase tracking-[0.3em] mb-0.5 opacity-70">{greeting}</p>
+          <p className={`font-black text-xl tracking-tight uppercase ${theme === "light" ? "text-amber-600" : "text-white"}`}>
+            {userName || "Athlete"}
           </p>
         </div>
       </div>
 
       <div className="flex-1 max-w-md mx-6 flex justify-center">
-        {isActive && (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={() => router.push("/dashboard/workout")}
-            className="flex items-center gap-4 px-6 py-2 bg-neon-blue/5 border border-neon-blue/30 rounded-full cursor-pointer hover:bg-neon-blue/10 transition-all group shadow-[0_0_30px_rgba(0,245,255,0.05)]"
-          >
-            <div className="relative">
-              <span className={`w-3 h-3 rounded-full bg-neon-blue block ${!isPaused ? 'animate-ping opacity-75' : ''}`} />
-              <span className="w-3 h-3 rounded-full bg-neon-blue absolute inset-0" />
-            </div>
-            <span className="text-neon-blue font-mono font-black text-base tracking-widest">
-              {isPaused ? "PAUSED" : formatTime(seconds)}
-            </span>
-          </motion.div>
-        )}
+        <TimerDisplay />
       </div>
 
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.push("/dashboard/workout")}
-          className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-neon-yellow text-dash-bg rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-[#facc15] text-[#050508] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
         >
-          ⚡ System Start
+          System Start
         </button>
 
         <button
           onClick={() => router.push("/dashboard/notifications")}
-          className="relative p-3 bg-dash-card border border-dash-border-subtle rounded-xl text-dash-text-dim hover:text-white hover:border-white/20 transition-all cursor-pointer group"
+          className="relative p-3 bg-white/5 border border-white/5 rounded-xl text-white/40 hover:text-white hover:border-white/20 transition-all cursor-pointer group"
         >
           <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-neon-blue text-dash-bg text-[10px] font-black rounded-full flex items-center justify-center border-2 border-dash-bg shadow-lg">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-neon-blue text-dash-bg text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#050508] shadow-lg">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -141,7 +149,7 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
 
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="p-3 bg-dash-card border border-dash-border-subtle rounded-xl text-dash-text-dim hover:text-red-400 hover:border-red-400/20 transition-all cursor-pointer"
+          className="p-3 bg-white/5 border border-white/5 rounded-xl text-white/40 hover:text-red-400 hover:border-red-400/20 transition-all cursor-pointer"
           title="Logout"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -161,5 +169,6 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
     </header>
   );
 }
+
 
 export default memo(TopNavbar);

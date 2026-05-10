@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Link from "next/link";
 import InputField from "@/components/ui/InputField";
 import SubmitButton from "@/components/ui/SubmitButton";
@@ -60,35 +60,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-gradient-to-br from-purple-950 via-gray-950 to-black animated-gradient">
-      {/* Animated background blobs */}
-      <div className="absolute top-20 -left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl animate-blob" />
-      <div className="absolute top-40 -right-20 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
-      <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl animate-blob animation-delay-4000" />
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-dash-bg">
+      {/* Minimal geometric background accents */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-neon-blue/5 rounded-full blur-[120px] -mr-40 -mt-40" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-neon-yellow/5 rounded-full blur-[120px] -ml-40 -mb-40" />
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="glass-panel-purple rounded-2xl p-8 shadow-2xl">
+        <div className="glass-panel rounded-[2rem] p-10 border border-white/5">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
-              <span className="text-2xl">🏋️</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-1">Welcome Back</h1>
-            <p className="text-sm text-white/50">Sign in to continue your streak</p>
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-black text-white tracking-tighter uppercase mb-2">
+              System <span className="text-neon-blue">Login</span>
+            </h1>
+            <p className="text-[10px] font-black text-dash-text-dim uppercase tracking-[0.3em] opacity-40">Access your fitness terminal</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
+          <form onSubmit={handleLogin} className="space-y-6" autoComplete="off">
             <InputField
-              label="Email"
+              label="Identifier"
               type="email"
+              placeholder="operator@gymstreak.com"
               name="gym-login-email"
               autoComplete="off"
-              variant="glass"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -98,11 +96,11 @@ export default function LoginPage() {
               error={errors.email}
             />
             <InputField
-              label="Password"
+              label="Access Code"
               type="password"
+              placeholder="••••••••"
               name="gym-login-password"
               autoComplete="new-password"
-              variant="glass"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -115,43 +113,43 @@ export default function LoginPage() {
             <div className="flex justify-end -mt-2">
               <Link
                 href="/forgot-password"
-                className="text-[10px] font-black text-white/40 hover:text-auth-accent uppercase tracking-widest transition-colors"
+                className="text-[9px] font-black text-dash-text-dim hover:text-neon-blue uppercase tracking-widest transition-colors"
               >
-                Forgot Password?
+                Forgot Credentials?
               </Link>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <p className="text-sm text-red-400">{error}</p>
+              <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
+                <p className="text-xs text-red-400 font-bold uppercase tracking-tight">{error}</p>
               </div>
             )}
 
-            <SubmitButton type="submit" loading={loading} variant="gradient-purple">
-              Sign In
+            <SubmitButton type="submit" loading={loading} variant="neon">
+              Initialize Access
             </SubmitButton>
 
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-xs text-white/30">OR</span>
-              <div className="flex-1 h-px bg-white/10" />
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-white/5" />
+              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Secondary Protocol</span>
+              <div className="flex-1 h-px bg-white/5" />
             </div>
 
             <button
               type="button"
               onClick={() => router.push("/verify-otp")}
-              className="w-full py-3 px-4 rounded-xl border-2 border-white/10 text-white/70 font-medium text-sm hover:bg-white/5 transition-all cursor-pointer"
+              className="w-full py-4 rounded-xl border border-white/10 text-white/40 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
             >
-              Sign in with OTP
+              One-Time Password
             </button>
 
-            <p className="text-center text-sm text-white/40 mt-4">
-              Don&apos;t have an account?{" "}
+            <p className="text-center text-[10px] font-black text-white/20 mt-8 uppercase tracking-widest">
+              No existing record?{" "}
               <Link
                 href="/register"
-                className="text-auth-accent hover:text-white transition-colors font-medium"
+                className="text-neon-blue hover:text-white transition-colors"
               >
-                Sign up
+                Create Account
               </Link>
             </p>
           </form>

@@ -6,7 +6,7 @@ import { authEmailFrontendService } from "@/services/authEmail.service";
 import { triggerToast } from "@/components/NotificationManager";
 import SubmitButton from "@/components/ui/SubmitButton";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

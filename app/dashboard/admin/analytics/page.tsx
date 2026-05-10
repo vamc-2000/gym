@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { apiClient } from "@/lib/api";
 import StatsCard from "@/components/dashboard/StatsCard";
 

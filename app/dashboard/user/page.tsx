@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { tokenManager } from "@/lib/auth";
 import { getDashboardState } from "@/lib/dashboardHelper";
 import { DashboardState } from "@/types/dashboard";
@@ -9,11 +9,33 @@ import { triggerToast } from "@/components/NotificationManager";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { apiClient } from "@/lib/api";
 
-import MilestoneFeedbackModal from "@/components/dashboard/MilestoneFeedbackModal";
-import StatsGrid from "@/components/dashboard/StatsGrid";
-import HydrationTracker from "@/components/dashboard/HydrationTracker";
+import dynamic from "next/dynamic";
+
+const ActivityMetrics = memo(({ activity }: { activity: any[] }) => (
+  <div className="lg:col-span-2 glass-panel p-8 rounded-3xl border border-dash-border-subtle">
+    <div className="flex justify-between items-start mb-10">
+      <div>
+        <h3 className="text-lg font-black text-white uppercase tracking-tight">Activity Metrics</h3>
+        <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-widest opacity-50">Weekly calorie burn progress</p>
+      </div>
+    </div>
+    <div className="flex items-end justify-between gap-4 h-[220px]">
+      {activity.map((data, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-4">
+          <div className="w-full bg-white/5 rounded-t-xl relative group overflow-hidden" style={{ height: `${Math.max(10, (data.calories / 600) * 100)}%` }}>
+            <div className="absolute inset-0 bg-neon-blue/20 group-hover:bg-neon-blue/40 transition-all" />
+          </div>
+          <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-tighter opacity-40">{data.day}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+));
+
+ActivityMetrics.displayName = "ActivityMetrics";
 
 export default function UserDashboard() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<DashboardState | null>(null);
   const [userName, setUserName] = useState("Athlete");
@@ -72,14 +94,14 @@ export default function UserDashboard() {
   const statsList = useMemo(() => {
     if (!state) return [];
     return [
-      { label: "Today Workout", value: state.stats.todayWorkoutStatus === "Done" ? "✅ Done" : "⏳ Pending", icon: "🏋️", color: "neon-blue" },
-      { label: "Today Burned", value: `${state.stats.todayCaloriesBurned} kcal`, icon: "⚡", color: "neon-yellow" },
-      { label: "Active Streak", value: `${state.stats.currentStreak} Days`, icon: "🔥", color: "orange-500" },
-      { label: "Diet Plan", value: state.stats.todayDietPlan, icon: "🥗", color: "neon-green" },
-      { label: "Progress", value: `${state.stats.progressPercentage}%`, icon: "📈", color: "cyan-400" },
-      { label: "Rank", value: `#${state.stats.leaderboardRank}`, icon: "🏆", color: "purple-500" },
-      { label: "Notifications", value: state.stats.unreadNotifications > 0 ? `${state.stats.unreadNotifications} New` : "All Read", icon: "🔔", color: "pink-500" },
-      { label: "Total Burned", value: `${state.stats.caloriesBurned} kcal`, icon: "💎", color: "blue-500" },
+      { label: "Today Workout", value: state.stats.todayWorkoutStatus === "Done" ? "Done" : "Pending", icon: "", color: "neon-blue" },
+      { label: "Today Burned", value: `${state.stats.todayCaloriesBurned} kcal`, icon: "", color: "neon-yellow" },
+      { label: "Active Streak", value: `${state.stats.currentStreak} Days`, icon: "", color: "orange-500" },
+      { label: "Diet Plan", value: state.stats.todayDietPlan, icon: "", color: "neon-green" },
+      { label: "Progress", value: `${state.stats.progressPercentage}%`, icon: "", color: "cyan-400" },
+      { label: "Rank", value: `#${state.stats.leaderboardRank}`, icon: "", color: "purple-500" },
+      { label: "Notifications", value: state.stats.unreadNotifications > 0 ? `${state.stats.unreadNotifications} New` : "All Read", icon: "", color: "pink-500" },
+      { label: "Total Burned", value: `${state.stats.caloriesBurned} kcal`, icon: "", color: "blue-500" },
     ];
   }, [state]);
 
@@ -95,32 +117,32 @@ export default function UserDashboard() {
     setState(prev => prev ? ({ ...prev, hydration: newData }) : null);
 
     if (amount > 0) {
-      triggerToast("Hydration", `Added ${amount * 1000}ml of water 💧`, "info");
+      triggerToast("Hydration", `Added ${amount * 1000}ml of water`, "info");
     }
   }, [state]);
 
   if (loading || !state) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <div className="w-12 h-12 border-4 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
-      <div className="text-white/40 text-sm font-medium animate-pulse">Initializing...</div>
+      <div className="w-10 h-10 border-2 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
+      <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Initializing System</div>
     </div>
   );
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-10 pb-12">
       <AnimatePresence>
         {state.latestNudge && (
           <motion.div
-            initial={{ height: 0, opacity: 0, y: -20 }}
-            animate={{ height: 'auto', opacity: 1, y: 0 }}
-            exit={{ height: 0, opacity: 0, y: -20 }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-neon-blue/10 border border-neon-blue/20 rounded-[1.5rem] p-6 mb-4 flex items-center justify-between gap-6 shadow-[0_0_30px_rgba(0,245,255,0.1)]">
-               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-neon-blue/20 rounded-2xl flex items-center justify-center text-2xl animate-bounce">⚡</div>
+            <div className="bg-neon-blue/5 border border-neon-blue/20 rounded-2xl p-6 mb-6 flex items-center justify-between gap-6">
+               <div className="flex items-center gap-5">
+                  <div className="w-10 h-10 bg-neon-blue/10 rounded-xl flex items-center justify-center text-neon-blue font-black">!</div>
                   <div>
-                     <p className="text-[10px] font-black text-neon-blue uppercase tracking-widest mb-1">Coach's Instant Nudge</p>
+                     <p className="text-[9px] font-black text-neon-blue uppercase tracking-[0.2em] mb-1 opacity-70">Coach Message</p>
                      <p className="text-sm font-bold text-white italic">"{state.latestNudge.message}"</p>
                   </div>
                </div>
@@ -131,7 +153,7 @@ export default function UserDashboard() {
                     syncState();
                   }
                 }}
-                 className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-dash-text-dim hover:text-white hover:bg-white/10 transition-all"
+                 className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-dash-text-dim hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                >
                  Dismiss
                </button>
@@ -140,81 +162,69 @@ export default function UserDashboard() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-8">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight mb-2">
-            Welcome Back, <span className="text-neon-blue">{userName}</span>!
+          <p className="text-neon-blue text-[10px] font-black uppercase tracking-[0.4em] mb-3 opacity-60">Operations Dashboard</p>
+          <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">
+            Welcome, <span className="text-neon-blue">{userName}</span>
           </h1>
-          <p className="text-dash-text-dim text-sm italic">You are currently at <span className="text-neon-blue font-bold">{userLevel}</span> level.</p>
+          <p className="text-dash-text-dim text-xs mt-4 uppercase font-black tracking-widest">Performance Level: <span className="text-white">{userLevel}</span></p>
         </div>
-        <div className="flex items-center gap-4 bg-dash-card p-4 rounded-2xl border border-dash-border-subtle shadow-xl">
+        <div className="flex items-center gap-6 bg-white/5 p-5 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div className="text-right">
-            <p className="text-dash-text-dim text-[10px] uppercase font-black tracking-widest">Active Streak</p>
-            <p className="text-dash-text font-black text-2xl">{state.stats.currentStreak} Days</p>
+            <p className="text-dash-text-dim text-[9px] uppercase font-black tracking-[0.2em] mb-1 opacity-50">Active Streak</p>
+            <p className="text-white font-black text-3xl leading-none">{state.stats.currentStreak}</p>
           </div>
-          <div className="w-14 h-14 bg-neon-yellow/10 rounded-2xl flex items-center justify-center text-3xl">🔥</div>
+          <div className="w-12 h-12 bg-neon-yellow/10 rounded-xl flex items-center justify-center text-neon-yellow font-black text-xl">
+             🔥
+          </div>
         </div>
       </div>
 
       <StatsGrid stats={statsList} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-panel p-8 rounded-3xl border border-dash-border-subtle min-h-[420px]">
-           <h3 className="text-xl font-bold text-dash-text mb-1">Activity Overview</h3>
-           <p className="text-dash-text-dim text-xs mb-8">Weekly calorie burn progress</p>
-           <div className="flex items-end justify-between gap-4 h-[250px]">
-              {state.weeklyActivity.map((data, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full bg-dash-text/5 rounded-t-xl relative group" style={{ height: `${(data.calories / 600) * 100}%` }}>
-                    <div className="absolute inset-0 bg-neon-blue/20 rounded-t-xl group-hover:bg-neon-blue/40 transition-all" />
-                  </div>
-                  <span className="text-[10px] font-black text-dash-text-dim uppercase">{data.day}</span>
-                </div>
-              ))}
-           </div>
-        </div>
+        <ActivityMetrics activity={state.weeklyActivity} />
 
-        <div className="glass-panel p-8 rounded-[2.5rem] border border-dash-border-subtle relative overflow-hidden flex flex-col justify-between min-h-[300px]">
-          <div className="relative z-10">
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Next Session</h3>
-            <p className="text-[11px] font-bold text-dash-text-dim uppercase tracking-widest opacity-60">Prepare for data logging</p>
+        <div className="glass-panel p-8 rounded-[2.5rem] border border-dash-border-subtle flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">Target Mission</h3>
+            <p className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] opacity-40">Next session deployment</p>
           </div>
           
-          <div className="space-y-6 relative z-10">
-            <div className="p-5 bg-dash-bg/60 backdrop-blur-xl rounded-[1.5rem] border border-white/5 shadow-inner">
-              <p className="text-neon-blue font-black text-sm uppercase tracking-[0.1em]">{state.nextWorkout?.title || 'No Workout'}</p>
-              <div className="flex items-center gap-2 mt-2">
-                 <span className="w-1.5 h-1.5 bg-neon-blue rounded-full animate-pulse" />
-                 <p className="text-dash-text-dim text-[10px] font-bold uppercase tracking-widest">{state.nextWorkout?.day}</p>
+          <div className="space-y-6">
+            <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
+              <p className="text-neon-blue font-black text-sm uppercase tracking-widest mb-2">{state.nextWorkout?.title || 'System Idle'}</p>
+              <div className="flex items-center gap-2">
+                 <span className={`w-1.5 h-1.5 rounded-full ${state.nextWorkout ? 'bg-neon-blue animate-pulse' : 'bg-dash-text-dim'}`} />
+                 <p className="text-dash-text-dim text-[9px] font-black uppercase tracking-widest opacity-50">{state.nextWorkout?.day || 'No active plan'}</p>
               </div>
             </div>
             <button 
-              onClick={() => window.location.href = '/dashboard/workout'} 
-              className="w-full py-4 rounded-[1.25rem] bg-neon-blue text-dash-bg font-black text-xs uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(0,245,255,0.3)] hover:shadow-[0_0_40px_rgba(0,245,255,0.5)] hover:scale-105 active:scale-95 transition-all"
+              onClick={() => router.push('/dashboard/workout')} 
+              className="w-full py-4 rounded-xl bg-neon-blue text-dash-bg font-black text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-neon-blue/20 hover:shadow-neon-blue/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
-              Initialize System
+              Start Training
             </button>
           </div>
-
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-neon-blue/5 rounded-full blur-3xl" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle">
-          <h4 className="text-dash-text font-bold mb-6">Daily Nutrition</h4>
-          <div className="space-y-4">
+          <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8 opacity-50">Nutrition Status</h4>
+          <div className="space-y-6">
             {[
-              { label: "Calories", cur: state.dailyNutrition.calories, tar: state.dailyNutrition.targetCalories, unit: "kcal" },
-              { label: "Protein", cur: state.dailyNutrition.protein, tar: state.dailyNutrition.targetProtein, unit: "g" },
+              { label: "Energy", cur: state.dailyNutrition.calories, tar: state.dailyNutrition.targetCalories, unit: "kcal" },
+              { label: "Synthesis", cur: state.dailyNutrition.protein, tar: state.dailyNutrition.targetProtein, unit: "g" },
             ].map(m => (
-              <div key={m.label} className="space-y-2">
-                <div className="flex justify-between text-[10px] font-black uppercase text-dash-text-dim">
+              <div key={m.label} className="space-y-3">
+                <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-dash-text-dim">
                   <span>{m.label}</span>
-                  <span>{m.cur} / {m.tar} {m.unit}</span>
+                  <span className="text-white">{m.cur} / {m.tar} {m.unit}</span>
                 </div>
-                <div className="h-1.5 w-full bg-dash-text/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-neon-blue" style={{ width: `${Math.min(100, (m.cur / m.tar) * 100)}%` }} />
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-neon-blue transition-all duration-1000" style={{ width: `${Math.min(100, (m.cur / m.tar) * 100)}%` }} />
                 </div>
               </div>
             ))}
@@ -228,12 +238,12 @@ export default function UserDashboard() {
         />
 
         <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle">
-          <h4 className="text-dash-text font-bold mb-6">History</h4>
-          <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar">
+          <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8 opacity-50">Recent History</h4>
+          <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-2 no-scrollbar">
             {state.activities.slice(0, 5).map((a, i) => (
-              <div key={i} className="text-[10px] p-3 bg-dash-bg/50 rounded-xl border border-dash-border-subtle flex justify-between">
-                <span className="font-bold text-dash-text">{a.workoutTitle}</span>
-                <span className="text-neon-green">+{a.caloriesBurned} kcal</span>
+              <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
+                <span className="text-[10px] font-black uppercase tracking-tight text-white group-hover:text-neon-blue transition-colors">{a.workoutTitle}</span>
+                <span className="text-[9px] font-black text-neon-green">+{a.caloriesBurned} kcal</span>
               </div>
             ))}
           </div>
@@ -242,3 +252,4 @@ export default function UserDashboard() {
     </div>
   );
 }
+

@@ -1,9 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
+import Image from "next/image";
 import { communityService, Post } from "@/services/communityService";
 import { triggerToast } from "@/components/NotificationManager";
 import { formatDistanceToNow } from "date-fns";
+
+const CommentItem = memo(({ comment }: { comment: any }) => (
+  <div className="flex gap-4">
+    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex-shrink-0 flex items-center justify-center text-xs font-black text-neon-blue">
+      {comment.user?.name?.[0] || "U"}
+    </div>
+    <div className="bg-white/2 p-4 rounded-2xl border border-white/5 flex-1 group">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-[10px] font-black text-neon-blue uppercase tracking-widest">{comment.user?.name || "Anonymous"}</span>
+        <span className="text-[8px] font-black text-dash-text-dim uppercase tracking-widest opacity-30">{formatDistanceToNow(new Date(comment.createdAt))}</span>
+      </div>
+      <p className="text-xs text-dash-text font-medium leading-relaxed">{comment.content}</p>
+    </div>
+  </div>
+));
+
+CommentItem.displayName = "CommentItem";
 
 export default function PostCard({ post, currentUserId, onDelete }: { post: Post, currentUserId: string, onDelete: () => void }) {
   const [likes, setLikes] = useState(post._count.likes);
@@ -12,8 +30,9 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<any[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [mediaError, setMediaError] = useState(false);
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     try {
       const res = await communityService.likePost(post.id, isLiked);
       if (res.success) {
@@ -21,9 +40,9 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
         setLikes(prev => isLiked ? prev - 1 : prev + 1);
       }
     } catch (e) {}
-  };
+  }, [post.id, isLiked]);
 
-  const fetchComments = async () => {
+  const toggleComments = useCallback(async () => {
     if (showComments) {
       setShowComments(false);
       return;
@@ -36,7 +55,7 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
     } finally {
       setLoadingComments(false);
     }
-  };
+  }, [showComments, post.id]);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,128 +65,123 @@ export default function PostCard({ post, currentUserId, onDelete }: { post: Post
       if (res.success) {
         setCommentText("");
         setComments(prev => [res.data, ...prev]);
-        triggerToast("Success", "Comment added", "success");
+        triggerToast("Update", "Comment added to sequence", "success");
       }
     } catch (e) {}
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm("Terminate this transmission?")) return;
     try {
       const res = await communityService.deletePost(post.id);
       if (res.success) {
-        triggerToast("Deleted", "Post removed", "success");
+        triggerToast("Cleanup", "Transmission terminated", "success");
         onDelete();
       }
     } catch (e) {}
   };
 
-  const [mediaError, setMediaError] = useState(false);
-
   return (
-    <div className="bg-dash-card border border-dash-border-subtle rounded-2xl overflow-hidden mb-6 shadow-lg">
-      <div className="p-4 flex items-center justify-between border-b border-dash-border-subtle/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-neon-blue/10 flex items-center justify-center border border-neon-blue/20 text-neon-blue font-bold">
+    <div className="bg-dash-card border border-white/5 rounded-[2.5rem] overflow-hidden mb-10 shadow-2xl backdrop-blur-xl group hover:border-white/10 transition-all">
+      <div className="p-6 flex items-center justify-between border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-[1rem] bg-neon-blue/5 flex items-center justify-center border border-neon-blue/10 text-neon-blue font-black text-xl">
             {post.user?.name?.[0] || "U"}
           </div>
           <div>
-            <h4 className="text-sm font-bold text-dash-text">{post.user?.name || "User"}</h4>
-            <span className="text-[10px] text-dash-text-dim">
-              {formatDistanceToNow(new Date(post.createdAt))} ago • {post.privacy === "public" ? "🌎 Public" : "🔒 Friends"}
-            </span>
+            <h4 className="text-sm font-black text-white uppercase tracking-tight">{post.user?.name || "User"}</h4>
+            <div className="flex items-center gap-3 mt-1.5">
+               <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] opacity-40">
+                {formatDistanceToNow(new Date(post.createdAt))} ago
+              </span>
+              <span className="text-[8px] font-black text-neon-blue uppercase tracking-widest opacity-60">
+                {post.privacy === "public" ? "Global Link" : "Secure Node"}
+              </span>
+            </div>
           </div>
         </div>
         {post.userId === currentUserId && (
-          <button onClick={handleDelete} className="p-2 text-dash-text-dim hover:text-red-500 transition-colors">🗑️</button>
+          <button onClick={handleDelete} className="w-10 h-10 rounded-xl hover:bg-red-500/10 text-dash-text-dim hover:text-red-500 transition-all flex items-center justify-center cursor-pointer">🗑️</button>
         )}
       </div>
 
-      <div className="p-4 space-y-4">
-        <p className="text-sm text-dash-text leading-relaxed whitespace-pre-wrap">{post.content}</p>
+      <div className="p-8 space-y-8">
+        <p className="text-sm text-dash-text leading-relaxed whitespace-pre-wrap font-medium">{post.content}</p>
         
         {post.mediaUrl && !mediaError && (
-          <div className="relative group">
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/5 aspect-video">
             {post.mediaType === "image" ? (
-              <img
+              <Image
                 src={post.mediaUrl}
-                alt="Post media"
-                className="w-full max-h-[420px] object-cover rounded-xl border border-neon-blue/10 hover:border-neon-blue/30 transition-all shadow-[0_0_20px_rgba(0,245,255,0.05)]"
+                alt="Media"
+                fill
+                className="object-cover hover:scale-105 transition-all duration-700"
                 onError={() => setMediaError(true)}
+                sizes="(max-width: 768px) 100vw, 800px"
               />
             ) : post.mediaType === "video" ? (
               <video
                 src={post.mediaUrl}
                 controls
-                className="w-full max-h-[420px] rounded-xl border border-neon-blue/10"
+                className="w-full max-h-[500px]"
                 onError={() => setMediaError(true)}
               />
             ) : null}
           </div>
         )}
-
-        {mediaError && (
-          <div className="w-full h-32 bg-dash-bg/50 rounded-xl border border-dashed border-dash-border-subtle flex flex-col items-center justify-center gap-2">
-            <span className="text-2xl opacity-40">🖼️</span>
-            <p className="text-[10px] font-black uppercase tracking-widest text-dash-text-dim">Media failed to load</p>
-          </div>
-        )}
       </div>
 
-      <div className="px-4 py-3 flex items-center gap-6 border-t border-dash-border-subtle/30 bg-dash-bg/30">
+      <div className="px-8 py-6 flex items-center gap-8 border-t border-white/5 bg-white/2">
         <button 
           onClick={handleLike}
-          className={`flex items-center gap-2 text-xs font-bold transition-all ${isLiked ? "text-neon-blue" : "text-dash-text-dim hover:text-dash-text"}`}
+          className={`flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${isLiked ? "text-neon-blue" : "text-dash-text-dim hover:text-white"}`}
         >
-          <span>{isLiked ? "❤️" : "🤍"}</span>
-          <span>{likes} {likes === 1 ? "Like" : "Likes"}</span>
+          <span className="text-lg">{isLiked ? "❤️" : "🤍"}</span>
+          <span>{likes} Reactions</span>
         </button>
         <button 
-          onClick={fetchComments}
-          className="flex items-center gap-2 text-xs font-bold text-dash-text-dim hover:text-dash-text transition-all"
+          onClick={toggleComments}
+          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-dash-text-dim hover:text-white transition-all cursor-pointer"
         >
-          <span>💬</span>
-          <span>{post._count.comments} {post._count.comments === 1 ? "Comment" : "Comments"}</span>
+          <span className="text-lg">💬</span>
+          <span>{post._count.comments} Intel</span>
         </button>
       </div>
 
-      {showComments && (
-        <div className="p-4 bg-dash-bg/50 border-t border-dash-border-subtle/50 space-y-4">
-          <form onSubmit={handleAddComment} className="flex gap-2">
-            <input 
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 bg-dash-card border border-dash-border-subtle rounded-lg px-3 py-2 text-xs text-dash-text outline-none focus:border-neon-blue"
-            />
-            <button className="px-4 py-2 bg-neon-blue text-dash-bg font-black rounded-lg text-[10px] uppercase">Post</button>
-          </form>
+      <AnimatePresence>
+        {showComments && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="p-8 bg-black/20 border-t border-white/5 space-y-8"
+          >
+            <form onSubmit={handleAddComment} className="flex gap-4">
+              <input 
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Submit Intel..."
+                className="flex-1 bg-white/5 border border-white/5 rounded-xl px-5 py-3 text-xs text-white outline-none focus:border-neon-blue/30 transition-all font-medium"
+              />
+              <button className="px-6 py-3 bg-neon-blue text-dash-bg font-black rounded-xl text-[10px] uppercase tracking-widest shadow-lg shadow-neon-blue/10 cursor-pointer">Post</button>
+            </form>
 
-          {loadingComments ? (
-            <div className="flex justify-center p-4">
-              <div className="w-5 h-5 border-2 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-dash-card border border-dash-border-subtle flex-shrink-0 flex items-center justify-center text-xs font-bold text-neon-blue">
-                    {comment.user?.name?.[0] || "U"}
-                  </div>
-                  <div className="bg-dash-card p-3 rounded-xl border border-dash-border-subtle flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-neon-blue">{comment.user?.name || "User"}</span>
-                      <span className="text-[8px] text-dash-text-dim">{formatDistanceToNow(new Date(comment.createdAt))} ago</span>
-                    </div>
-                    <p className="text-xs text-dash-text">{comment.content}</p>
-                  </div>
-                </div>
-              ))}
-              {comments.length === 0 && <p className="text-center text-[10px] text-dash-text-dim italic">No comments yet. Be the first!</p>}
-            </div>
-          )}
-        </div>
-      )}
+            {loadingComments ? (
+              <div className="flex justify-center p-8">
+                <div className="w-6 h-6 border-2 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {comments.map((comment) => (
+                  <CommentItem key={comment.id} comment={comment} />
+                ))}
+                {comments.length === 0 && <p className="text-center text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] opacity-30 italic">No historical intel available.</p>}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

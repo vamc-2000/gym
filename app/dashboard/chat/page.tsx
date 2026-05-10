@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { chatService } from "@/services/chatService";
 import ChatWindow from "@/components/community/ChatWindow";
 import { tokenManager } from "@/lib/auth";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export default function ChatPage() {
   const [friends, setFriends] = useState<any[]>([]);

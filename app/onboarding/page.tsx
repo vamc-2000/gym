@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import SelectionCard from "@/components/ui/SelectionCard";
 import InputField from "@/components/ui/InputField";

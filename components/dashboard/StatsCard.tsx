@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 
 interface StatsCardProps {
   icon: string;
@@ -46,28 +45,28 @@ export default function StatsCard({
   }
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.04, y: -4 }}
-      className={`bg-dash-card/80 backdrop-blur-xl rounded-3xl p-6 border border-white/[0.03] transition-all duration-300 cursor-default shadow-xl ${glowClasses[glowColor]}`}
+    <div
+      className={`bg-white/2 backdrop-blur-3xl rounded-[2rem] p-7 border border-white/5 transition-all duration-300 cursor-default group hover:bg-white/5 hover:-translate-y-1 ${glowClasses[glowColor]}`}
     >
-      <div className="flex items-start justify-between mb-5">
-        <div className="w-12 h-12 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-center shadow-inner">
-          <span className="text-2xl">{icon}</span>
+      <div className="flex items-start justify-between mb-8">
+        <div className="w-14 h-14 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <span className="text-2xl opacity-80">{icon}</span>
         </div>
         {trend && (
           <span
-            className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${
+            className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${
               trendUp
-                ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                ? "bg-neon-green/10 text-neon-green border-neon-green/20"
+                : "bg-red-500/10 text-red-400 border-red-500/20"
             }`}
           >
-            {trendUp ? "↑" : "↓"} {trend}
+            {trendUp ? "▲" : "▼"} {trend}
           </span>
         )}
       </div>
-      <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-[0.2em] mb-2">{label}</p>
-      <p className={`text-3xl font-black tracking-tight ${accentColors[glowColor]}`}>{value}</p>
-    </motion.div>
+      <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-[0.3em] mb-3 opacity-50">{label}</p>
+      <p className={`text-4xl font-black tracking-tighter uppercase ${accentColors[glowColor]}`}>{value}</p>
+    </div>
   );
 }
+
