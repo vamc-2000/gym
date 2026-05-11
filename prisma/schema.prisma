@@ -58,6 +58,7 @@ model User {
   receivedRequests Friendship[]    @relation("ReceivedRequests")
   sentMessages     ChatMessage[]   @relation("SentMessages")
   receivedMessages ChatMessage[]   @relation("ReceivedMessages")
+  stories          Story[]
 
   // Email & Security
   resetTokens PasswordResetToken[]
@@ -595,6 +596,19 @@ enum MediaType {
 enum FriendshipStatus {
   PENDING
   ACCEPTED
+}
+
+model Story {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  mediaUrl  String
+  mediaType String   @default("image") // image, video
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {

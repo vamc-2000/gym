@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { tokenManager } from "@/lib/auth";
 import { getDashboardState } from "@/lib/dashboardHelper";
@@ -8,38 +9,64 @@ import { DashboardState } from "@/types/dashboard";
 import { triggerToast } from "@/components/NotificationManager";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { apiClient } from "@/lib/api";
+import StatsGrid from "@/components/dashboard/StatsGrid";
+import HydrationTracker from "@/components/dashboard/HydrationTracker";
+import { IMAGE_URLS } from "@/config/images";
+import Image from "next/image";
 
 import dynamic from "next/dynamic";
+import { usePerformanceSettings } from "@/hooks/usePerformanceSettings";
 
-const ActivityMetrics = memo(({ activity }: { activity: any[] }) => (
-  <div className="lg:col-span-2 glass-panel p-8 rounded-3xl border border-dash-border-subtle">
-    <div className="flex justify-between items-start mb-10">
-      <div>
-        <h3 className="text-lg font-black text-white uppercase tracking-tight">Activity Metrics</h3>
-        <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-widest opacity-50">Weekly calorie burn progress</p>
+const ActivityMetrics = memo(({ activity }: { activity: any[] }) => {
+  const chartData = useMemo(() => {
+    if (activity && activity.length > 0) return activity;
+    return [
+      { day: "Mon", calories: 0 },
+      { day: "Tue", calories: 0 },
+      { day: "Wed", calories: 0 },
+      { day: "Thu", calories: 0 },
+      { day: "Fri", calories: 0 },
+      { day: "Sat", calories: 0 },
+      { day: "Sun", calories: 0 },
+    ];
+  }, [activity]);
+
+  return (
+    <div className="lg:col-span-2 glass-panel p-8 rounded-3xl border border-dash-border-subtle">
+      <div className="flex justify-between items-start mb-10">
+        <div>
+          <h3 className="text-lg font-black text-white uppercase tracking-tight">Activity Metrics</h3>
+          <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-widest opacity-50">Weekly calorie burn progress</p>
+        </div>
+      </div>
+      <div className="flex items-end justify-between gap-4 h-[220px]">
+        {chartData.map((data, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-4">
+            <div className="w-full bg-white/5 rounded-t-xl relative group overflow-hidden" style={{ height: `${Math.max(10, (Number(data.calories || 0) / 600) * 100)}%` }}>
+              <div className="absolute inset-0 bg-neon-blue/20 group-hover:bg-neon-blue/40 transition-all" />
+            </div>
+            <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-tighter opacity-40">{data.day}</span>
+          </div>
+        ))}
       </div>
     </div>
-    <div className="flex items-end justify-between gap-4 h-[220px]">
-      {activity.map((data, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-4">
-          <div className="w-full bg-white/5 rounded-t-xl relative group overflow-hidden" style={{ height: `${Math.max(10, (data.calories / 600) * 100)}%` }}>
-            <div className="absolute inset-0 bg-neon-blue/20 group-hover:bg-neon-blue/40 transition-all" />
-          </div>
-          <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-tighter opacity-40">{data.day}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-));
+  );
+});
 
 ActivityMetrics.displayName = "ActivityMetrics";
 
 export default function UserDashboard() {
   const router = useRouter();
+  const { shouldAnimate } = usePerformanceSettings();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<DashboardState | null>(null);
   const [userName, setUserName] = useState("Athlete");
   const [userLevel, setUserLevel] = useState("Beginner");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const syncState = useCallback(async () => {
     const user = tokenManager.getUser();
@@ -121,7 +148,7 @@ export default function UserDashboard() {
     }
   }, [state]);
 
-  if (loading || !state) return (
+  if (!mounted || loading || !state) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-10 h-10 border-2 border-neon-blue/20 border-t-neon-blue rounded-full animate-spin" />
       <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Initializing System</div>
@@ -161,6 +188,20 @@ export default function UserDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div className="relative h-48 md:h-64 w-full rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl">
+        <Image 
+          src={IMAGE_URLS.placeholders.dashboard}
+          alt="Performance Dashboard"
+          fill
+          className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000"
+          unoptimized={true}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-dash-bg via-dash-bg/20 to-transparent" />
+        <div className="absolute bottom-8 left-8">
+           <span className="px-3 py-1 bg-neon-blue text-dash-bg text-[10px] font-black uppercase tracking-[0.2em] rounded-md">System Active</span>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-8">
         <div>
@@ -240,10 +281,13 @@ export default function UserDashboard() {
         <div className="glass-panel p-8 rounded-3xl border border-dash-border-subtle">
           <h4 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8 opacity-50">Recent History</h4>
           <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-2 no-scrollbar">
-            {state.activities.slice(0, 5).map((a, i) => (
+            {state.activities.slice(0, 8).map((a, i) => (
               <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
-                <span className="text-[10px] font-black uppercase tracking-tight text-white group-hover:text-neon-blue transition-colors">{a.workoutTitle}</span>
-                <span className="text-[9px] font-black text-neon-green">+{a.caloriesBurned} kcal</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-tight text-white group-hover:text-neon-blue transition-colors">{a.workoutTitle || "Training Session"}</span>
+                  <span className="text-[7px] text-dash-text-dim uppercase font-bold tracking-widest opacity-40">{a.time || "Recent"}</span>
+                </div>
+                <span className="text-[9px] font-black text-neon-green">+{a.caloriesBurned || 0} kcal</span>
               </div>
             ))}
           </div>

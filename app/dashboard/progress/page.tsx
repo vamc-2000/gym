@@ -1,3 +1,19 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { dashboardService } from "@/lib/services/dashboardService";
+import { InputField } from "@/components/ui/InputField";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+
+interface ProgressEntry {
+  date: string;
+  weight: number;
+  note?: string;
+}
+
 const WeightChart = dynamic(() => import("recharts").then((mod) => {
   const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = mod;
   return function Chart({ data }: { data: any[] }) {

@@ -100,6 +100,51 @@ export class CommunityService {
       return { success: false, error: error.message };
     }
   }
+
+  async searchHashtags(tag: string): Promise<ApiResponse<Post[]>> {
+    return await apiClient<Post[]>(`/community/hashtags/search?tag=${encodeURIComponent(tag)}`);
+  }
+
+  async getTrendingHashtags(): Promise<ApiResponse<any[]>> {
+    return await apiClient<any[]>("/community/hashtags/trending");
+  }
+
+  // --- Stories ---
+
+  async getStories(): Promise<ApiResponse<any[]>> {
+    return await apiClient<any[]>("/community/stories");
+  }
+
+  async createStory(data: { mediaUrl: string, mediaType: string }): Promise<ApiResponse<any>> {
+    return await apiClient<any>("/community/stories", {
+      method: "POST",
+      body: data
+    });
+  }
+
+  // --- Friends ---
+
+  async sendFriendRequest(friendId: string): Promise<ApiResponse<any>> {
+    return await apiClient<any>("/community/friends/request", {
+      method: "POST",
+      body: { friendId }
+    });
+  }
+
+  async getPendingRequests(): Promise<ApiResponse<any[]>> {
+    return await apiClient<any[]>("/community/friends/pending");
+  }
+
+  async respondToFriendRequest(requestId: string, status: "ACCEPTED" | "REJECTED"): Promise<ApiResponse<any>> {
+    return await apiClient<any>("/community/friends/respond", {
+      method: "POST",
+      body: { requestId, status }
+    });
+  }
+
+  async getSuggestions(): Promise<ApiResponse<any[]>> {
+    return await apiClient<any[]>("/community/friends/suggestions");
+  }
 }
 
 export const communityService = new CommunityService();

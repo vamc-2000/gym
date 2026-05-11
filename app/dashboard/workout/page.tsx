@@ -9,6 +9,7 @@ import { triggerToast } from "@/components/NotificationManager";
 import { useWorkout } from "@/hooks/useWorkout";
 import { tokenManager } from "@/lib/auth";
 import { UserPlan, WorkoutDay } from "@/types/dashboard";
+import { IMAGE_URLS } from "@/config/images";
 
 const getCompletedDays = (completedWorkouts: any[]) => {
   return completedWorkouts?.map((w: any) => w.day) || [];
@@ -18,25 +19,21 @@ const ExerciseCard = memo(({ ex, lang, speakingId, onSpeak, onStop }: {
   ex: any; 
   lang: string; 
   speakingId: string | null; 
-  onSpeak: (id: string, inst: string[]) => void;
+  onSpeak: (id: string, inst: string[], tLang: "en" | "te") => void;
   onStop: () => void;
 }) => {
   const instructions = lang === "te" && ex.instructionsTe ? ex.instructionsTe : ex.instructions;
   return (
     <div className="bg-white/2 p-10 rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-all">
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col gap-12">
         <div className="flex-1">
           <div className="flex items-start justify-between mb-10">
             <div>
-              <h4 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 group-hover:text-neon-blue transition-colors">{ex.name}</h4>
+              <h4 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 group-hover:text-neon-blue transition-colors">
+                {lang === "te" && ex.nameTe ? ex.nameTe : ex.name}
+              </h4>
               <span className="text-[9px] font-black bg-white/5 px-3 py-1.5 rounded-lg text-dash-text-dim uppercase tracking-[0.2em]">{ex.equipment}</span>
             </div>
-            <button
-              onClick={() => speakingId === ex.id ? onStop() : onSpeak(ex.id, instructions)}
-              className={`w-12 h-12 rounded-full border transition-all flex items-center justify-center ${speakingId === ex.id ? "bg-red-500/10 border-red-500/20 text-red-400 animate-pulse" : "bg-neon-blue/5 border-neon-blue/10 text-neon-blue"}`}
-            >
-              {speakingId === ex.id ? "■" : "▶"}
-            </button>
           </div>
 
           <div className="grid grid-cols-3 gap-6 mb-10">
@@ -54,40 +51,50 @@ const ExerciseCard = memo(({ ex, lang, speakingId, onSpeak, onStop }: {
             </div>
           </div>
 
-          <div className="space-y-4 bg-black/20 p-8 rounded-[2rem] border border-white/5">
-            <p className="text-[10px] font-black text-dash-text-dim uppercase tracking-[0.3em] opacity-50">Execution Steps:</p>
+          <div className="space-y-6 bg-black/20 p-8 rounded-[2rem] border border-white/5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+              <p className="text-[10px] font-black text-dash-text-dim uppercase tracking-[0.3em] opacity-50">Execution Steps:</p>
+              
+              <div className="flex items-center gap-2">
+                <div className="flex bg-white/5 border border-white/5 rounded-lg p-0.5 mr-2">
+                  <button 
+                    onClick={() => onSpeak(ex.id, ex.instructions, "en")} 
+                    className={`px-3 py-1 text-[8px] font-black rounded-md transition-all cursor-pointer ${lang === "en" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim opacity-50 hover:opacity-100"}`}
+                  >
+                    EN
+                  </button>
+                  <button 
+                    onClick={() => onSpeak(ex.id, ex.instructionsTe || ex.instructions, "te")} 
+                    className={`px-3 py-1 text-[8px] font-black rounded-md transition-all cursor-pointer ${lang === "te" ? "bg-neon-blue text-dash-bg" : "text-dash-text-dim opacity-50 hover:opacity-100"}`}
+                  >
+                    TE
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => speakingId === ex.id ? onStop() : onSpeak(ex.id, instructions, lang as "en" | "te")}
+                  className={`w-10 h-10 rounded-full border transition-all flex items-center justify-center cursor-pointer ${speakingId === ex.id ? "bg-red-500/10 border-red-500/20 text-red-400 animate-pulse" : "bg-neon-blue/5 border-neon-blue/10 text-neon-blue hover:bg-neon-blue/10"}`}
+                >
+                  {speakingId === ex.id ? "■" : "▶"}
+                </button>
+              </div>
+            </div>
+
             <ul className="space-y-4">
-              {instructions.map((step: string, j: number) => (
-                <li key={j} className="text-sm text-dash-text-dim flex gap-5">
-                  <span className="text-neon-blue font-black text-xs opacity-50">0{j+1}</span>
-                  <span className={`leading-relaxed ${lang === "te" ? "font-medium" : ""}`}>{step}</span>
-                </li>
-              ))}
+              {instructions && instructions.length > 0 ? (
+                instructions.map((step: string, j: number) => (
+                  <li key={j} className="text-sm text-dash-text-dim flex gap-5">
+                    <span className="text-neon-blue font-black text-xs opacity-50">0{j+1}</span>
+                    <span className={`leading-relaxed ${lang === "te" ? "font-medium" : ""}`}>{step}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="text-xs text-dash-text-dim opacity-40 italic">Calibration data missing for this sequence.</li>
+              )}
             </ul>
           </div>
         </div>
 
-        {ex.image && (
-          <div className="lg:w-[400px] h-full flex flex-col justify-center">
-            <div className="relative aspect-square rounded-[3rem] overflow-hidden border border-white/10 bg-dash-bg shadow-2xl">
-              <Image 
-                src={ex.image}
-                alt={ex.name}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-700"
-                sizes="400px"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  const fallback = `/workouts/${ex.name.toLowerCase().replace(/\s+/g, '_')}.png`;
-                  if (target.src !== fallback) {
-                    target.src = fallback;
-                  }
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-dash-bg via-transparent to-transparent opacity-60" />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -137,6 +144,21 @@ export default function WorkoutPage() {
   const [lang, setLang] = useState<"en" | "te">("en");
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      if (availableVoices.length > 0) {
+        setVoices(availableVoices);
+      }
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
 
   const {
     seconds,
@@ -198,19 +220,45 @@ export default function WorkoutPage() {
     return [h, m, s].map(v => v < 10 ? "0" + v : v).join(":");
   };
 
-  const speakInstructions = useCallback((exerciseId: string, instructions: string[]) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const text = instructions.join(". ");
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === "en" ? "en-US" : "te-IN";
-      utterance.rate = 0.9;
-      utterance.onstart = () => setSpeakingId(exerciseId);
-      utterance.onend = () => setSpeakingId(null);
-      utterance.onerror = () => setSpeakingId(null);
-      window.speechSynthesis.speak(utterance);
+  const speakInstructions = useCallback((exerciseId: string, instructions: string[], targetLang: "en" | "te") => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        
+        const text = (instructions || []).join(". ").trim();
+        if (!text) return;
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const targetVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+        
+        if (targetLang === "te") {
+          const teVoice = targetVoices.find(v => v.lang.includes("te") || v.lang.includes("telugu"));
+          if (teVoice) utterance.voice = teVoice;
+          utterance.lang = "te-IN";
+        } else {
+          const enVoice = targetVoices.find(v => v.lang.includes("en-US") || v.lang.includes("en-GB"));
+          if (enVoice) utterance.voice = enVoice;
+          utterance.lang = "en-US";
+        }
+
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.onstart = () => setSpeakingId(exerciseId);
+        utterance.onend = () => setSpeakingId(null);
+        utterance.onerror = (e) => {
+          if (e.error !== 'interrupted') {
+             console.error("Speech engine error:", e);
+          }
+          setSpeakingId(null);
+        };
+        
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error("Failed to initialize speech:", err);
+        setSpeakingId(null);
+      }
     }
-  }, [lang]);
+  }, [voices]);
 
   const stopSpeaking = useCallback(() => {
     window.speechSynthesis.cancel();
@@ -390,10 +438,10 @@ export default function WorkoutPage() {
                             </button>
                             <button
                               onClick={handleCompleteWorkout}
-                              disabled={loading || seconds < 10}
-                              className="flex-1 py-4 bg-neon-green text-dash-bg rounded-xl font-black text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-neon-green/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 cursor-pointer"
+                              disabled={loading || seconds < 1}
+                              className="flex-1 py-4 bg-neon-green text-dash-bg rounded-xl font-black text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-neon-green/20 hover:shadow-neon-green/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 cursor-pointer"
                             >
-                              {loading ? "PROCESSING..." : "Finalize Protocol"}
+                              {loading ? "SAVING SEQUENCE..." : "Complete Workout"}
                             </button>
                           </>
                         )
@@ -422,8 +470,9 @@ export default function WorkoutPage() {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex-1 py-4 bg-neon-green/5 border border-neon-green/10 rounded-xl text-center flex items-center justify-center">
-                           <span className="text-[10px] font-black text-neon-green uppercase tracking-[0.3em]">Completed Protocol</span>
+                        <div className="flex-1 py-4 bg-neon-green/10 border border-neon-green/20 rounded-xl text-center flex flex-col items-center justify-center">
+                           <span className="text-[10px] font-black text-neon-green uppercase tracking-[0.3em] mb-1">Workout Complete</span>
+                           <span className="text-[8px] font-black text-neon-green/60 uppercase tracking-widest">Protocol Finalized</span>
                         </div>
                       )}
                     </div>
@@ -441,24 +490,6 @@ export default function WorkoutPage() {
         </AnimatePresence>
       </div>
 
-      {isActive && getDayStatus(selectedDay) === "active" && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-sm p-6 bg-dash-bg/95 backdrop-blur-2xl border border-neon-green/20 rounded-[2.5rem] z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center justify-between mb-6 px-2">
-            <div className="text-left">
-              <span className="text-[9px] font-black text-dash-text-dim uppercase tracking-[0.2em] opacity-50">Operational Time</span>
-              <p className="text-2xl font-mono font-black text-white tracking-tighter">{formatTime(seconds)}</p>
-            </div>
-            <button onClick={isPaused ? resumeTimer : pauseTimer} className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-lg cursor-pointer">{isPaused ? "▶" : "||"}</button>
-          </div>
-          <button
-            onClick={handleCompleteWorkout}
-            disabled={loading || seconds < 10}
-            className="w-full py-4 rounded-2xl bg-neon-green text-dash-bg font-black text-xs uppercase tracking-[0.3em] shadow-lg shadow-neon-green/20 active:scale-95 transition-all disabled:opacity-30 cursor-pointer"
-          >
-            {loading ? "PROCESSING..." : "Finalize Protocol"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

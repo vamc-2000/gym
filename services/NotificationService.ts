@@ -143,6 +143,21 @@ export class NotificationService {
       metadata: { relatedId, senderName }
     });
   }
+
+  async sendAdminNotificationToAll(params: { title: string; message: string; priority?: NotificationPriority }) {
+    const users = await prisma.user.findMany({ select: { id: true } });
+    const notifications = await Promise.all(users.map(user => 
+      this.sendNotification({
+        userId: user.id,
+        title: params.title,
+        message: params.message,
+        type: "ADMIN_ALERT",
+        category: NotificationCategory.ADMIN,
+        priority: params.priority || NotificationPriority.MEDIUM
+      })
+    ));
+    return notifications;
+  }
 }
 
 export const notificationService = new NotificationService();

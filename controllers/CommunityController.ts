@@ -109,6 +109,62 @@ export class CommunityController {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }
+
+  async searchHashtags(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const tag = searchParams.get("tag");
+    if (!tag) return NextResponse.json({ error: "Tag is required" }, { status: 400 });
+
+    try {
+      const posts = await communityRepository.searchByHashtag(tag, decoded.userId);
+      return NextResponse.json({ success: true, data: posts });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  async getTrending(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const trending = await communityRepository.getTrendingHashtags();
+      return NextResponse.json({ success: true, data: trending });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  // --- Story Handlers ---
+
+  async getStories(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const friendIds = await friendshipRepository.getFriendIds(decoded.userId);
+      const stories = await communityRepository.getStories(decoded.userId, friendIds);
+      return NextResponse.json({ success: true, data: stories });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  async createStory(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      const { mediaUrl, mediaType } = await req.json();
+      const story = await communityRepository.createStory(decoded.userId, mediaUrl, mediaType);
+      return NextResponse.json({ success: true, data: story });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
 }
 
 export const communityController = new CommunityController();

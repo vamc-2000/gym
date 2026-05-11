@@ -11,6 +11,8 @@ export type Exercise = {
   notes?: string;
   imageUrl?: string;
   instructions?: string[];
+  nameTe?: string;
+  instructionsTe?: string[];
   caloriesBurn: number;
 };
 

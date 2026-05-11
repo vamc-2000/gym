@@ -1,3 +1,31 @@
+"use client";
+
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { dashboardService } from "@/lib/services/dashboardService";
+import { triggerToast } from "@/components/NotificationManager";
+
+interface MealItem {
+  name: string;
+  quantity: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+}
+
+interface Meal {
+  name: string;
+  items: MealItem[];
+  totalMacros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+  };
+}
+
 const MealCard = memo(({ meal, isMealCompleted, onToggle }: { 
   meal: Meal; 
   isMealCompleted: boolean; 

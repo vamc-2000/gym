@@ -11,7 +11,7 @@ interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   showStepper?: boolean;
 }
 
-const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
+export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
   ({ label, error, icon, variant = "light", showStepper = false, className = "", ...props }, ref) => {
     const [focused, setFocused] = useState(false);
     const hasValue = props.value !== undefined && props.value !== null && String(props.value).length > 0;
@@ -60,6 +60,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             ref={ref}
             {...props}
             type={inputType}
+            suppressHydrationWarning
             onFocus={(e) => {
               setFocused(true);
               props.onFocus?.(e);

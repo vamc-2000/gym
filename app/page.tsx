@@ -98,9 +98,17 @@ export default function Home() {
                    pb-20 sm:pb-24
                    px-4 sm:px-6"
       >
-        {/* Background grid */}
+        {/* Background grid & Hero Image */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,245,255,0.05),transparent_60%)]" />
+          <Image 
+            src={IMAGE_URLS.placeholders.hero}
+            alt="Hero Background"
+            fill
+            className="object-cover opacity-20"
+            unoptimized={true}
+            priority
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,245,255,0.1),transparent_70%)]" />
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{

@@ -1,3 +1,26 @@
+"use client";
+
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
+import { motion } from "motion/react";
+import { dashboardService } from "@/lib/services/dashboardService";
+
+interface Notification {
+  _id?: string;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  createdAt: string;
+}
+
+interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  readBy: string[];
+  createdAt: string;
+}
+
 const NotificationItem = memo(({ notif, onMarkRead, typeColors, typeIcons }: { 
   notif: Notification; 
   onMarkRead: (id: string | undefined) => void;

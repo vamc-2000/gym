@@ -133,6 +133,85 @@ export class CommunityRepository {
       return comment;
     });
   }
+
+  async searchByHashtag(tag: string, userId: string) {
+    return await prisma.communityPost.findMany({
+      where: {
+        content: { contains: tag },
+        OR: [
+          { privacy: "public" },
+          { userId }
+        ]
+      },
+      include: {
+        user: { select: { id: true, name: true } },
+        _count: { select: { likes: true, comments: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async getTrendingHashtags() {
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    const posts = await prisma.communityPost.findMany({
+      where: { createdAt: { gte: lastWeek } },
+      select: { content: true }
+    });
+
+    const tags: Record<string, number> = {};
+    posts.forEach(post => {
+      const found = post.content.match(/#[a-zA-Z0-9]+/g);
+      if (found) {
+        found.forEach(tag => {
+          const t = tag.toLowerCase();
+          tags[t] = (tags[t] || 0) + 1;
+        });
+      }
+    });
+
+    return Object.entries(tags)
+      .map(([tag, count]) => ({ tag: tag.replace("#", ""), posts: count }))
+      .sort((a, b) => b.posts - a.posts)
+      .slice(0, 10);
+  }
+
+  // --- Story Methods ---
+
+  async createStory(userId: string, mediaUrl: string, mediaType: string = "image") {
+    return await prisma.story.create({
+      data: {
+        userId,
+        mediaUrl,
+        mediaType,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      },
+      include: {
+        user: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+  }
+
+  async getStories(userId: string, friendIds: string[]) {
+    return await prisma.story.findMany({
+      where: {
+        OR: [
+          { userId },
+          { userId: { in: friendIds } }
+        ],
+        expiresAt: { gte: new Date() }
+      },
+      include: {
+        user: {
+          select: { id: true, name: true }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
 }
 
 export const communityRepository = new CommunityRepository();

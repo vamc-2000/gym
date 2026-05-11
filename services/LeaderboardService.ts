@@ -6,11 +6,8 @@ export class LeaderboardService {
     // Upsert will add points because we defined increment in repository
     const updated = await leaderboardRepository.upsert(userId, { score: points, category });
     
-    // In a real app, you might trigger `updateRanks` asynchronously here 
-    // or run it in a nightly cron job to avoid heavy DB load.
-    // For immediate feedback during a workout:
-    await leaderboardRepository.updateRanks();
-
+    // Recalculating all ranks on every point change is too expensive O(N^2).
+    // Ranks will be calculated on-the-fly or via periodic background tasks.
     return updated;
   }
 
@@ -22,9 +19,7 @@ export class LeaderboardService {
       caloriesBurned 
     });
     
-    // Update daily ranks
-    await leaderboardRepository.updateDailyRanks();
-
+    // Daily ranks will also be calculated on-the-fly.
     return updated;
   }
 

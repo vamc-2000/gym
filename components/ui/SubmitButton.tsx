@@ -9,7 +9,7 @@ interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export default function SubmitButton({
+export function SubmitButton({
   children,
   loading = false,
   variant = "primary",
@@ -31,6 +31,7 @@ export default function SubmitButton({
   return (
     <button
       disabled={loading || props.disabled}
+      suppressHydrationWarning
       className={`${fullWidth ? "w-full" : ""} py-3.5 px-6 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variants[variant]} ${!loading ? "hover:scale-[1.02] active:scale-[0.98]" : ""} ${className}`}
       {...props}
     >
@@ -59,3 +60,4 @@ export default function SubmitButton({
     </button>
   );
 }
+export default SubmitButton;

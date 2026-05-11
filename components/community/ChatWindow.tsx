@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { chatService } from "@/services/chatService";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "motion/react";
@@ -241,22 +241,6 @@ export default function ChatWindow({ friend, currentUserId }: { friend: any, cur
           </button>
         </form>
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
-        }
-      `}</style>
-    </div>
-  );
-}
 
 
       <style jsx>{`

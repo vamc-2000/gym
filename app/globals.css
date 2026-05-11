@@ -83,6 +83,39 @@
   --color-glass-border: rgba(255, 215, 0, 0.2);
 }
 
+@keyframes aura-pulse {
+  0% { box-shadow: 0 0 5px rgba(0, 245, 255, 0.2), inset 0 0 5px rgba(0, 245, 255, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(0, 245, 255, 0.5), inset 0 0 15px rgba(0, 245, 255, 0.3); }
+  100% { box-shadow: 0 0 5px rgba(0, 245, 255, 0.2), inset 0 0 5px rgba(0, 245, 255, 0.1); }
+}
+
+@keyframes gold-shimmer {
+  0% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
+  100% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+}
+
+@keyframes float-particle {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  25% { opacity: 0.5; }
+  50% { transform: translateY(-100px) translateX(20px); opacity: 0.8; }
+  75% { opacity: 0.5; }
+  100% { transform: translateY(-200px) translateX(-20px); opacity: 0; }
+}
+
+.aura-cyan { animation: aura-pulse 3s infinite ease-in-out; }
+.shimmer-gold { animation: gold-shimmer 4s infinite ease-in-out; }
+
+.glass-panel {
+  background: rgba(13, 13, 20, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.neo-border {
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.05);
+}
 
 /* =========================================================
    Base resets
@@ -150,8 +183,21 @@ textarea::placeholder {
   }
 }
 
+.animated-gradient {
+  background-size: 400% 400%;
+  animation: gradient-bg 15s ease infinite;
+}
+
+@keyframes gradient-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .animate-blob {
-  animation: blob 8s ease-in-out infinite;
+  animation: blob 12s ease-in-out infinite;
+  opacity: 0.15; /* Reduced opacity for performance */
+  filter: blur(40px); /* Reduced blur radius */
 }
 
 .animation-delay-2000 {
@@ -305,10 +351,10 @@ textarea::placeholder {
 }
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px); /* Reduced from 20px for performance */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease-out;
 }
 
 .premium-card {

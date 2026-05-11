@@ -138,6 +138,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => router.push("/verify-otp")}
+              suppressHydrationWarning
               className="w-full py-4 rounded-xl border border-white/10 text-white/40 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
             >
               One-Time Password
