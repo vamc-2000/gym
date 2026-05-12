@@ -94,15 +94,16 @@ export class SuperAdminController {
     }
   }
 
-  async deleteAdmin(req: NextRequest, { params }: { params: { id: string } }) {
+  async deleteAdmin(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await this.checkSuperAdmin(req);
     if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     try {
-      const targetAdmin = await prisma.user.findUnique({ where: { id: params.id } });
+      const { id } = await params;
+      const targetAdmin = await prisma.user.findUnique({ where: { id } });
       if (!targetAdmin) throw new Error("Admin not found");
 
-      await prisma.user.delete({ where: { id: params.id } });
+      await prisma.user.delete({ where: { id } });
 
       await prisma.adminLog.create({
         data: {
@@ -120,14 +121,15 @@ export class SuperAdminController {
     }
   }
 
-  async updateAdmin(req: NextRequest, { params }: { params: { id: string } }) {
+  async updateAdmin(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await this.checkSuperAdmin(req);
     if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     try {
+      const { id } = await params;
       const { name, email } = await req.json();
       const updated = await prisma.user.update({
-        where: { id: params.id },
+        where: { id },
         data: { name, email }
       });
 
@@ -192,6 +194,48 @@ export class SuperAdminController {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred";
       return NextResponse.json({ success: false, error: message }, { status: 400 });
+    }
+  }
+
+  async getGlobalTrainers(req: NextRequest) {
+    const admin = await this.checkSuperAdmin(req);
+    if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    try {
+      const trainers = await prisma.user.findMany({
+        where: { role: "TRAINER" },
+        include: {
+          trainerProfile: true,
+          _count: { select: { assignedUsers: true } }
+        }
+      });
+      return NextResponse.json({ success: true, data: trainers });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  async getGlobalCoachingStats(req: NextRequest) {
+    const admin = await this.checkSuperAdmin(req);
+    if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    try {
+      const [totalChallenges, totalNudges, avgConsistency] = await Promise.all([
+        prisma.challenge.count(),
+        prisma.notification.count({ where: { category: "COACHING" } }),
+        prisma.userEngagement.aggregate({ _avg: { consistencyScore: true } })
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          totalChallenges,
+          totalNudges,
+          avgConsistency: Math.round(avgConsistency._avg.consistencyScore || 0)
+        }
+      });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }
 

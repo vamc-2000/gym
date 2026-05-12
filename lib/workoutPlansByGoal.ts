@@ -12,6 +12,7 @@ export type Exercise = {
   equipment: string;
   instructions: string[];
   instructionsTe?: string[];
+  image?: string;
 };
 
 export type WorkoutDay = {
@@ -32,6 +33,8 @@ const getLevelMultiplier = (level: string) => {
   }
 };
 
+import { IMAGE_URLS } from "@/config/images";
+
 // Comprehensive exercise database with 6-step instructions in EN and TE
 const EXERCISE_DB: Record<string, {
   bodyPart: string;
@@ -39,6 +42,7 @@ const EXERCISE_DB: Record<string, {
   instructions: string[];
   instructionsTe: string[];
   baseCalories: number;
+  image?: string;
 }> = {
   "Burpees": {
     bodyPart: "Full Body",
@@ -59,7 +63,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: పాదాలను తిరిగి స్క్వాట్ స్థితిలోకి తీసుకురండి.",
       "దశ 6: ఆకాశం వైపు చూస్తూ వేగంగా పైకి దూకండి."
     ],
-    baseCalories: 12
+    baseCalories: 12,
+    image: IMAGE_URLS.workouts.pushup
   },
   "Squats": {
     bodyPart: "Legs",
@@ -80,7 +85,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: తొడలు నేలకు సమాంతరంగా ఉండే వరకు క్రిందికి వెళ్ళండి.",
       "దశ 6: ప్రారంభ స్థానానికి తిరిగి రావడానికి మడమల ద్వారా పైకి నెట్టండి."
     ],
-    baseCalories: 8
+    baseCalories: 8,
+    image: IMAGE_URLS.workouts.squat
   },
   "Pushups": {
     bodyPart: "Chest",
@@ -101,7 +107,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: పైకి రావడానికి మీ అరచేతుల ద్వారా నెట్టండి.",
       "దశ 6: మోచేతులను లాక్ చేయకుండా చేతులను పూర్తిగా చాచండి."
     ],
-    baseCalories: 7
+    baseCalories: 7,
+    image: IMAGE_URLS.workouts.pushup
   },
   "Plank": {
     bodyPart: "Core",
@@ -122,7 +129,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: మెడను తటస్థంగా ఉంచడానికి క్రింద నేల వైపు చూడండి.",
       "దశ 6: స్థిరంగా శ్వాస తీసుకుంటూ అదే స్థితిలో ఉండండి."
     ],
-    baseCalories: 5
+    baseCalories: 5,
+    image: IMAGE_URLS.workouts.plank
   },
   "Bench Press": {
     bodyPart: "Chest",
@@ -143,7 +151,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: బరువును విశ్రాంతి తీసుకోకుండా కొద్దిసేపు ఆపండి.",
       "దశ 6: బార్‌ను తిరిగి ప్రారంభ స్థితికి నెట్టండి."
     ],
-    baseCalories: 10
+    baseCalories: 10,
+    image: IMAGE_URLS.workouts.benchpress
   },
   "Deadlift": {
     bodyPart: "Back",
@@ -164,7 +173,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: నిటారుగా నిలబడే వరకు బార్‌ను శరీరానికి దగ్గరగా లాగండి.",
       "దశ 6: నియంత్రణలో బార్‌ను తిరిగి నేలపై దించండి."
     ],
-    baseCalories: 15
+    baseCalories: 15,
+    image: IMAGE_URLS.workouts.deadlift
   },
   "Mountain Climbers": {
     bodyPart: "Core",
@@ -185,7 +195,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: పృష్ఠభాగాలను తక్కువగా ఉంచండి మరియు ఎగరడం మానుకోండి.",
       "దశ 6: వేగంగా కాళ్ళను మారుస్తూ కొనసాగించండి."
     ],
-    baseCalories: 9
+    baseCalories: 9,
+    image: IMAGE_URLS.workouts.plank
   },
   "Jumping Jacks": {
     bodyPart: "Full Body",
@@ -206,7 +217,8 @@ const EXERCISE_DB: Record<string, {
       "దశ 5: మీ చేతులను తిరిగి మీ పక్కలకు దించండి.",
       "దశ 6: అంతటా స్థిరమైన లయను కొనసాగించండి."
     ],
-    baseCalories: 6
+    baseCalories: 6,
+    image: IMAGE_URLS.workouts.squat
   }
 };
 
@@ -237,7 +249,8 @@ const createExercise = (
     difficulty: difficulty,
     equipment: dbData.equipment,
     instructions: dbData.instructions,
-    instructionsTe: dbData.instructionsTe
+    instructionsTe: dbData.instructionsTe,
+    image: dbData.image
   };
 };
 

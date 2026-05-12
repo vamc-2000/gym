@@ -80,14 +80,21 @@ export class WorkoutService {
     const todayStr = this.getDateString(now);
     const isCompletedToday = userPlan.completedDate === todayStr;
 
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const countdownSeconds = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
+    // Precise IST-to-UTC countdown calculation
+    const [year, month, day] = todayStr.split('-').map(Number);
+    // Start of Tomorrow IST = 00:00:00 IST of next day
+    const startOfTomorrowIST = new Date(Date.UTC(year, month - 1, day + 1, 0, 0, 0));
+    startOfTomorrowIST.setMinutes(startOfTomorrowIST.getMinutes() - 330); // Convert IST to UTC
+    
+    const countdownSeconds = Math.max(0, Math.floor((startOfTomorrowIST.getTime() - now.getTime()) / 1000));
+    const nextUnlockAt = startOfTomorrowIST.toISOString();
 
     // Unlimited cycling logic
     const workoutPlanTemplates = (userPlan.workoutPlan as any[]) || [];
-    const actualWorkoutDay = userPlan.currentDay;
+    
+    // If completed today, we stay on the completed day for display/repeat. 
+    // Otherwise, we show the currentDay which is the next pending session.
+    const actualWorkoutDay = isCompletedToday ? Math.max(1, userPlan.currentDay - 1) : userPlan.currentDay;
     const templateIndex = (actualWorkoutDay - 1) % workoutPlanTemplates.length;
     const planCycleDay = templateIndex + 1;
     
@@ -107,12 +114,13 @@ export class WorkoutService {
 
     return {
       ...userPlan,
+      currentDay: actualWorkoutDay, // Return the effective day for the UI
       currentWorkout,
       planCycleDay,
       completedDays,
       isLockedUntilTomorrow: isCompletedToday,
       countdownSeconds,
-      nextUnlockAt: tomorrow.toISOString()
+      nextUnlockAt: nextUnlockAt
     };
   }
 
@@ -217,13 +225,21 @@ export class WorkoutService {
     console.log(`History saved: ${history.id}`);
 
     // 4. Update UserPlan
+    const completedDaysArr = Array.isArray(userPlan.completedDays) 
+      ? [...userPlan.completedDays] 
+      : [];
+    
+    if (!completedDaysArr.includes(currentDay)) {
+      completedDaysArr.push(currentDay);
+    }
+
     await prisma.userPlan.update({
       where: { id: userPlan.id },
       data: {
         completedDate: todayStr,
         lastCompletedAt: new Date(),
         currentDay: currentDay + 1,
-        completedDays: { push: currentDay }
+        completedDays: completedDaysArr
       }
     });
 

@@ -11,17 +11,17 @@
   /* Default Dark Theme */
   --color-neon-blue: #00f5ff;
   --color-neon-yellow: #facc15;
-  --color-dash-bg: #0a0a0f;
-  --color-dash-card: #111118;
-  --color-dash-border: rgba(255, 255, 255, 0.06);
+  --color-dash-bg: #050508;
+  --color-dash-card: #0d0d14;
+  --color-dash-border: rgba(255, 255, 255, 0.08);
   --color-primary: #00f5ff;
   --color-primary-hover: #00d4dd;
   --color-text: #ffffff;
-  --color-text-muted: rgba(255, 255, 255, 0.6);
-  --color-text-dim: rgba(255, 255, 255, 0.4);
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-glass-bg: rgba(255, 255, 255, 0.03);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-text-muted: rgba(255, 255, 255, 0.75);
+  --color-text-dim: rgba(255, 255, 255, 0.55);
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+  --color-glass-bg: rgba(255, 255, 255, 0.04);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme='light'] {
@@ -83,6 +83,39 @@
   --color-glass-border: rgba(255, 215, 0, 0.2);
 }
 
+@keyframes aura-pulse {
+  0% { box-shadow: 0 0 5px rgba(0, 245, 255, 0.2), inset 0 0 5px rgba(0, 245, 255, 0.1); }
+  50% { box-shadow: 0 0 25px rgba(0, 245, 255, 0.5), inset 0 0 15px rgba(0, 245, 255, 0.3); }
+  100% { box-shadow: 0 0 5px rgba(0, 245, 255, 0.2), inset 0 0 5px rgba(0, 245, 255, 0.1); }
+}
+
+@keyframes gold-shimmer {
+  0% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8)); }
+  100% { filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5)); }
+}
+
+@keyframes float-particle {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  25% { opacity: 0.5; }
+  50% { transform: translateY(-100px) translateX(20px); opacity: 0.8; }
+  75% { opacity: 0.5; }
+  100% { transform: translateY(-200px) translateX(-20px); opacity: 0; }
+}
+
+.aura-cyan { animation: aura-pulse 3s infinite ease-in-out; }
+.shimmer-gold { animation: gold-shimmer 4s infinite ease-in-out; }
+
+.glass-panel {
+  background: rgba(13, 13, 20, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.neo-border {
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.05);
+}
 
 /* =========================================================
    Base resets
@@ -103,6 +136,17 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::placeholder {
+  color: var(--color-text-dim) !important;
+  opacity: 1 !important;
+}
+
+input::placeholder, 
+textarea::placeholder {
+  color: var(--color-text-dim) !important;
+  opacity: 1 !important;
 }
 
 /* =========================================================
@@ -139,8 +183,21 @@ body {
   }
 }
 
+.animated-gradient {
+  background-size: 400% 400%;
+  animation: gradient-bg 15s ease infinite;
+}
+
+@keyframes gradient-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .animate-blob {
-  animation: blob 8s ease-in-out infinite;
+  animation: blob 12s ease-in-out infinite;
+  opacity: 0.15; /* Reduced opacity for performance */
+  filter: blur(40px); /* Reduced blur radius */
 }
 
 .animation-delay-2000 {
@@ -281,25 +338,38 @@ body {
   box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
 }
 
+/* =========================================================
+   Utility: Premium Classes
+   ========================================================= */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .glass-panel {
-  background: var(--color-glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-glass-border);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px); /* Reduced from 20px for performance */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease-out;
 }
 
-[data-theme='light'] .glass-panel {
-  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.05);
+.premium-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
-.glass-panel-purple {
-  background: rgba(88, 28, 135, 0.1);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+.glow-text-blue {
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
 }
 
-
-
+.glow-text-yellow {
+  text-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+}
 
 /* =========================================================
    Global Click & Focus Reset
@@ -315,8 +385,8 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-neon-blue) !important;
-  outline-offset: 2px !important;
+  outline: 1px solid var(--color-neon-blue) !important;
+  outline-offset: 4px !important;
 }
 
 /* Prevent accidental text selection on buttons and icons */
@@ -338,4 +408,5 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
 

@@ -37,10 +37,8 @@ export const getDashboardState = (user: AuthUser | null): DashboardState => {
 
   const completedDays: string[] = JSON.parse(localStorage.getItem("completedWorkoutDays") || "[]");
 
-  const todayLabel = `Day ${currentDayNum}`;
   const isTodayCompleted = completedDays.includes(`day-${currentDayNum}`);
-
-  let nextWorkout = plan.find(day => day.day === todayLabel) || plan[currentDayNum - 1] || plan[0];
+  let nextWorkout = plan.find(day => day.day === currentDayNum) || plan[currentDayNum - 1] || plan[0];
 
   // If today is done, we could show tomorrow's preview (locked)
   if (isTodayCompleted && currentDayNum < 30) {

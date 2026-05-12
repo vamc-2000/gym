@@ -64,6 +64,21 @@ export class NotificationController {
       return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
     }
   }
+
+  async sendAdminNotification(req: NextRequest) {
+    const decoded = authMiddleware(req);
+    if (!decoded || decoded.role !== "ADMIN" && decoded.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+      const { title, message, priority } = await req.json();
+      const notifications = await notificationService.sendAdminNotificationToAll({ title, message, priority });
+      return NextResponse.json({ success: true, data: { count: notifications.length } });
+    } catch (error: unknown) {
+      return NextResponse.json({ success: false, error: (error instanceof Error ? error.message : String(error)) }, { status: 400 });
+    }
+  }
 }
 
 export const notificationController = new NotificationController();

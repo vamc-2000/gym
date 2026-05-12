@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 
 interface StatsCardProps {
   icon: string;
@@ -46,28 +45,28 @@ export default function StatsCard({
   }
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      className={`bg-dash-card rounded-2xl p-5 border border-white/5 transition-all duration-300 cursor-default ${glowClasses[glowColor]}`}
+    <div
+      className={`bg-white/2 backdrop-blur-3xl rounded-[2rem] p-7 border border-white/5 transition-all duration-300 cursor-default group hover:bg-white/5 hover:-translate-y-1 ${glowClasses[glowColor]}`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-          <span className="text-xl">{icon}</span>
+      <div className="flex items-start justify-between mb-8">
+        <div className="w-14 h-14 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+          <span className="text-2xl opacity-80">{icon}</span>
         </div>
         {trend && (
           <span
-            className={`text-xs font-medium px-2 py-1 rounded-full ${
+            className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${
               trendUp
-                ? "bg-green-500/10 text-green-400"
-                : "bg-red-500/10 text-red-400"
+                ? "bg-neon-green/10 text-neon-green border-neon-green/20"
+                : "bg-red-500/10 text-red-400 border-red-500/20"
             }`}
           >
-            {trendUp ? "↑" : "↓"} {trend}
+            {trendUp ? "▲" : "▼"} {trend}
           </span>
         )}
       </div>
-      <p className="text-white/40 text-xs font-medium mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${accentColors[glowColor]}`}>{value}</p>
-    </motion.div>
+      <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-[0.3em] mb-3 opacity-50">{label}</p>
+      <p className={`text-4xl font-black tracking-tighter uppercase ${accentColors[glowColor]}`}>{value}</p>
+    </div>
   );
 }
+

@@ -1,126 +1,117 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import InputField from "@/components/ui/InputField";
+import { authEmailFrontendService } from "@/services/authEmail.service";
+import { triggerToast } from "@/components/NotificationManager";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { authService } from "@/lib/services/authService";
+import { motion } from "motion/react";
 
-function ResetPasswordForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
-
-  const [otp, setOtp] = useState("");
-  const [password, setPassword] = useState("");
+function ResetPasswordContent() {
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!token) {
+      triggerToast("Error", "Invalid or missing reset token. Please request a new link.", "error");
+      router.push("/forgot-password");
+    }
+  }, [token, router]);
+
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otp || !password || !confirmPassword) {
-      setError("All fields are required");
+    
+    if (!token) {
+      triggerToast("Error", "Missing reset token", "error");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+
+    if (newPassword !== confirmPassword) {
+      triggerToast("Error", "Passwords do not match", "error");
       return;
     }
 
     setLoading(true);
-    setError("");
-
     try {
-      const res = await authService.resetPassword({ email, otp, password });
+      const res = await authEmailFrontendService.resetPassword(token, newPassword);
       if (res.success) {
-        setSuccess(true);
-        setTimeout(() => router.push("/login"), 2000);
+        triggerToast("Success", "Password updated! Please login.", "success");
+        router.push("/login");
       } else {
-        setError(res.error || "Reset failed");
+        triggerToast("Error", res.error || "Failed to reset password", "error");
       }
-    } catch {
-      setError("Something went wrong");
+    } catch (err: any) {
+      console.error("Reset password error:", err);
+      triggerToast("Error", err.message || "An unexpected error occurred", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-8 border border-white/5 shadow-2xl">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Reset Password</h1>
-        <p className="text-sm text-white/40">Verify OTP sent to {email} and enter your new password.</p>
-      </div>
-
-      {success ? (
-        <div className="text-center py-4">
-          <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-xl">🔒</span>
-          </div>
-          <p className="text-green-400 font-medium">Password reset successful!</p>
-          <p className="text-sm text-white/30 mt-2">Redirecting to login...</p>
+    <div className="min-h-screen bg-dash-bg flex items-center justify-center p-6 bg-grid-white/[0.02]">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-dash-card border border-dash-border-subtle rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-neon-green to-neon-blue" />
+        
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-black text-dash-text tracking-tighter mb-2">NEW CREDENTIALS</h1>
+          <p className="text-dash-text-dim text-sm italic">Define your secure access point</p>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <InputField
-            label="OTP Code"
-            variant="dark"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter 6-digit OTP"
-          />
 
-          <InputField
-            label="New Password"
-            type="password"
-            variant="dark"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min. 6 characters"
-          />
+        <form onSubmit={handleReset} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-dash-text-dim uppercase tracking-widest ml-1">New Password</label>
+            <input
+              type="password"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-dash-card border border-dash-border-subtle rounded-xl p-4 text-dash-text placeholder:text-dash-text-dim focus:border-neon-blue outline-none transition-all font-medium"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-dash-text-dim uppercase tracking-widest ml-1">Confirm Password</label>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-dash-card border border-dash-border-subtle rounded-xl p-4 text-dash-text placeholder:text-dash-text-dim focus:border-neon-blue outline-none transition-all font-medium"
+            />
+          </div>
 
-          <InputField
-            label="Confirm Password"
-            type="password"
-            variant="dark"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repeat your password"
-          />
-
-          {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          <SubmitButton type="submit" loading={loading} variant="neon">
+          <SubmitButton
+            loading={loading}
+            variant="neon"
+            className="h-14 !text-lg"
+          >
             Reset Password
           </SubmitButton>
         </form>
-      )}
+      </motion.div>
     </div>
   );
 }
 
-export default function ResetPasswordPage() {
+export default function ResetPassword() {
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 bg-gradient-to-br from-gray-950 via-gray-950 to-black">
-      <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 -right-20 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl" />
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <Suspense fallback={<div className="text-white">Loading...</div>}>
-          <ResetPasswordForm />
-        </Suspense>
-      </motion.div>
-    </div>
+    <Suspense fallback={
+      <div className="min-h-screen bg-dash-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-neon-blue"></div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

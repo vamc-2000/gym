@@ -32,6 +32,10 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  // Reset Password Fields
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+
   notificationSettings NotificationSettings?
   streaks              Streak?
   workoutLogs          WorkoutLog[]
@@ -45,6 +49,183 @@ model User {
   assignedDiets        AssignedDiet[]
   userPlan             UserPlan?
   workoutHistory       WorkoutHistory[]
+
+  // Community & Social
+  posts            CommunityPost[]
+  likes            PostLike[]
+  comments         PostComment[]
+  sentRequests     Friendship[]    @relation("SentRequests")
+  receivedRequests Friendship[]    @relation("ReceivedRequests")
+  sentMessages     ChatMessage[]   @relation("SentMessages")
+  receivedMessages ChatMessage[]   @relation("ReceivedMessages")
+  stories          Story[]
+
+  // Email & Security
+  resetTokens PasswordResetToken[]
+  sentEmails  EmailLog[]
+
+  // Coaching & Trainer System
+  trainerId           String?              @db.ObjectId
+  trainer             User?                @relation("TrainerToUser", fields: [trainerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  assignedUsers       User[]               @relation("TrainerToUser")
+  trainerProfile      TrainerProfile?
+  trainerAssignments  TrainerAssignment[]  @relation("UserAssignments")
+  trainerNotes        TrainerNote[]        @relation("UserNotes")
+  engagement          UserEngagement?
+  challengeActivities ChallengeActivity[]
+  workoutSessions     WorkoutSession[]
+  trainerSessions     WorkoutSession[]    @relation("TrainerSessions")
+}
+
+model TrainerProfile {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  user            User     @relation(fields: [userId], references: [id])
+  specialization  String[]
+  bio             String?
+  rating          Float    @default(5.0)
+  experienceYears Int      @default(0)
+  isActive        Boolean  @default(true)
+  
+  // Stats
+  totalAssignedUsers Int @default(0)
+  activeUserCount    Int @default(0)
+
+  assignments   TrainerAssignment[] @relation("TrainerAssignments")
+  notesWritten  TrainerNote[]       @relation("TrainerWrittenNotes")
+  activityLogs  TrainerActivityLog[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TrainerAssignment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  trainerId   String   @db.ObjectId
+  userId      String   @db.ObjectId
+  assignedBy  String   @db.ObjectId // Admin User ID
+  status      String   @default("ACTIVE") // ACTIVE, REASSIGNED, COMPLETED
+  
+  trainer     TrainerProfile @relation("TrainerAssignments", fields: [trainerId], references: [id])
+  user        User           @relation("UserAssignments", fields: [userId], references: [id])
+  
+  assignedAt  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([trainerId, status])
+  @@index([userId])
+}
+
+model TrainerNote {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  trainerId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  content   String
+  type      String   @default("GENERAL") // PROGRESS, WARNING, MOTIVATION, PLAN_CHANGE
+  isPrivate Boolean  @default(false) // If true, only admins/superadmins can see it
+  
+  trainer   TrainerProfile @relation("TrainerWrittenNotes", fields: [trainerId], references: [id])
+  user      User           @relation("UserNotes", fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([trainerId])
+}
+
+model UserEngagement {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique @db.ObjectId
+  user             User     @relation(fields: [userId], references: [id])
+  
+  workoutStreak    Int      @default(0)
+  consistencyScore Float    @default(0.0) // 0-100 score based on adherence
+  retentionStatus  String   @default("STABLE") // STABLE, AT_RISK, CRITICAL, INACTIVE
+  
+  lastWorkoutDate  DateTime?
+  lastMealLogDate  DateTime?
+  lastActiveDate   DateTime @default(now())
+  
+  weeklyCompletion Float    @default(0.0) // % of planned tasks completed this week
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([retentionStatus])
+}
+
+model Challenge {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  trainerId       String   @db.ObjectId
+  title           String
+  description     String
+  type            String   @default("WORKOUT_COUNT") // WORKOUT_COUNT, CALORIE_BURN, STREAK
+  targetValue     Float    @default(10)
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  startDate       DateTime @default(now())
+  endDate         DateTime
+  assignedUserIds String[] @db.ObjectId
+  
+  activities      ChallengeActivity[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trainerId])
+}
+
+model ChallengeActivity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  challengeId String   @db.ObjectId
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  status            String   @default("PARTICIPATING") // PARTICIPATING, COMPLETED, DROPPED
+  progress          Float    @default(0.0)
+  score             Int      @default(0)
+  completedWorkouts Int      @default(0)
+  lastActivity      DateTime @default(now())
+  rank              Int?
+  
+  joinedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([challengeId])
+}
+
+model WorkoutSession {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  trainerId         String?   @db.ObjectId
+  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+  durationSeconds   Int?
+  currentExercise   String?
+  caloriesBurned    Int?
+  
+  user              User      @relation(fields: [userId], references: [id])
+  trainer           User?     @relation("TrainerSessions", fields: [trainerId], references: [id])
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId, status])
+  @@index([trainerId])
+}
+
+model TrainerActivityLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  trainerId String   @db.ObjectId
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id])
+  action    String // LOGIN, VIEW_USER, ADD_NOTE, ASSIGN_WORKOUT, etc.
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([trainerId])
 }
 
 model UserPlan {
@@ -93,6 +274,7 @@ model WorkoutHistory {
 enum Role {
   SUPER_ADMIN
   ADMIN
+  TRAINER
   USER
 }
 
@@ -326,4 +508,134 @@ model AdminLog {
   target    String?
   details   String?
   createdAt DateTime @default(now())
+}
+
+// --- Community Module ---
+
+model CommunityPost {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  content       String
+  mediaUrl      String?
+  mediaType     String?       @default("none") // image, video, none
+  privacy       String        @default("public") // public, private
+  likesCount    Int           @default(0)
+  commentsCount Int           @default(0)
+  likes         PostLike[]
+  comments      PostComment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([privacy])
+}
+
+model PostLike {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String        @db.ObjectId
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String        @db.ObjectId
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime      @default(now())
+
+  @@index([postId])
+}
+
+model Friendship {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  friendId  String           @db.ObjectId
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user   User @relation("SentRequests", fields: [userId], references: [id])
+  friend User @relation("ReceivedRequests", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+model ChatMessage {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String    @db.ObjectId
+  receiverId String    @db.ObjectId
+  message    String?
+  mediaUrl   String?
+  mediaType  String    @default("none")
+  read       Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+enum PostPrivacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Story {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  mediaUrl  String
+  mediaType String   @default("image") // image, video
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  otp       String
+  token     String?
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([email])
+}
+
+model EmailLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId    String   @db.ObjectId
+  sender      User     @relation(fields: [senderId], references: [id])
+  audience    String // "ALL", "ADMINS", "SELECTED"
+  subject     String
+  message     String
+  status      String // "SENT", "FAILED"
+  sentCount   Int      @default(0)
+  failedCount Int      @default(0)
+  createdAt   DateTime @default(now())
 }
