@@ -13,6 +13,7 @@ export interface Post {
   user: {
     id: string;
     name: string;
+    avatar?: string;
   };
   likes: { id: string }[];
   _count: {

@@ -174,7 +174,7 @@ const generatePlan = (baseLevel: "Beginner" | "Intermediate" | "Advanced"): Work
 
     return {
       id: `day-${baseLevel}-${dayNum}`,
-      day: `Day ${dayNum}`,
+      day: dayNum,
       title,
       exercises
     };

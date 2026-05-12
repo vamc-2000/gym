@@ -152,7 +152,7 @@ const EXERCISE_DB: Record<string, {
       "దశ 6: బార్‌ను తిరిగి ప్రారంభ స్థితికి నెట్టండి."
     ],
     baseCalories: 10,
-    image: IMAGE_URLS.workouts.benchPress
+    image: IMAGE_URLS.workouts.benchpress
   },
   "Deadlift": {
     bodyPart: "Back",
