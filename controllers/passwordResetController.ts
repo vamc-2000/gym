@@ -8,7 +8,7 @@ export class PasswordResetController {
       if (!email) throw new Error("Email is required");
 
       await authEmailService.initiateForgotPassword(email);
-      return NextResponse.json({ success: true, message: "OTP sent to your email" });
+      return NextResponse.json({ success: true, message: "Reset link sent to your email" });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
@@ -28,10 +28,10 @@ export class PasswordResetController {
 
   async reset(req: NextRequest) {
     try {
-      const { email, token, newPassword } = await req.json();
-      if (!email || !token || !newPassword) throw new Error("Missing required fields");
+      const { token, newPassword } = await req.json();
+      if (!token || !newPassword) throw new Error("Missing required fields");
 
-      await authEmailService.resetPassword(email, token, newPassword);
+      await authEmailService.resetPassword(token, newPassword);
       return NextResponse.json({ success: true, message: "Password updated successfully" });
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });

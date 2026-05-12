@@ -23,10 +23,15 @@ export default function FriendsPage() {
   }, []);
 
   return (
-    <div className="space-y-10 pb-20 max-w-4xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-dash-text tracking-tight uppercase">Social Connections</h1>
-        <p className="text-dash-text-dim text-sm italic font-medium">Build your circle of motivated athletes.</p>
+    <div className="space-y-12 pb-24 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between flex-wrap gap-8 border-b border-white/5 pb-8">
+        <div>
+          <p className="text-neon-blue text-[10px] font-black uppercase tracking-[0.4em] mb-3 opacity-60">Social Intelligence</p>
+          <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">Neural <span className="text-neon-blue">Circle</span></h1>
+          <p className="text-dash-text-dim text-[10px] font-black uppercase tracking-widest mt-4 opacity-40">
+            {data.friends.length} Active Synchronizations
+          </p>
+        </div>
       </div>
 
       {/* Pending Requests */}

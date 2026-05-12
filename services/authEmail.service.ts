@@ -15,10 +15,10 @@ export class AuthEmailFrontendService {
     });
   }
 
-  async resetPassword(email: string, token: string, newPassword: string): Promise<ApiResponse<void>> {
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse<void>> {
     return await apiClient<void>("/auth/reset-password", {
       method: "POST",
-      body: { email, token, newPassword }
+      body: { token, newPassword }
     });
   }
 }

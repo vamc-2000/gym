@@ -1,86 +1,96 @@
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { sendEmail, getResetOTPTemplate, getPasswordChangedTemplate } from "./emailService";
+import { sendEmail, getResetLinkTemplate, getPasswordChangedTemplate } from "./emailService";
 
 export class AuthEmailService {
   async initiateForgotPassword(email: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) throw new Error("User not found with this email");
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
-    // Store in DB
-    await prisma.passwordResetToken.create({
+    // Store in User model
+    await prisma.user.update({
+      where: { id: user.id },
       data: {
-        userId: user.id,
-        email,
-        otp,
-        expiresAt,
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: resetPasswordExpires,
       },
     });
+
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
 
     // Send Email
-    return await sendEmail(email, "Reset your GymStreak password", getResetOTPTemplate(otp));
+    return await sendEmail(email, "Reset your GymStreak password", getResetLinkTemplate(resetUrl));
   }
 
-  async verifyOTP(email: string, otp: string) {
-    const tokenRecord = await prisma.passwordResetToken.findFirst({
-      where: { 
-        email, 
-        otp, 
-        used: false,
-        expiresAt: { gt: new Date() }
+  async resetPassword(token: string, newPassword: string) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEBUG] Received token:", token);
+      console.log("[DEBUG] Current time:", new Date().toISOString());
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: { gt: new Date() },
       },
-      orderBy: { createdAt: "desc" }
     });
 
-    if (!tokenRecord) throw new Error("Invalid or expired OTP");
-
-    // Create a temporary verification token to use in the final reset
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    
-    await prisma.passwordResetToken.update({
-      where: { id: tokenRecord.id },
-      data: { token: verificationToken }
-    });
-
-    return verificationToken;
-  }
-
-  async resetPassword(email: string, token: string, newPassword: string) {
-    const tokenRecord = await prisma.passwordResetToken.findFirst({
-      where: { 
-        email, 
-        token, 
-        used: false,
-        expiresAt: { gt: new Date() }
+    if (process.env.NODE_ENV === "development") {
+      console.log("[DEBUG] User found:", !!user);
+      if (user) {
+        console.log("[DEBUG] Token expiry time:", user.resetPasswordExpires?.toISOString());
       }
-    });
+    }
 
-    if (!tokenRecord) throw new Error("Invalid or expired reset token");
+    if (!user) {
+      throw new Error("Invalid or expired reset token");
+    }
 
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user and mark token as used
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: tokenRecord.userId },
-        data: { password: hashedPassword }
-      }),
-      prisma.passwordResetToken.update({
-        where: { id: tokenRecord.id },
-        data: { used: true }
-      })
-    ]);
+    // Update user and clear reset fields
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      },
+    });
 
     // Send confirmation email
-    await sendEmail(email, "Password Changed Successfully", getPasswordChangedTemplate());
+    await sendEmail(user.email, "Password Changed Successfully", getPasswordChangedTemplate());
 
     return true;
+  }
+
+  async verifyOTP(email: string, otp: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.otp || !user.otpExpiry || user.otp !== otp || user.otpExpiry < new Date()) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    // Generate secure reset token to be used in the final reset step
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otp: null,
+        otpExpiry: null,
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: resetPasswordExpires,
+      },
+    });
+
+    return resetToken;
   }
 }
 

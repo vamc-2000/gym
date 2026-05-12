@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { friendService } from "@/services/friendService";
 import { triggerToast } from "@/components/NotificationManager";
 
@@ -50,15 +51,32 @@ export default function FriendCard({ user, status, requestId, onUpdate }: Friend
     }
   };
 
+  const [avatarError, setAvatarError] = useState(false);
+  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+
   return (
-    <div className="bg-dash-card border border-dash-border-subtle rounded-2xl p-4 flex items-center justify-between shadow-md hover:border-neon-blue/30 transition-all">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center text-neon-blue font-black text-xl">
-          {user.name[0]}
+    <div className="bg-black/40 border border-white/5 rounded-[2rem] p-5 flex items-center justify-between group hover:border-neon-blue/30 transition-all backdrop-blur-md relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-neon-blue to-transparent opacity-0 group-hover:opacity-20 transition-opacity" />
+      
+      <div className="flex items-center gap-5">
+        <div className="relative">
+          <div className="w-14 h-14 rounded-2xl border-2 border-white/5 overflow-hidden bg-dash-card group-hover:border-neon-blue/30 transition-all">
+            <Image 
+              src={avatarError ? fallbackAvatar : (fallbackAvatar)} 
+              alt={user.name} 
+              width={56} 
+              height={56}
+              className="object-cover"
+              onError={() => setAvatarError(true)}
+            />
+          </div>
+          {status === "FRIEND" && (
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-dash-bg shadow-[0_0_10px_rgba(57,255,20,0.5)]" />
+          )}
         </div>
         <div>
-          <h4 className="text-sm font-bold text-dash-text">{user.name}</h4>
-          <p className="text-[10px] text-dash-text-dim">{user.email || "Athlete"}</p>
+          <h4 className="text-sm font-black text-white uppercase tracking-tight group-hover:text-neon-blue transition-colors">{user.name}</h4>
+          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mt-1 italic">{user.email?.split('@')[0] || "ATHLETE_NODE"}</p>
         </div>
       </div>
 
@@ -67,26 +85,26 @@ export default function FriendCard({ user, status, requestId, onUpdate }: Friend
           <button 
             onClick={handleReject}
             disabled={loading}
-            className="px-3 py-1.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-[10px] font-bold hover:bg-red-500/20 transition-all"
+            className="px-4 py-2 bg-white/5 text-white/40 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all cursor-pointer"
           >
-            Decline
+            Refuse
           </button>
         )}
         <button
           onClick={handleAction}
           disabled={loading || status === "SENT"}
-          className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
-            status === "SUGGESTED" ? "bg-neon-blue text-dash-bg" :
-            status === "PENDING" ? "bg-neon-green text-dash-bg" :
-            status === "SENT" ? "bg-dash-bg border border-dash-border-subtle text-dash-text-dim cursor-default" :
-            "bg-white/5 border border-white/10 text-white hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
+          className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-lg ${
+            status === "SUGGESTED" ? "bg-neon-blue text-dash-bg shadow-neon-blue/20 hover:scale-105" :
+            status === "PENDING" ? "bg-neon-green text-dash-bg shadow-neon-green/20 hover:scale-105" :
+            status === "SENT" ? "bg-white/5 border border-white/10 text-white/20 cursor-default" :
+            "bg-white/5 border border-white/10 text-white/40 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20"
           }`}
         >
           {loading ? "..." : 
-           status === "SUGGESTED" ? "Add Friend" :
+           status === "SUGGESTED" ? "Connect" :
            status === "PENDING" ? "Accept" :
            status === "SENT" ? "Pending" :
-           "Remove"}
+           "Purge"}
         </button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface Stat {
   label: string;
@@ -18,19 +18,20 @@ function StatsGrid({ stats }: StatsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat, i) => (
-        <motion.div
+        <div
           key={stat.label}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-          className="glass-panel p-6 rounded-3xl border border-dash-border-subtle group hover:border-neon-blue/20 hover:scale-[1.02] transition-all duration-300"
+          className="p-6 rounded-2xl bg-dash-card border border-dash-border-subtle group hover:border-neon-blue/20 transition-all duration-300"
         >
           <div className="flex items-center justify-between mb-4">
-            <span className="text-dash-text-dim text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
-            <span className="text-xl group-hover:scale-125 transition-transform">{stat.icon}</span>
+            <span className="text-dash-text-dim text-[9px] font-black uppercase tracking-[0.2em] opacity-50">{stat.label}</span>
+            {stat.icon && <span className="text-xl opacity-70">{stat.icon}</span>}
           </div>
-          <h3 className="text-2xl font-black text-dash-text truncate">{stat.value}</h3>
-        </motion.div>
+          <h3 className={`text-2xl font-black truncate uppercase ${
+            stat.color === 'neon-blue' ? 'text-neon-blue' :
+            stat.color === 'neon-yellow' ? 'text-neon-yellow' :
+            'text-white'
+          }`}>{stat.value}</h3>
+        </div>
       ))}
     </div>
   );

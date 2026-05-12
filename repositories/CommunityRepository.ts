@@ -1,21 +1,21 @@
 import { prisma } from "../lib/prisma";
-import { MediaType, PostPrivacy, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export class CommunityRepository {
   async createPost(data: {
     userId: string;
     content: string;
     mediaUrl?: string;
-    mediaType?: MediaType;
-    privacy?: PostPrivacy;
+    mediaType?: string;
+    privacy?: string;
   }) {
     return await prisma.communityPost.create({
       data: {
         userId: data.userId,
         content: data.content,
         mediaUrl: data.mediaUrl,
-        mediaType: data.mediaType || "TEXT",
-        privacy: data.privacy || "PUBLIC",
+        mediaType: data.mediaType || "none",
+        privacy: data.privacy || "public",
       },
       include: {
         user: {
@@ -32,10 +32,10 @@ export class CommunityRepository {
     return await prisma.communityPost.findMany({
       where: {
         OR: [
-          { privacy: "PUBLIC" },
+          { privacy: "public" },
           { 
             AND: [
-              { privacy: "PRIVATE" },
+              { privacy: "private" },
               { userId: { in: [userId, ...friendIds] } }
             ]
           }
@@ -116,13 +116,100 @@ export class CommunityRepository {
   async addComment(postId: string, userId: string, content: string) {
     return await prisma.$transaction(async (tx) => {
       const comment = await tx.postComment.create({
-        data: { postId, userId, content }
+        data: { postId, userId, content },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       });
       await tx.communityPost.update({
         where: { id: postId },
         data: { commentsCount: { increment: 1 } }
       });
       return comment;
+    });
+  }
+
+  async searchByHashtag(tag: string, userId: string) {
+    return await prisma.communityPost.findMany({
+      where: {
+        content: { contains: tag },
+        OR: [
+          { privacy: "public" },
+          { userId }
+        ]
+      },
+      include: {
+        user: { select: { id: true, name: true } },
+        _count: { select: { likes: true, comments: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async getTrendingHashtags() {
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    const posts = await prisma.communityPost.findMany({
+      where: { createdAt: { gte: lastWeek } },
+      select: { content: true }
+    });
+
+    const tags: Record<string, number> = {};
+    posts.forEach(post => {
+      const found = post.content.match(/#[a-zA-Z0-9]+/g);
+      if (found) {
+        found.forEach(tag => {
+          const t = tag.toLowerCase();
+          tags[t] = (tags[t] || 0) + 1;
+        });
+      }
+    });
+
+    return Object.entries(tags)
+      .map(([tag, count]) => ({ tag: tag.replace("#", ""), posts: count }))
+      .sort((a, b) => b.posts - a.posts)
+      .slice(0, 10);
+  }
+
+  // --- Story Methods ---
+
+  async createStory(userId: string, mediaUrl: string, mediaType: string = "image") {
+    return await prisma.story.create({
+      data: {
+        userId,
+        mediaUrl,
+        mediaType,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      },
+      include: {
+        user: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+  }
+
+  async getStories(userId: string, friendIds: string[]) {
+    return await prisma.story.findMany({
+      where: {
+        OR: [
+          { userId },
+          { userId: { in: friendIds } }
+        ],
+        expiresAt: { gte: new Date() }
+      },
+      include: {
+        user: {
+          select: { id: true, name: true }
+        }
+      },
+      orderBy: { createdAt: "desc" }
     });
   }
 }

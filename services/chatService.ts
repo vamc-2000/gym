@@ -9,10 +9,10 @@ export class ChatService {
     return await apiClient<any[]>(`/chat/messages?friendId=${friendId}`);
   }
 
-  async sendMessage(receiverId: string, message: string): Promise<ApiResponse<any>> {
+  async sendMessage(receiverId: string, message: string, mediaUrl?: string, mediaType?: string): Promise<ApiResponse<any>> {
     return await apiClient<any>("/chat/send", {
       method: "POST",
-      body: { receiverId, message }
+      body: { receiverId, message, mediaUrl, mediaType }
     });
   }
 }

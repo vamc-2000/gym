@@ -11,15 +11,34 @@ export type Exercise = {
   notes?: string;
   imageUrl?: string;
   instructions?: string[];
+  nameTe?: string;
+  instructionsTe?: string[];
   caloriesBurn: number;
 };
 
 export type WorkoutDay = {
   id: string;
-  day: string;
+  day: number;
   title: string;
-  exercises: Exercise[];
+  exercises: any[];
+  bodyPartFocus?: string;
+  estimatedDuration?: number;
+  estimatedCalories?: number;
   isCompleted?: boolean;
+};
+
+export type UserPlan = {
+  id: string;
+  userId: string;
+  goal: string;
+  currentDay: number;
+  workoutPlan: WorkoutDay[];
+  currentWorkout: WorkoutDay;
+  completedDays: any[];
+  isLockedUntilTomorrow: boolean;
+  countdownSeconds: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type AuthUser = {
@@ -83,4 +102,8 @@ export type DashboardState = {
     completedDate?: string;
     bodyPartFocus?: string;
   }[];
+  latestNudge?: {
+    id: string;
+    message: string;
+  } | null;
 };

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 
 import { Exercise } from "@/types/dashboard";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 interface ExerciseFormModalProps {
   isOpen: boolean;

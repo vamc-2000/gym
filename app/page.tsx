@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { IMAGE_URLS, getSafeImageUrl } from "@/config/images";
 
 export default function Home() {
   const router = useRouter();
@@ -20,35 +22,40 @@ export default function Home() {
       title: "Smart Workout Engine",
       description:
         "Our AI analyzes your performance in real-time to adjust intensity, ensuring you're always pushing your limits without burnout.",
-      image: "/landing1.png",
+      image: IMAGE_URLS.landing.one,
+      fallback: "/landing1.png",
       color: "from-neon-blue to-cyan-500",
     },
     {
       title: "Nutrition at its Core",
       description:
         "Stop guessing your macros. Get precise meal plans and track your intake with a database of over 1 million foods.",
-      image: "/landing2.png",
+      image: IMAGE_URLS.landing.two,
+      fallback: "/landing2.png",
       color: "from-neon-yellow to-amber-500",
     },
     {
       title: "Consistency Redefined",
       description:
         "The Streak System gamifies your fitness journey. Earn rewards, unlock achievements, and never miss a Monday again.",
-      image: "/landing3.png",
+      image: IMAGE_URLS.landing.three,
+      fallback: "/landing3.png",
       color: "from-purple-500 to-pink-500",
     },
     {
       title: "Global Leaderboard",
       description:
         "Compete with athletes across the globe. Rise through the ranks, join leagues, and claim your spot at the top.",
-      image: "/landing4.png",
+      image: IMAGE_URLS.landing.four,
+      fallback: "/landing4.png",
       color: "from-emerald-500 to-teal-400",
     },
     {
       title: "Deep Analytics",
       description:
         "Visualize every rep and every calorie. Interactive charts give you the insight you need to optimize your results.",
-      image: "/landing5.png",
+      image: IMAGE_URLS.landing.five,
+      fallback: "/landing5.png",
       color: "from-blue-600 to-indigo-500",
     },
   ];
@@ -91,9 +98,17 @@ export default function Home() {
                    pb-20 sm:pb-24
                    px-4 sm:px-6"
       >
-        {/* Background grid */}
+        {/* Background grid & Hero Image */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,245,255,0.05),transparent_60%)]" />
+          <Image 
+            src={IMAGE_URLS.placeholders.hero}
+            alt="Hero Background"
+            fill
+            className="object-cover opacity-20"
+            unoptimized={true}
+            priority
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,245,255,0.1),transparent_70%)]" />
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -244,11 +259,22 @@ export default function Home() {
                 className="relative z-10 rounded-2xl sm:rounded-3xl overflow-hidden
                            border border-white/10 shadow-2xl bg-gray-900"
               >
-                <img
+                <Image
                   src={section.image}
                   alt={section.title}
+                  width={800}
+                  height={500}
+                  priority={index === 0}
+                  unoptimized={true}
+                  loading={index === 0 ? undefined : "lazy"}
                   className="w-full h-auto object-cover
                              transform transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== section.fallback) {
+                      target.src = section.fallback;
+                    }
+                  }}
                 />
               </motion.div>
               <div

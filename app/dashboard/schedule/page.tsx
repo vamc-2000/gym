@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { dashboardService } from "@/lib/services/dashboardService";
 import { triggerToast } from "@/components/NotificationManager";
 

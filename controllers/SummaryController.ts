@@ -138,6 +138,11 @@ export class SummaryController {
 
       const goalProgress = userPlan ? Math.min(Math.round(((userPlan.currentDay - 1) / 30) * 100), 100) : 0;
 
+      const latestNudge = await prisma.notification.findFirst({
+        where: { userId, read: false, category: "COACHING" },
+        orderBy: { createdAt: 'desc' }
+      });
+
       return NextResponse.json({
         success: true,
         data: {
@@ -166,6 +171,7 @@ export class SummaryController {
           currentWorkoutDay: userPlan?.currentDay || 1,
           bmi: userPlan?.bmi || userData?.bmi,
           bmiCategory: userPlan?.bmiCategory || userData?.bmiCategory,
+          latestNudge: latestNudge || null,
         }
       });
     } catch (error: unknown) {

@@ -1,16 +1,15 @@
 "use client";
 
-import { motion, HTMLMotionProps } from "framer-motion";
-import { ReactNode } from "react";
+import { ReactNode, ButtonHTMLAttributes } from "react";
 
-interface SubmitButtonProps extends HTMLMotionProps<"button"> {
+interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   loading?: boolean;
-  variant?: "primary" | "gradient-purple" | "neon";
+  variant?: "primary" | "gradient-purple" | "neon" | "neon-yellow";
   fullWidth?: boolean;
 }
 
-export default function SubmitButton({
+export function SubmitButton({
   children,
   loading = false,
   variant = "primary",
@@ -20,24 +19,25 @@ export default function SubmitButton({
 }: SubmitButtonProps) {
   const variants = {
     primary:
-      "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20",
+      "bg-primary text-dash-bg hover:bg-primary-hover shadow-lg shadow-primary/20 font-black uppercase tracking-[0.2em]",
     "gradient-purple":
-      "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 shadow-lg shadow-purple-500/20",
+      "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 shadow-lg shadow-purple-500/20 font-bold",
     neon:
-      "bg-neon-blue text-dash-bg hover:shadow-lg hover:shadow-neon-blue/30 font-bold",
+      "bg-neon-blue text-dash-bg hover:shadow-[0_0_20px_rgba(0,245,255,0.4)] font-black uppercase tracking-[0.2em]",
+    "neon-yellow":
+      "bg-neon-yellow text-dash-bg hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] font-black uppercase tracking-[0.2em]",
   };
 
   return (
-    <motion.button
-      whileHover={{ scale: loading ? 1 : 1.02 }}
-      whileTap={{ scale: loading ? 1 : 0.98 }}
+    <button
       disabled={loading || props.disabled}
-      className={`${fullWidth ? "w-full" : ""} py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variants[variant]} ${className}`}
+      suppressHydrationWarning
+      className={`${fullWidth ? "w-full" : ""} py-3.5 px-6 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${variants[variant]} ${!loading ? "hover:scale-[1.02] active:scale-[0.98]" : ""} ${className}`}
       {...props}
     >
       {loading && (
         <svg
-          className="animate-spin w-4 h-4"
+          className="animate-spin w-3 h-3"
           fill="none"
           viewBox="0 0 24 24"
         >
@@ -56,7 +56,8 @@ export default function SubmitButton({
           />
         </svg>
       )}
-      {loading ? "Please wait..." : children}
-    </motion.button>
+      {loading ? "SYSTEM PROCESSING..." : children}
+    </button>
   );
 }
+export default SubmitButton;
