@@ -33,7 +33,12 @@ export class AuthService {
     const existing = await userRepository.findByEmail(userData.email);
     if (existing) throw new Error("Email already registered");
 
-    validatePassword(userData.password);
+    // Only validate password strictly for regular USER registrations
+    if (!userData.role || userData.role === "USER") {
+      validatePassword(userData.password);
+    } else if (userData.password.length < 6) {
+      throw new Error("Temporary password must be at least 6 characters");
+    }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const user = await userRepository.create({

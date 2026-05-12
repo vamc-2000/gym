@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { triggerToast } from "@/components/NotificationManager";
 

@@ -8,3 +8,8 @@ export async function GET(req: NextRequest) {
   await connectDB();
   return notificationController.getNotifications(req);
 }
+
+export async function POST(req: NextRequest) {
+  await connectDB();
+  return notificationController.sendAdminNotification(req);
+}
