@@ -3,7 +3,7 @@
 ## 🏋️ Overview
 **GymStreak** is a high-performance, full-stack fitness management and tracking application. Designed with a focus on consistency and gamification, it empowers users to maintain workout streaks, track nutritional intake, and compete on global leaderboards.
 
-The application features a modern, anime-inspired aesthetic with dynamic animations and a robust administrative backend for managing workout templates, diet plans, and user progress.
+The application features a modern, anime-inspired aesthetic with dynamic animations and a robust administrative backend for managing workout templates, diet plans, and user progress. The platform has evolved to include social connectivity and a comprehensive coaching module.
 
 ---
 
@@ -34,15 +34,29 @@ The application features a modern, anime-inspired aesthetic with dynamic animati
   - `Score = (Streak * 10) + Workout Count + Floor(Calories / 10)`
 - **Achievement Badges**: Gold, Silver, and Bronze podiums for top performers.
 
-### 5. Scheduling & Notifications
+### 5. Community & Social
+- **Community Feed**: Share updates, photos, and achievements with privacy controls.
+- **Interactions**: Like and comment on peers' posts to foster an engaging community.
+- **Friendships**: Send, receive, and manage friend requests.
+- **Direct Messaging (Chat)**: Real-time chat with friends, supporting text and media messages, complete with read receipts.
+- **Stories**: Ephemeral media sharing (images/videos) that expires automatically.
+
+### 6. Coaching & Trainer System
+- **Trainer Profiles**: Specialized profiles for trainers highlighting their expertise, ratings, and active user count.
+- **Client Management**: Assign users to trainers, and manage user progression via trainer notes (public and private).
+- **Challenges**: Trainers can create competitive challenges (workout count, calorie burn, streak-based) for their assigned users.
+- **Live Sessions**: Track active, real-time workout sessions under trainer supervision.
+
+### 7. Scheduling & Notifications
 - **Smart Scheduler**: Manage workouts, meals, water intake, sleep, and supplements.
 - **Reward System**: Earn 5 points for every completed schedule item.
 - **Notification System**: Category-based alerts (Workout, Goals, Nutrition, Recovery, Social, Admin, Marketing) with priority levels (Critical, High, Medium, Low) and DND settings.
 
-### 6. Admin Panel
+### 8. Admin Panel
 - **User Management**: Monitor user activity and progress.
 - **Template Management**: Create and assign global workout and diet templates.
 - **System Control**: Toggle registrations, admin approvals, and feature availability.
+- **Communications**: Dispatch system-wide or targeted emails to users and admins.
 
 ---
 
@@ -98,6 +112,12 @@ The application uses a relational-style schema on MongoDB for flexibility and pe
 | **Notification** | Stores category-based and priority-indexed messages. |
 | **SystemSettings** | Global feature flags and system toggles. |
 | **ExerciseLibrary**| Master list of exercises available in the system. |
+| **CommunityPost** | User-generated content for the community feed. |
+| **Friendship** | Tracks friend connections and pending requests. |
+| **ChatMessage** | Direct messaging logs between friends. |
+| **TrainerProfile** | Metadata, stats, and specialties for trainers. |
+| **TrainerAssignment**| Link mapping users to their assigned trainers. |
+| **Challenge** | Time-bound competitive events created by trainers. |
 
 ---
 
@@ -138,6 +158,5 @@ The application uses a relational-style schema on MongoDB for flexibility and pe
 
 ## 📈 Future Roadmap
 - **AI Integration**: Personalizing workout intensities based on historical performance.
-- **Social Features**: Friend challenges and workout sharing.
 - **Wearable Sync**: Integration with Apple Health and Google Fit.
 - **Mobile App**: Native mobile experience using React Native.
