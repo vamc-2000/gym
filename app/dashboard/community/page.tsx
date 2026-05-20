@@ -7,9 +7,12 @@ import PostCard from "@/components/community/PostCard";
 import StoryBar from "@/components/community/StoryBar";
 import CommunitySidebar from "@/components/community/CommunitySidebar";
 import RightSidebar from "@/components/community/RightSidebar";
+import MessagesView from "@/components/community/MessagesView";
+import FriendsView from "@/components/community/FriendsView";
 import { tokenManager } from "@/lib/auth";
 
 export default function CommunityPage() {
+  const [activeTab, setActiveTab] = useState("Home");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
@@ -63,7 +66,7 @@ export default function CommunityPage() {
         
         {/* Left Sidebar - Inner Community Navigation */}
         <aside className="hidden lg:flex flex-col border-r border-white/5 bg-black/20 backdrop-blur-3xl h-full overflow-hidden">
-          <CommunitySidebar />
+          <CommunitySidebar activeTab={activeTab} onTabChange={setActiveTab} />
         </aside>
 
         {/* Center Feed - Primary Content Area */}
@@ -84,38 +87,48 @@ export default function CommunityPage() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar pt-8 pb-32">
-            <div className="max-w-4xl mx-auto px-6 space-y-8">
-              {/* Stories */}
-              <div className="bg-black/20 rounded-3xl p-6 border border-white/5">
-                <StoryBar />
-              </div>
-
-              {/* Post Creator */}
-              <CreatePost onPostCreated={fetchData} />
-
-              {/* Feed Content */}
-              {loading ? (
-                <div className="space-y-6">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-96 w-full bg-white/5 rounded-3xl animate-pulse border border-white/5" />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {posts.map((post) => (
-                    <PostCard key={post.id} post={post} currentUserId={userId} onDelete={fetchData} />
-                  ))}
-                  {posts.length === 0 && (
-                    <div className="text-center py-24 rounded-3xl border border-dashed border-white/10 bg-black/20 opacity-40">
-                      <span className="text-6xl block mb-6">📡</span>
-                      <p className="text-xs font-black text-white uppercase tracking-[0.3em]">No transmissions detected in sector.</p>
-                    </div>
-                  )}
-                </div>
-              )}
+          {activeTab === "Messages" ? (
+            <div className="flex-1 w-full h-full p-4 overflow-hidden">
+              <MessagesView />
             </div>
-          </div>
+          ) : activeTab === "Friends" ? (
+            <div className="flex-1 w-full h-full p-6 overflow-y-auto custom-scrollbar">
+              <FriendsView />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto no-scrollbar pt-8 pb-32">
+              <div className="max-w-4xl mx-auto px-6 space-y-8">
+                {/* Stories */}
+                <div className="bg-black/20 rounded-3xl p-6 border border-white/5">
+                  <StoryBar />
+                </div>
+
+                {/* Post Creator */}
+                <CreatePost onPostCreated={fetchData} />
+
+                {/* Feed Content */}
+                {loading ? (
+                  <div className="space-y-6">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-96 w-full bg-white/5 rounded-3xl animate-pulse border border-white/5" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {posts.map((post) => (
+                      <PostCard key={post.id} post={post} currentUserId={userId} onDelete={fetchData} />
+                    ))}
+                    {posts.length === 0 && (
+                      <div className="text-center py-24 rounded-3xl border border-dashed border-white/10 bg-black/20 opacity-40">
+                        <span className="text-6xl block mb-6">📡</span>
+                        <p className="text-xs font-black text-white uppercase tracking-[0.3em]">No transmissions detected in sector.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </main>
 
         {/* Right Sidebar - Social Intelligence */}

@@ -6,7 +6,7 @@ import ChatWindow from "@/components/community/ChatWindow";
 import { tokenManager } from "@/lib/auth";
 import { motion } from "motion/react";
 
-export default function ChatPage() {
+export default function MessagesView() {
   const [friends, setFriends] = useState<any[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [userId, setUserId] = useState<string>("");
@@ -29,7 +29,7 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-140px)] flex gap-6 pb-4 overflow-hidden relative">
+    <div className="h-full flex gap-6 pb-4 overflow-hidden relative">
       {/* Sidebar - Friend List */}
       <div className="w-80 bg-dash-card/50 backdrop-blur-xl border border-dash-border-subtle rounded-[2rem] flex flex-col overflow-hidden shadow-2xl">
         <div className="p-8 border-b border-dash-border-subtle/50">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { friendService } from "@/services/friendService";
 import FriendCard from "@/components/community/FriendCard";
 
-export default function FriendsPage() {
+export default function FriendsView() {
   const [data, setData] = useState<any>({ friends: [], pending: [], sent: [], suggested: [] });
   const [loading, setLoading] = useState(true);
 

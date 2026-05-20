@@ -31,7 +31,6 @@ const roleBasedItems: Record<string, NavItem[]> = {
     { href: "/dashboard/leaderboard", label: "Leaderboard", icon: "🏆" },
     { href: "/dashboard/community", label: "Community", icon: "🤝" },
     { href: "/dashboard/friends", label: "Friends", icon: "👥" },
-    { href: "/dashboard/chat", label: "Chat", icon: "💬" },
   ],
   TRAINER: [
     { href: "/dashboard/trainer", label: "Overview", icon: "📊" },

@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Hash, Zap, Users, Trophy, Star, ArrowUpRight } from "lucide-react";
 import { communityService } from "@/services/communityService";
+import { friendService } from "@/services/friendService";
 import { triggerToast } from "@/components/NotificationManager";
+import { tokenManager } from "@/lib/auth";
 
 const FriendItem = ({ friend, onFollow }: { friend: any, onFollow: (id: string) => void }) => {
   const [error, setError] = useState(false);
@@ -48,17 +50,25 @@ const FriendItem = ({ friend, onFollow }: { friend: any, onFollow: (id: string) 
 export default function RightSidebar() {
   const [trending, setTrending] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string>("");
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [trendRes, suggestRes] = await Promise.all([
+      const [trendRes, suggestRes, friendsRes] = await Promise.all([
         communityService.getTrendingHashtags(),
-        communityService.getSuggestions()
+        communityService.getSuggestions(),
+        friendService.getFriendsData()
       ]);
       if (trendRes.success) setTrending(trendRes.data || []);
       if (suggestRes.success) setSuggestions(suggestRes.data || []);
+      if (friendsRes.success && friendsRes.data?.friends) {
+        // Extract the actual friend object based on who sent the request
+        // Since getFriendsData returns { id, userId, friendId, user, friend }
+        setFriends(friendsRes.data.friends);
+      }
     } finally {
       setLoading(false);
     }
@@ -66,6 +76,8 @@ export default function RightSidebar() {
 
   useEffect(() => {
     fetchData();
+    const user = tokenManager.getUser();
+    if (user) setUserId(user.id);
   }, []);
 
   const handleFollow = async (friendId: string) => {
@@ -110,6 +122,47 @@ export default function RightSidebar() {
           </div>
         </div>
       </div>
+
+      {/* My Circle (Active Friends) */}
+      {friends.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="flex items-center gap-3">
+              <Users className="w-4 h-4 text-white/40" />
+              <h4 className="text-[11px] font-black text-white uppercase tracking-widest">My Circle</h4>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {friends.map((f: any) => {
+              const friendUser = f.user?.id === userId ? f.friend : f.user;
+              if (!friendUser) return null;
+              
+              return (
+                <div key={f.id} className="flex items-center justify-between px-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative shrink-0">
+                      <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-dash-card">
+                        <Image 
+                          src={friendUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friendUser.name || 'G'}`} 
+                          alt={friendUser.name || "User"} 
+                          width={36} 
+                          height={36}
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-dash-bg rounded-full bg-neon-green" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-white uppercase tracking-tight truncate">{friendUser.name}</p>
+                      <p className="text-[8px] font-black text-neon-green uppercase tracking-widest">Online</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Suggested Connections */}
       <div>

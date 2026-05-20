@@ -2,15 +2,15 @@ import { apiClient, ApiResponse } from "../lib/api";
 
 export class ChatService {
   async getChatFriends(): Promise<ApiResponse<any[]>> {
-    return await apiClient<any[]>("/chat/friends");
+    return await apiClient<any[]>("/community/messages/friends");
   }
 
   async getMessages(friendId: string): Promise<ApiResponse<any[]>> {
-    return await apiClient<any[]>(`/chat/messages?friendId=${friendId}`);
+    return await apiClient<any[]>(`/community/messages/messages?friendId=${friendId}`);
   }
 
   async sendMessage(receiverId: string, message: string, mediaUrl?: string, mediaType?: string): Promise<ApiResponse<any>> {
-    return await apiClient<any>("/chat/send", {
+    return await apiClient<any>("/community/messages/send", {
       method: "POST",
       body: { receiverId, message, mediaUrl, mediaType }
     });

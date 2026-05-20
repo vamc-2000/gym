@@ -2,25 +2,25 @@ import { apiClient, ApiResponse } from "../lib/api";
 
 export class FriendService {
   async getFriendsData(): Promise<ApiResponse<any>> {
-    return await apiClient<any>("/friends");
+    return await apiClient<any>("/community/friends");
   }
 
   async sendRequest(friendId: string): Promise<ApiResponse<any>> {
-    return await apiClient<any>("/friends/request", {
+    return await apiClient<any>("/community/friends/request", {
       method: "POST",
       body: { friendId }
     });
   }
 
   async respondToRequest(requestId: string, status: "ACCEPTED" | "REJECTED"): Promise<ApiResponse<void>> {
-    return await apiClient<void>("/friends/respond", {
+    return await apiClient<void>("/community/friends/respond", {
       method: "POST",
       body: { requestId, status }
     });
   }
 
   async removeFriend(friendId: string): Promise<ApiResponse<void>> {
-    return await apiClient<void>("/friends/remove", {
+    return await apiClient<void>("/community/friends/remove", {
       method: "POST",
       body: { friendId }
     });
