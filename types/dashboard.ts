@@ -46,6 +46,8 @@ export type AuthUser = {
   name: string;
   email: string;
   role: "USER" | "ADMIN" | "SUPER_ADMIN";
+  avatar?: string;
+  username?: string;
   fitnessLevel?: string;
   goal?: string;
   workoutStartDate?: string;

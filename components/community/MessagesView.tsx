@@ -54,10 +54,14 @@ export default function MessagesView() {
               {selectedFriend?.id === friend.id && (
                 <motion.div layoutId="active-chat" className="absolute left-0 top-0 bottom-0 w-1 bg-neon-blue shadow-[0_0_10px_rgba(0,245,255,1)]" />
               )}
-              <div className="w-12 h-12 rounded-xl bg-dash-bg border border-dash-border-subtle flex items-center justify-center text-neon-blue font-black text-lg relative shadow-inner">
-                {friend.name[0].toUpperCase()}
+              <div className="w-12 h-12 rounded-xl bg-dash-bg border border-dash-border-subtle flex items-center justify-center text-neon-blue font-black text-lg relative shadow-inner overflow-hidden">
+                {friend.avatar ? (
+                  <img src={friend.avatar} alt={friend.name} className="w-full h-full object-cover" />
+                ) : (
+                  friend.name?.charAt(0).toUpperCase() || "U"
+                )}
                 {friend.unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-neon-blue text-dash-bg text-[9px] font-black rounded-full flex items-center justify-center border-2 border-dash-card shadow-lg">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-neon-blue text-dash-bg text-[9px] font-black rounded-full flex items-center justify-center border-2 border-dash-card shadow-lg z-10">
                     {friend.unreadCount > 9 ? "9+" : friend.unreadCount}
                   </span>
                 )}

@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Avatar from "@/components/ui/Avatar";
 import { Hash, Zap, Users, Trophy, Star, ArrowUpRight } from "lucide-react";
 import { communityService } from "@/services/communityService";
 import { friendService } from "@/services/friendService";
@@ -10,9 +10,6 @@ import { triggerToast } from "@/components/NotificationManager";
 import { tokenManager } from "@/lib/auth";
 
 const FriendItem = ({ friend, onFollow }: { friend: any, onFollow: (id: string) => void }) => {
-  const [error, setError] = useState(false);
-  const fallback = `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.name || 'G'}`;
-
   return (
     <motion.div 
       whileHover={{ x: 4 }}
@@ -20,16 +17,12 @@ const FriendItem = ({ friend, onFollow }: { friend: any, onFollow: (id: string) 
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="relative shrink-0">
-          <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-dash-card">
-            <Image 
-              src={error ? fallback : (friend.avatar || fallback)} 
-              alt={friend.name} 
-              width={36} 
-              height={36}
-              onError={() => setError(true)}
-              className="object-cover"
-            />
-          </div>
+          <Avatar
+            src={friend.avatar}
+            name={friend.name}
+            className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-dash-card"
+            fallbackSizeClass="text-[10px] font-black uppercase"
+          />
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-dash-bg rounded-full bg-white/10" />
         </div>
         <div className="min-w-0">
@@ -141,15 +134,12 @@ export default function RightSidebar() {
                 <div key={f.id} className="flex items-center justify-between px-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative shrink-0">
-                      <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-dash-card">
-                        <Image 
-                          src={friendUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friendUser.name || 'G'}`} 
-                          alt={friendUser.name || "User"} 
-                          width={36} 
-                          height={36}
-                          className="object-cover"
-                        />
-                      </div>
+                      <Avatar
+                        src={friendUser.avatar}
+                        name={friendUser.name}
+                        className="w-9 h-9 rounded-full border border-white/10 overflow-hidden bg-dash-card"
+                        fallbackSizeClass="text-[10px] font-black uppercase"
+                      />
                       <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-dash-bg rounded-full bg-neon-green" />
                     </div>
                     <div className="min-w-0">

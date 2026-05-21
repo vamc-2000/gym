@@ -2,6 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    font-family: var(--font-sans), 'Inter', 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  /* Premium Typography Hierarchy */
+  .hero-heading {
+    @apply text-5xl md:text-6xl font-bold tracking-tight leading-tight;
+  }
+
+  .section-heading {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+
+  .card-heading {
+    @apply text-xl font-semibold;
+  }
+
+  .body-text {
+    @apply text-base leading-7 text-dash-text-muted;
+  }
+
+  .small-text {
+    @apply text-sm leading-6 text-dash-text-dim;
+  }
+
+  .button-text {
+    @apply text-sm font-medium;
+  }
+}
+
 /* =========================================================
    GymStreak Design System
    Tailwind v4 theme tokens + global styles

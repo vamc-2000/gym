@@ -15,6 +15,8 @@ export function toAuthUser(user: any): AuthUser {
     fitnessLevel: user.fitnessLevel || undefined,
     goal: user.goal || undefined,
     createdAt: user.createdAt,
+    avatar: user.userProfile?.avatar || undefined,
+    username: user.userProfile?.username || undefined,
   };
 }
 

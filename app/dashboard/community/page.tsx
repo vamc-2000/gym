@@ -9,6 +9,9 @@ import CommunitySidebar from "@/components/community/CommunitySidebar";
 import RightSidebar from "@/components/community/RightSidebar";
 import MessagesView from "@/components/community/MessagesView";
 import FriendsView from "@/components/community/FriendsView";
+import ExploreView from "@/components/community/ExploreView";
+import ReelsView from "@/components/community/ReelsView";
+import ChallengesView from "@/components/community/ChallengesView";
 import { tokenManager } from "@/lib/auth";
 
 export default function CommunityPage() {
@@ -33,6 +36,13 @@ export default function CommunityPage() {
 
   useEffect(() => {
     fetchData();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    }
     setParticles([...Array(20)].map(() => ({
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
@@ -94,6 +104,18 @@ export default function CommunityPage() {
           ) : activeTab === "Friends" ? (
             <div className="flex-1 w-full h-full p-6 overflow-y-auto custom-scrollbar">
               <FriendsView />
+            </div>
+          ) : activeTab === "Explore" ? (
+            <div className="flex-1 w-full h-full p-6 overflow-y-auto custom-scrollbar">
+              <ExploreView />
+            </div>
+          ) : activeTab === "Reels" ? (
+            <div className="flex-1 w-full h-full p-6 overflow-y-auto custom-scrollbar">
+              <ReelsView />
+            </div>
+          ) : activeTab === "Challenges" ? (
+            <div className="flex-1 w-full h-full p-6 overflow-y-auto custom-scrollbar">
+              <ChallengesView />
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto no-scrollbar pt-8 pb-32">

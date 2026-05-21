@@ -20,7 +20,11 @@ module.exports = {
         'primary-hover': 'var(--color-primary-hover)',
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Inter', 'Segoe UI', 'sans-serif'],
+      },
+      fontWeight: {
+        extrabold: '700',
+        black: '700',
       },
       animation: {
         'gradient-x': 'gradient-x 4s ease infinite',

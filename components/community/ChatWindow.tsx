@@ -129,8 +129,12 @@ export default function ChatWindow({ friend, currentUserId }: { friend: any, cur
       <div className="p-6 bg-white/2 border-b border-white/5 flex items-center justify-between backdrop-blur-xl">
         <div className="flex items-center gap-5">
           <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/10 border border-white/10 flex items-center justify-center text-neon-blue font-black text-xl shadow-lg">
-              {friend.name[0].toUpperCase()}
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-neon-purple/10 border border-white/10 flex items-center justify-center text-neon-blue font-black text-xl shadow-lg overflow-hidden">
+              {friend.avatar ? (
+                <img src={friend.avatar} alt={friend.name} className="w-full h-full object-cover" />
+              ) : (
+                friend.name?.charAt(0).toUpperCase() || "U"
+              )}
             </div>
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-dash-bg rounded-full flex items-center justify-center border-2 border-dash-bg">
               <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse shadow-[0_0_8px_rgba(57,255,20,0.8)]" />

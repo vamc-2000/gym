@@ -15,8 +15,8 @@ export interface Post {
     name: string;
     avatar?: string;
   };
-  likes: { id: string }[];
-  _count: {
+  likes?: { id: string }[];
+  _count?: {
     likes: number;
     comments: number;
   };
@@ -34,8 +34,28 @@ export class CommunityService {
     });
   }
 
+  async editPost(id: string, data: { content?: string; privacy?: string; mediaUrl?: string; mediaType?: string }): Promise<ApiResponse<Post>> {
+    return await apiClient<Post>(`/community/posts/${id}/edit`, {
+      method: "PUT",
+      body: data
+    });
+  }
+
   async deletePost(id: string): Promise<ApiResponse<void>> {
-    return await apiClient<void>(`/community/posts/${id}`, {
+    return await apiClient<void>(`/community/posts/${id}/delete`, {
+      method: "DELETE"
+    });
+  }
+
+  async editReel(id: string, data: { caption?: string; videoUrl?: string }): Promise<ApiResponse<any>> {
+    return await apiClient<any>(`/community/reels/${id}/edit`, {
+      method: "PUT",
+      body: data
+    });
+  }
+
+  async deleteReel(id: string): Promise<ApiResponse<void>> {
+    return await apiClient<void>(`/community/reels/${id}/delete`, {
       method: "DELETE"
     });
   }
@@ -120,6 +140,18 @@ export class CommunityService {
     return await apiClient<any>("/community/stories", {
       method: "POST",
       body: data
+    });
+  }
+
+  async markStoryViewed(storyId: string): Promise<ApiResponse<any>> {
+    return await apiClient<any>(`/community/stories/${storyId}/view`, {
+      method: "POST"
+    });
+  }
+
+  async deleteStory(storyId: string): Promise<ApiResponse<void>> {
+    return await apiClient<void>(`/community/stories/${storyId}`, {
+      method: "DELETE"
     });
   }
 

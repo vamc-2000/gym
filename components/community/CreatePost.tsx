@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { Image as ImageIcon, Video, Tag, Smile, Send } from "lucide-react";
 import { communityService } from "@/services/communityService";
 import { triggerToast } from "@/components/NotificationManager";
+import imageCompression from 'browser-image-compression';
 
 export default function CreatePost({ onPostCreated }: { onPostCreated: () => void }) {
   const [content, setContent] = useState("");
@@ -31,7 +32,25 @@ export default function CreatePost({ onPostCreated }: { onPostCreated: () => voi
       let finalMediaUrl = undefined;
 
       if (mediaType !== "none" && file) {
-        const uploadRes = await communityService.uploadMedia(file);
+        let uploadFile = file;
+        
+        // Client-side media optimization architecture implementation
+        if (mediaType === "image") {
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+            fileType: 'image/webp'
+          };
+          try {
+            const compressedFile = await imageCompression(file, options);
+            uploadFile = new File([compressedFile], file.name.replace(/\.[^/.]+$/, "") + ".webp", { type: "image/webp" });
+          } catch (compressionError) {
+            console.warn("Compression failed, uploading original image", compressionError);
+          }
+        }
+
+        const uploadRes = await communityService.uploadMedia(uploadFile);
         if (!uploadRes.success || !uploadRes.data) {
           throw new Error(uploadRes.error || "Failed to upload media");
         }

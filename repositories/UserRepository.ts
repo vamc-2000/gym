@@ -6,12 +6,14 @@ export class UserRepository {
   async findByEmail(email: string) {
     return await prisma.user.findUnique({
       where: { email },
+      include: { userProfile: true }
     });
   }
 
   async findById(id: string) {
     return await prisma.user.findUnique({
       where: { id },
+      include: { userProfile: true }
     });
   }
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Avatar from "@/components/ui/Avatar";
 import { friendService } from "@/services/friendService";
 import { triggerToast } from "@/components/NotificationManager";
 
 interface FriendCardProps {
-  user: { id: string; name: string; email?: string };
+  user: { id: string; name: string; email?: string; avatar?: string };
   status: "SUGGESTED" | "PENDING" | "SENT" | "FRIEND";
   requestId?: string;
   onUpdate: () => void;
@@ -51,25 +51,18 @@ export default function FriendCard({ user, status, requestId, onUpdate }: Friend
     }
   };
 
-  const [avatarError, setAvatarError] = useState(false);
-  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-
   return (
     <div className="bg-black/40 border border-white/5 rounded-[2rem] p-5 flex items-center justify-between group hover:border-neon-blue/30 transition-all backdrop-blur-md relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-neon-blue to-transparent opacity-0 group-hover:opacity-20 transition-opacity" />
       
       <div className="flex items-center gap-5">
         <div className="relative">
-          <div className="w-14 h-14 rounded-2xl border-2 border-white/5 overflow-hidden bg-dash-card group-hover:border-neon-blue/30 transition-all">
-            <Image 
-              src={avatarError ? fallbackAvatar : (fallbackAvatar)} 
-              alt={user.name} 
-              width={56} 
-              height={56}
-              className="object-cover"
-              onError={() => setAvatarError(true)}
-            />
-          </div>
+          <Avatar
+            src={user.avatar}
+            name={user.name}
+            className="w-14 h-14 rounded-2xl border-2 border-white/5 overflow-hidden bg-dash-card group-hover:border-neon-blue/30 transition-all"
+            fallbackSizeClass="text-base font-black uppercase"
+          />
           {status === "FRIEND" && (
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-dash-bg shadow-[0_0_10px_rgba(57,255,20,0.5)]" />
           )}

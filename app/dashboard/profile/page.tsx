@@ -90,6 +90,10 @@ export default function ProfilePage() {
             name: form.name,
             fitnessLevel: form.fitnessLevel as "Beginner" | "Intermediate" | "Advanced"
           });
+
+          // Sync name change across community components
+          const { profileSync } = await import("@/lib/profile-sync");
+          profileSync.emit({ name: form.name });
         }
         
         // Force refresh for plan regeneration

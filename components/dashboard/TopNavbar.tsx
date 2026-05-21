@@ -7,6 +7,8 @@ import { motion } from "motion/react";
 import { tokenManager } from "@/lib/auth";
 import { useWorkout } from "@/context/WorkoutContext";
 import { dashboardService } from "@/lib/services/dashboardService";
+import { useProfile } from "@/hooks/use-profile";
+import Avatar from "@/components/ui/Avatar";
 import dynamic from "next/dynamic";
 const ConfirmationModal = dynamic(() => import("../ui/ConfirmationModal"), { ssr: false });
 import { useTheme } from "@/context/ThemeContext";
@@ -42,6 +44,7 @@ TimerDisplay.displayName = "TimerDisplay";
 function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
   const router = useRouter();
   const { theme } = useTheme();
+  const { user } = useProfile();
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [greeting, setGreeting] = useState("Welcome");
@@ -142,9 +145,14 @@ function TopNavbar({ onMenuToggle, userName }: TopNavbarProps) {
 
         <Link
           href="/dashboard/profile"
-          className="w-11 h-11 bg-gradient-to-br from-neon-blue to-purple-600 rounded-xl flex items-center justify-center text-sm font-black text-white cursor-pointer hover:scale-110 active:scale-95 transition-all shadow-lg hover:shadow-neon-blue/20"
+          className="block hover:scale-110 active:scale-95 transition-all shadow-lg hover:shadow-neon-blue/20"
         >
-          {userName ? userName.charAt(0).toUpperCase() : "U"}
+          <Avatar
+            src={user?.avatar}
+            name={user?.username || user?.name || userName || "U"}
+            className="w-11 h-11 rounded-xl border-2 border-neon-blue/20 overflow-hidden bg-dash-card"
+            fallbackSizeClass="text-sm font-black uppercase"
+          />
         </Link>
 
         <button

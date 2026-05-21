@@ -20,7 +20,7 @@ export class FriendshipRepository {
   }
 
   async getFriendships(userId: string) {
-    return await prisma.friendship.findMany({
+    const friendships = await prisma.friendship.findMany({
       where: {
         OR: [
           { userId, status: "ACCEPTED" },
@@ -29,35 +29,99 @@ export class FriendshipRepository {
       },
       include: {
         user: {
-          select: { id: true, name: true, email: true },
+          select: { 
+            id: true, 
+            name: true, 
+            email: true,
+            userProfile: {
+              select: { avatar: true, username: true }
+            }
+          },
         },
         friend: {
-          select: { id: true, name: true, email: true },
+          select: { 
+            id: true, 
+            name: true, 
+            email: true,
+            userProfile: {
+              select: { avatar: true, username: true }
+            }
+          },
         },
       },
     });
+
+    return friendships.map(f => ({
+      ...f,
+      user: {
+        id: f.user.id,
+        name: f.user.name,
+        email: f.user.email,
+        avatar: f.user.userProfile?.avatar || "",
+        username: f.user.userProfile?.username || ""
+      },
+      friend: {
+        id: f.friend.id,
+        name: f.friend.name,
+        email: f.friend.email,
+        avatar: f.friend.userProfile?.avatar || "",
+        username: f.friend.userProfile?.username || ""
+      }
+    }));
   }
 
   async getPendingRequests(userId: string) {
-    return await prisma.friendship.findMany({
+    const requests = await prisma.friendship.findMany({
       where: { friendId: userId, status: "PENDING" },
       include: {
         user: {
-          select: { id: true, name: true },
+          select: { 
+            id: true, 
+            name: true,
+            userProfile: {
+              select: { avatar: true, username: true }
+            }
+          },
         },
       },
     });
+
+    return requests.map(r => ({
+      ...r,
+      user: {
+        id: r.user.id,
+        name: r.user.name,
+        avatar: r.user.userProfile?.avatar || "",
+        username: r.user.userProfile?.username || ""
+      }
+    }));
   }
 
   async getSentRequests(userId: string) {
-    return await prisma.friendship.findMany({
+    const requests = await prisma.friendship.findMany({
       where: { userId, status: "PENDING" },
       include: {
         friend: {
-          select: { id: true, name: true },
+          select: { 
+            id: true, 
+            name: true,
+            userProfile: {
+              select: { avatar: true, username: true }
+            }
+          },
         },
       },
     });
+
+    return requests.map(r => ({
+      ...r,
+      friend: {
+        id: r.friend.id,
+        name: r.friend.name,
+        avatar: r.friend.userProfile?.avatar || "",
+        username: r.friend.userProfile?.username || ""
+      }
+    }));
   }
 
   async removeFriendship(userId: string, friendId: string) {
@@ -72,18 +136,32 @@ export class FriendshipRepository {
   }
 
   async getFriendIds(userId: string): Promise<string[]> {
-    const friendships = await this.getFriendships(userId);
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [
+          { userId, status: "ACCEPTED" },
+          { friendId: userId, status: "ACCEPTED" },
+        ],
+      },
+    });
     return friendships.map((f) => (f.userId === userId ? f.friendId : f.userId));
   }
 
   async suggestUsers(userId: string) {
     const friendIds = await this.getFriendIds(userId);
-    const pendingIds = (await this.getPendingRequests(userId)).map(r => r.userId);
-    const sentIds = (await this.getSentRequests(userId)).map(r => r.friendId);
+    const pendingRequests = await prisma.friendship.findMany({
+      where: { friendId: userId, status: "PENDING" }
+    });
+    const pendingIds = pendingRequests.map(r => r.userId);
+
+    const sentRequests = await prisma.friendship.findMany({
+      where: { userId, status: "PENDING" }
+    });
+    const sentIds = sentRequests.map(r => r.friendId);
     
     const excludedIds = [userId, ...friendIds, ...pendingIds, ...sentIds];
 
-    return await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         id: { notIn: excludedIds },
         role: "USER"
@@ -91,10 +169,21 @@ export class FriendshipRepository {
       select: {
         id: true,
         name: true,
-        email: true
+        email: true,
+        userProfile: {
+          select: { avatar: true, username: true }
+        }
       },
       take: 10
     });
+
+    return users.map(u => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      avatar: u.userProfile?.avatar || "",
+      username: u.userProfile?.username || ""
+    }));
   }
 }
 

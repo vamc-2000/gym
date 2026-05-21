@@ -206,10 +206,44 @@ export class CommunityRepository {
       },
       include: {
         user: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true, 
+            userProfile: {
+              select: { avatar: true, username: true }
+            } 
+          }
+        },
+        views: {
+          where: { userId }
         }
       },
       orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async markStoryViewed(storyId: string, userId: string) {
+    try {
+      return await prisma.storyView.upsert({
+        where: {
+          storyId_userId: { storyId, userId }
+        },
+        update: {},
+        create: { storyId, userId }
+      });
+    } catch (e) {
+      // Ignore if it already exists or errors
+      return null;
+    }
+  }
+
+  async deleteStory(storyId: string, userId: string) {
+    // Only the user who created the story can delete it
+    return await prisma.story.delete({
+      where: { 
+        id: storyId,
+        userId: userId
+      },
     });
   }
 }

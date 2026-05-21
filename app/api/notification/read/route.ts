@@ -7,3 +7,8 @@ export async function PATCH(req: NextRequest) {
   // The controller expects notificationId from body currently.
   return notificationController.markAsRead(req);
 }
+
+export async function POST(req: NextRequest) {
+  await connectDB();
+  return notificationController.markAllAsRead(req);
+}

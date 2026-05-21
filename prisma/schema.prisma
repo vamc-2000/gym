@@ -59,6 +59,12 @@ model User {
   sentMessages     ChatMessage[]   @relation("SentMessages")
   receivedMessages ChatMessage[]   @relation("ReceivedMessages")
   stories          Story[]
+  storyViews       StoryView[]
+  storyReactions   StoryReaction[]
+  reels            Reel[]
+  reelLikes        ReelLike[]
+  reelComments     ReelComment[]
+  reelViews        ReelView[]
 
   // Email & Security
   resetTokens PasswordResetToken[]
@@ -75,6 +81,7 @@ model User {
   challengeActivities ChallengeActivity[]
   workoutSessions     WorkoutSession[]
   trainerSessions     WorkoutSession[]    @relation("TrainerSessions")
+  userProfile         UserProfile?
 }
 
 model TrainerProfile {
@@ -520,6 +527,7 @@ model CommunityPost {
   mediaUrl      String?
   mediaType     String?       @default("none") // image, video, none
   privacy       String        @default("public") // public, private
+  edited        Boolean       @default(false)
   likesCount    Int           @default(0)
   commentsCount Int           @default(0)
   likes         PostLike[]
@@ -599,16 +607,46 @@ enum FriendshipStatus {
 }
 
 model Story {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  mediaUrl  String
-  mediaType String   @default("image") // image, video
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id])
+  mediaUrl     String
+  mediaType    String   @default("image") // image, video
+  thumbnailUrl String?
+  duration     Float?   @default(5.0)
+  caption      String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  views        StoryView[]
+  reactions    StoryReaction[]
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model StoryView {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  storyId   String   @db.ObjectId
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([storyId, userId])
+}
+
+model StoryReaction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  storyId   String   @db.ObjectId
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  reaction  String   // emoji or text
+  createdAt DateTime @default(now())
+
+  @@index([storyId])
+  @@index([userId])
 }
 
 model PasswordResetToken {
@@ -638,4 +676,116 @@ model EmailLog {
   sentCount   Int      @default(0)
   failedCount Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+model Reel {
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String        @db.ObjectId
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caption            String
+  videoUrl           String
+  optimizedVideoUrl  String?
+  thumbnailUrl       String?
+  videoDuration      Float?
+  videoWidth         Int?
+  videoHeight        Int?
+  compressionStatus  String        @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  edited             Boolean       @default(false)
+  likesCount         Int           @default(0)
+  commentsCount      Int           @default(0)
+  viewsCount         Int           @default(0)
+  likes              ReelLike[]
+  comments           ReelComment[]
+  views              ReelView[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ReelLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  reelId    String   @db.ObjectId
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([reelId, userId])
+}
+
+model ReelComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  reelId    String   @db.ObjectId
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([reelId])
+}
+
+model ReelView {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  reelId       String   @db.ObjectId
+  reel         Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  userId       String?  @db.ObjectId
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  viewDuration Float?
+  createdAt    DateTime @default(now())
+
+  @@index([reelId])
+  @@index([userId])
+}
+
+model UserProfile {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @unique @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username     String   @unique
+  bio          String?
+  avatar       String?
+  banner       String?
+  goal         String?
+  location     String?
+  isPrivate    Boolean  @default(false)
+  verified     Boolean  @default(false)
+  socialLinks  Json?    // e.g. { instagram, twitter, youtube }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Follow {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String   @db.ObjectId
+  followingId String   @db.ObjectId
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model SavedPost {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  postId     String   @db.ObjectId
+  collection String   @default("All Posts")
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model MediaUpload {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @db.ObjectId
+  url                String
+  optimizedVideoUrl  String?
+  thumbnailUrl       String?
+  videoDuration      Float?
+  videoWidth         Int?
+  videoHeight        Int?
+  compressionStatus  String   @default("PENDING")
+  type               String   // "image" or "video"
+  key                String   // R2 key
+  createdAt          DateTime @default(now())
 }

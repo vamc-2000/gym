@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import Image from "next/image";
+import Avatar from "@/components/ui/Avatar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
   Home, Hash, Play, Trophy, MessageSquare, 
-  Bell, User, BarChart3, Settings, Flame, Users
+  Bell, User, Settings, Flame, Users
 } from "lucide-react";
-import { tokenManager } from "@/lib/auth";
+import { useProfile } from "@/hooks/use-profile";
 import { triggerToast } from "@/components/NotificationManager";
 
 const navItems = [
@@ -21,7 +21,6 @@ const navItems = [
   { icon: Users, label: "Friends" },
   { icon: Bell, label: "Notifications" },
   { icon: User, label: "Profile" },
-  { icon: BarChart3, label: "Leaderboard" },
   { icon: Settings, label: "Settings" },
 ];
 
@@ -33,16 +32,10 @@ export default function CommunitySidebar({
   onTabChange?: (tab: string) => void 
 }) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [avatarError, setAvatarError] = useState(false);
-
+  const { user, mounted } = useProfile();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
-    setUser(tokenManager.getUser());
-    
     const fetchUnread = async () => {
       try {
         const res = await fetch("/api/notification/unread");
@@ -54,14 +47,19 @@ export default function CommunitySidebar({
   }, []);
 
   const handleItemClick = (label: string) => {
-    if (label === "Home" || label === "Messages" || label === "Friends") {
+    if (
+      label === "Home" ||
+      label === "Messages" ||
+      label === "Friends" ||
+      label === "Explore" ||
+      label === "Reels" ||
+      label === "Challenges"
+    ) {
       onTabChange && onTabChange(label);
     } else if (label === "Notifications") {
       router.push("/dashboard/notifications");
     } else if (label === "Profile") {
-      router.push("/dashboard/profile");
-    } else if (label === "Leaderboard") {
-      router.push("/dashboard/leaderboard");
+      router.push("/community/profile/me");
     } else if (label === "Settings") {
       router.push("/dashboard/settings");
     } else {
@@ -73,7 +71,7 @@ export default function CommunitySidebar({
     <div className="fixed left-0 top-0 h-screen w-72 bg-dash-bg border-r border-white/5 p-8" />
   );
 
-  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'G'}`;
+
 
   return (
     <div className="flex flex-col h-full w-full p-6">
@@ -119,16 +117,12 @@ export default function CommunitySidebar({
         <div className="bg-black/40 p-4 rounded-3xl border border-white/5 hover:border-neon-blue/30 transition-all group cursor-pointer relative overflow-hidden">
           <div className="flex items-center gap-3 mb-4">
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full border border-neon-blue/30 overflow-hidden bg-dash-card">
-                <Image 
-                  src={avatarError ? fallbackAvatar : (user?.avatar || fallbackAvatar)} 
-                  alt="Avatar" 
-                  width={40} 
-                  height={40}
-                  className="object-cover"
-                  onError={() => setAvatarError(true)}
-                />
-              </div>
+              <Avatar
+                src={user?.avatar}
+                name={user?.username || user?.name || "Athlete"}
+                className="w-10 h-10 rounded-full border border-neon-blue/30 overflow-hidden bg-dash-card"
+                fallbackSizeClass="text-xs font-black uppercase"
+              />
               <div className="absolute -bottom-0.5 -right-0.5 bg-dash-bg border border-neon-blue/30 p-0.5 rounded-full">
                 <Flame className="w-2.5 h-2.5 text-orange-500" fill="currentColor" />
               </div>

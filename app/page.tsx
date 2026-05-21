@@ -144,9 +144,7 @@ export default function Home() {
 
           {/* Headline */}
           <h1
-            className="font-black tracking-tight leading-tight
-                       text-3xl sm:text-5xl md:text-6xl lg:text-7xl
-                       mb-4 sm:mb-5 md:mb-6"
+            className="hero-heading mb-4 sm:mb-5 md:mb-6"
           >
             EVOLVE YOUR{" "}
             <span
@@ -180,7 +178,7 @@ export default function Home() {
                          py-3 sm:py-3.5 md:py-4
                          bg-white text-dash-bg
                          rounded-xl sm:rounded-2xl
-                         font-black
+                         font-semibold
                          text-sm sm:text-base
                          hover:shadow-2xl hover:shadow-white/10
                          transition-all cursor-pointer group"
@@ -233,8 +231,7 @@ export default function Home() {
                 className={`w-10 sm:w-12 h-1 bg-gradient-to-r ${section.color} rounded-full mx-auto lg:mx-0`}
               />
               <h2
-                className="font-bold text-white tracking-tight leading-tight
-                           text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
+                className="section-heading text-white"
               >
                 {section.title}
               </h2>
@@ -303,8 +300,7 @@ export default function Home() {
           <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-neon-blue/10 rounded-full blur-[100px] sm:blur-[120px]" />
           <div className="absolute bottom-0 left-0 w-48 sm:w-64 h-48 sm:h-64 bg-neon-yellow/10 rounded-full blur-[100px] sm:blur-[120px]" />
           <h2
-            className="font-bold mb-6 sm:mb-8 relative z-10
-                       text-2xl sm:text-4xl md:text-5xl lg:text-6xl"
+            className="section-heading mb-6 sm:mb-8 relative z-10 text-white"
           >
             Ready to break your limits?
           </h2>
@@ -316,7 +312,7 @@ export default function Home() {
                        py-3.5 sm:py-5 md:py-6
                        bg-gradient-to-r from-neon-yellow to-amber-500
                        text-dash-bg rounded-xl sm:rounded-2xl
-                       font-black
+                       font-semibold
                        text-base sm:text-lg md:text-xl
                        hover:shadow-2xl hover:shadow-neon-yellow/30
                        transition-all cursor-pointer relative z-10"

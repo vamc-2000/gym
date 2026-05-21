@@ -165,6 +165,30 @@ export class CommunityController {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
   }
+
+  async markStoryViewed(req: NextRequest, { params }: { params: { id: string } }) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      await communityRepository.markStoryViewed(params.id, decoded.userId);
+      return NextResponse.json({ success: true });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
+
+  async deleteStory(req: NextRequest, { params }: { params: { id: string } }) {
+    const decoded = authMiddleware(req);
+    if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+      await communityRepository.deleteStory(params.id, decoded.userId);
+      return NextResponse.json({ success: true });
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+  }
 }
 
 export const communityController = new CommunityController();
